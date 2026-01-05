@@ -1,0 +1,14 @@
+FINOX SCRAPER DATA QUALITY REPORT
+Symbol: TATASTEEL
+Company: Unknown
+
+Ratios captured: 0
+
+Quarterly metrics: none detected
+
+
+Shareholding snapshot:
+  (no shareholding data provided)
+
+Raw payload keys: financials, metadata, shareholding, source, url
+Data quality note: inspect raw JSON for full fidelity.

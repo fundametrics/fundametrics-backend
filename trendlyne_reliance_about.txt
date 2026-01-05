@@ -1,0 +1,892 @@
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+
+
+
+
+
+
+<html lang="en" >
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self'; image-src https:*; child-src 'none';">-->
+  <meta property="og:site_name" content="Trendlyne.com">
+  
+    
+        <meta name="description" content="Reliance Industries is engaged in activities spanning across hydrocarbon exploration and production, Oil to Chemicals, Retail and Digital Services.">
+    
+
+
+  <title>
+    Reliance Industries company information, history, management and director details and CEO salary
+</title>
+
+  
+  
+    <link href='//cdnjs.cloudflare.com/' rel='preconnect' >
+  
+    <link href='//ajax.googleapis.com/' rel='preconnect' >
+  
+    <link href='//www.googletagmanager.com/' rel='preconnect' >
+  
+    <link href='//fonts.gstatic.com/' rel='preconnect' >
+  
+    <link href='//www.google-analytics.com/' rel='preconnect' >
+  
+    <link href='//trendlyne-media-mumbai-new.s3.amazonaws.com/' rel='preconnect' >
+  
+    <link href='//s3-ap-south-1.amazonaws.com/' rel='preconnect' >
+  
+    <link href='//cdn.datatables.net' rel='preconnect' >
+  
+    <link href='//fonts.googleapis.com' rel='preconnect' >
+  
+    <link href='https://cdn-static.trendlyne.com/static/' rel='preconnect' >
+  
+
+  
+  
+    <link href='//cdnjs.cloudflare.com/' rel='dns-prefetch' >
+  
+    <link href='//www.googletagmanager.com/' rel='dns-prefetch' >
+  
+    <link href='//www.google-analytics.com/' rel='dns-prefetch' >
+  
+    <link href='//trendlyne-media-mumbai-new.s3.amazonaws.com/' rel='dns-prefetch' >
+  
+    <link href='//s3-ap-south-1.amazonaws.com/' rel='dns-prefetch' >
+  
+    <link href='//cdn.datatables.net' rel='dns-prefetch' >
+  
+
+  <link rel="apple-touch-icon-precomposed" sizes="57x57" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-57x57.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-114x114.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-72x72.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-144x144.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="60x60" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-60x60.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-120x120.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="76x76" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-76x76.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://cdn-static.trendlyne.com/static/favicons/apple-touch-icon-152x152.png" />
+  <link rel="icon" type="image/png" href="https://cdn-static.trendlyne.com/static/favicons/favicon-196x196.png" sizes="196x196" />
+  <link rel="icon" type="image/png" href="https://cdn-static.trendlyne.com/static/favicons/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/png" href="https://cdn-static.trendlyne.com/static/favicons/favicon-32x32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="https://cdn-static.trendlyne.com/static/favicons/favicon-16x16.png" sizes="16x16" />
+  <link rel="icon" type="image/png" href="https://cdn-static.trendlyne.com/static/favicons/favicon-128.png" sizes="128x128" />
+  <meta name="application-name" content="&nbsp;"/>
+  <meta name="msapplication-TileColor" content="#FFFFFF" />
+  <meta name="msapplication-TileImage" content="https://cdn-static.trendlyne.com/static/favicons/mstile-144x144.png" />
+  <meta name="msapplication-square70x70logo" content="https://cdn-static.trendlyne.com/static/favicons/mstile-70x70.png" />
+  <meta name="msapplication-square150x150logo" content="https://cdn-static.trendlyne.com/static/favicons/mstile-150x150.png" />
+  <meta name="msapplication-wide310x150logo" content="https://cdn-static.trendlyne.com/static/favicons/mstile-310x150.png" />
+  <meta name="msapplication-square310x310logo" content="https://cdn-static.trendlyne.com/static/favicons/mstile-310x310.png" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" />
+  <link rel="preload" as="style" href='https://fonts.googleapis.com/css?family=Roboto:100,400,700,500|Droid+Sans:400,700|Lato:400,700,900&display=swap' />
+  <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:100,400,700,500|Droid+Sans:400,700|Lato:400,700,900&display=swap' />
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet' type='text/css' />
+
+  
+  
+
+    <link rel="stylesheet" href="https://cdn-static.trendlyne.com/static/CACHE/css/output.37c939944be6.css" type="text/css">
+
+  <link rel="stylesheet" href="https://cdn-static.trendlyne.com/static/CACHE/css/output.6b2ea91dc190.css" type="text/css">
+
+  
+  
+
+  
+  
+
+
+  
+  
+
+
+
+
+
+
+</head>
+<body class=''
+    data-disableajaxcache=""
+    
+>
+    <!-- Below script to include theme mode in the mobile webview e.g. #theme-dark -->
+<script>
+    (function(){
+        var hashId = window.location.hash;
+        if (hashId && hashId.startsWith('#theme-')) {
+            var theme = hashId.split('-')[1]; if (theme) document.body.classList.add("theme-mode", theme);
+        }
+    })()
+</script>
+
+
+<script>
+  var TrendlyneApp =  TrendlyneApp || {};
+  TrendlyneApp.shaon = false;
+  TrendlyneApp.galoaded = false;
+  TrendlyneApp.gaon = true;
+  TrendlyneApp.RE_CAPTCHA_KEY = "6LfbvMUqAAAAAM2r1dJN30bR11kvMpieISxyl8Pe";
+  TrendlyneApp.localsystem = false;
+  
+</script>
+
+
+
+
+
+
+
+
+<header><nav class="container-fluid"><div class="row " id="tl-navbar" ><div id="tl-navbar-big-menu" aria-label="Sub Navigation"></div><div id="tl-navbar-side-menu" aria-label="Sidebar"></div><div class="navbar navbar-inverse navbar-fixed-top tl-navbar nobdr m0 p0 side-nav-color "
+                role="navigation" id="tl-navbar-div" aria-label="Main Navigation"><div class="col-xl-9 col-lg-8 col-md-7 col-sm-2 col-xs-2 p-r-0 p-l-0"><div class="hidden-md-up p-x-0 tl-navbar-body "><div class="tl-navbar-brand navbar-brand hidden-md-up sidebar-left-menu-icon m-r-0 p-x-1 pointer mt05r" ><i class="sprite-side-menu sprite-side-menu-menu-icon"></i><i class="sprite-side-menu sprite-side-menu-close-icon hidden"></i></div></div><div class="hidden-sm-down p-x-0 tl-navbar-body "><ul id="navbarmoremenu" class="nav navbar-nav"><li class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link p-a-0"><a class="tl-navbar-brand navbar-brand hidden-sm-down sidebar-left-menu-name p-y-0 m-r-0 pl05rem pointer" 
+    href="https://trendlyne.com/features/"
+    style="max-width:21rem;"
+><img class="img-fluid" src='https://cdn-static.trendlyne.com/static/TL-logomark-v1.webp'
+         alt="Trendlyne logo"
+         height="34"
+         width="34"
+         style="height:34px; margin-top:10px;"
+         
+    ></a></li><li><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link   "
+                                    href="https://trendlyne.com/markets-today/"
+                                    data-toggle="collapse1" data-target="#marketsCollapsingNavbar"
+                                    aria-controls="marketsCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar" >
+                                    Markets
+                                </a></li><li><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link starfolio_subnavbar"
+                                    href="https://starfolio.trendlyne.com/"
+                                    target="_blank"
+                                    style="padding-top:1.2rem;padding-bottom:0.8rem;"><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-starfolio-light"></i></a></li><li><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/alerts/portfolio-real-time-alerts/"
+                                    data-toggle="collapse1" data-target="#alertCollapsingNavbar"
+                                    aria-controls="alertCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Alerts
+                                </a></li><li class="hidden-md-down"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                        href="https://smartoptions.trendlyne.com/dashboard/options/?redirect_source=trendlyne-fno"
+                                        data-toggle="collapse1" data-target="#fnoCollapsingNavbar"
+                                        aria-controls="fnoCollapsingNavbar" aria-expanded="false"
+                                        aria-label="Toggle navigation" data-parent="#tl-navbar">
+                                        F&O
+                                    </a></li><li><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                        href="https://trendlyne.com/mutual-fund/mf-all/?category=Multi-Cap&active=multicap"
+                                        data-toggle="collapse1" data-target="#mfCollapsingNavbar"
+                                        aria-controls="mfCollapsingNavbar" aria-expanded="false"
+                                        aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    >
+                                        MF
+                                    </a></li><li class="hidden-md-down"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                        href="https://trendlyne.com/research-reports/all/"
+                                        data-toggle="collapse1" data-target="#reportsCollapsingNavbar"
+                                        aria-controls="reportsCollapsingNavbar" aria-expanded="false"
+                                        aria-label="Toggle navigation" data-parent="#tl-navbar">
+                                        Reports
+                                    </a></li><li class="hidden-lg-down"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/stock-screeners/by-type/"
+                                    data-toggle="collapse1" data-target="#screenerCollapsingNavbar"
+                                    aria-controls="screenerCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Screeners
+                                </a></li><li class="hidden-lg-down hiddenforenterprise"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link fw500
+                                                        "
+                                    style="color:#ed9f40 !important;"
+                                    href="https://trendlyne.com/subscription/plans/"
+                                    data-parent="#tl-navbar"
+                                >
+                                    Subscribe
+                                </a></li><li style="hidden-lg-down"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/portfolio/superstar-shareholders/index/"
+                                    data-toggle="collapse1" data-target="#superstarsCollapsingNavbar"
+                                    aria-controls="superstarsCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Superstars
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link   "
+                                    href="https://trendlyne.com/portfolio/holdings/"
+                                    data-toggle="collapse1" data-target="#portfolioCollapsingNavbar"
+                                    aria-controls="portfolioCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Portfolio
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link loginModal modal-trigger replace-url "
+                                    href="https://trendlyne.com/visitor/loginmodal.html?next=https://trendlyne.com/portfolio/show/Watchlist/default/"
+                                    data-url="https://trendlyne.com/portfolio/show/Watchlist/default/"
+                                    data-toggle="collapse1" data-target="#watchlistCollapsingNavbar"
+                                    aria-controls="watchlistCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Watchlist
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link " 
+                                    href="https://trendlyne.com/equity/group-insider-trading-sast/"
+                                    data-url="https://trendlyne.com/equity/group-insider-trading-sast/"
+                                    data-toggle="collapse1" data-target="#trading_SAST_CollapsingNavbar"
+                                    aria-controls="trading_SAST_CollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Insider Trades
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/dashboard/results/industry/"
+                                    data-toggle="collapse1" data-target="#resultsCollapsingNavbar"
+                                    aria-controls="resultsCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                >
+                                    Results
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link"
+                                    href="https://trendlyne.com/tools/data-downloader/stock-data-downloader/"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    >
+                                    Data Downloader
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/equity/calendar/all/all/"
+                                    data-toggle="collapse1" data-target="#eventscalendar"
+                                    aria-controls="eventscalendar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    >
+                                    Events Calendar
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                        href="https://trendlyne.com/faq/articles/84000392527-what-s-new-at-trendlyne-"
+                                        data-toggle="collapse1" data-target="#whatsnewCollapsingNavbar"
+                                        aria-controls="whatsnewCollapsingNavbar" aria-expanded="false"
+                                        aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                        >
+                                        What's New
+                                    </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link "
+                                    href="https://trendlyne.com/features/"
+                                    data-toggle="collapse1" data-target="#exploreCollapsingNavbar"
+                                    aria-controls="exploreCollapsingNavbar" aria-expanded="false"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    >
+                                    Explore
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link"
+                                    href="https://trendlyne.com/faq/"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    >
+                                    FAQs
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link disflex align-items-center"
+                                    href="https://trendlyne.com/features/matrix/"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    target="_blank"
+                                    >
+                                    All Features
+                                </a></li><li style="display:none;"><a class="nav-item ttn-item text-xs-center point tl-collapsing-nav-link"
+                                    href="https://trendlyne.com/web-widget/showcase"
+                                    aria-label="Toggle navigation" data-parent="#tl-navbar"
+                                    target="_blank"
+                                    >
+                                    Widgets
+                                </a></li></ul><span class="ib navbar-nav posrelative collect"><a role="button" href="#" data-toggle="dropdown" class="dropdown-toggle-tl ib ttn-item"
+                            >
+                                More
+                                <i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-down-arrow ml3 scale-75"></i></a><ul id="submenu" class="dropdown-menu"></ul></span></div></div><div class="col-xl-3 col-lg-4 col-md-5 col-sm-10 col-xs-10 p-l-0 p-r-0" id="topnav-right-col"><div class='tl-navbar-search-wrapper'><div class='tl-navbar-search-btn mb05r hidden-sm-up'><a class="nav-link btn p-b-0 p-x-1"><sub><i class="sprite-side-menu sprite-side-menu-search-icon posrelative" style="top: 3px;"></i><span class="p-l-1">
+                                        Search stocks
+                                        </span></sub></a></div><div class="topnav-right pull-sm-down-right"><div class="hidden-xs-down pt0" id="top-nav-search"><div class=""><form class="navbar-form navbar-input-group input-group p0 tl-navbar-search-form tl-navbar-search"
+        data-bind="enterkey: submit" ><div class="input-group-addon nobdr tl-navbar-search-addon"><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-search-Icon"></i></div><input name="search" type="text" autocomplete="off" id="navbar-desktop-search"
+                class="navbar-topsearch form-inline form-control mform-control navbar-ac tl-navbar-search-input tl-navbar-search"
+                data-searchurl="https://trendlyne.com/member/api/ac_snames/stock/"
+                placeholder=" Search Stock, Index, MF " 
+                /></form></div></div><div class="hidden-sm-down"><div class='tl-country-switch color202020' ><div class="btn-group full-width hidden-sm-down" role="group"><div><div class='pointer dropdown dropdown-toggle-tl' id="countryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-IND img-rounded"></i><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-down-arrow scale-75"></i></div><div class="dropdown-menu pa05r" aria-labelledby="countryDropdown"><a
+                        class="dropdown-item point p-a-0 mx05r country-switcher country-option option active"
+                        rel="noopener noreferrer"
+                        href="https://trendlyne.com/switch-country/IND/"
+                        data-country-code="IND"
+                    ><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-IND img-rounded mr4"></i>
+                        IND
+                    </a><a
+                        class="dropdown-item point p-a-0 mx05r country-switcher country-option option "
+                        rel="noopener noreferrer"
+                        href="https://trendlyne.com/switch-country/USA/"
+                        data-country-code="USA"
+                    ><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-USA img-rounded mr4"></i>
+                        USA
+                    </a></div></div></div><div class="hidden-md-up full-width"><div data-toggle="modal" data-target="#selectCountyModal" class="modal-trigger"><div class="selected-country"><div class='country-option nobdr'><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-IND img-rounded"></i><span class="vr"></span><span class="pl6"> 
+                        
+                            
+                                IND
+                            
+                        
+                            
+                        
+                    </span></div><i class="sprite-side-menu sprite-side-menu-arrow-icon"></i></div></div><div class="modal fade noclearOnclose" id="selectCountyModal" tabindex="-1" role="dialog" aria-hidden="true"><div class="modal-dialog" role="document"><div class="modal-content"><div class="modal-header p-a-0"><div class="selected-country"><div class='country-option nobdr p-a-0'><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-IND img-rounded"></i><span class="vr"></span><span class="color202020 pl6">
+                                
+                                
+                                    
+                                        IND
+                                    
+                                
+                                    
+                                
+                            </span></div><button type="button" class="close" data-dismiss="modal"><div  aria-hidden="true">×</div><span class="sr-only">Close</span></button></div></div><div class="modal-body"><a href="https://trendlyne.com/switch-country/IND/" class="col-inh"><div class="option "><div class='country-option active'><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-IND img-rounded"></i><span class="pl6">IND</span></div></div></a><a href="https://trendlyne.com/switch-country/USA/" class="col-inh"><div class="option "><div class='country-option '><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-USA img-rounded"></i><span class="pl6">USA</span></div></div></a></div></div></div></div></div></div></div><div style="margin-left:auto"><div class="fetchOnLoad" data-fetchurl="
+                                        https://trendlyne.com/getUserNavBar/"></div></div></div></div></div><div  id="navbar-xs-search" ><form class="form-inline navbar-form navbar-input-group input-group navbar-xs-search-form "
+                        data-bind="enterkey: submit"><div class="input-group-btn "><button type="button" class="norbdr btn dropdown-toggle tl-navbar-search-dd"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><ul class="dropdown-menu ddselect" data-function="searchValueChange"><li class="dropdown-item"><span data-context="stock" data-placeholder="stocks"
+                                        data-searchurl="https://trendlyne.com/member/api/ac_snames/stock/" class="active">Stocks</span></li><li class="dropdown-item"><span data-context="FNO" data-placeholder="Futures & Options"
+                                        data-searchurl="https://trendlyne.com/futures-options/search/">Futures & Options<sup><i class="fa fa-asterisk negative fs04rem"></i></sup></span></li><li class="dropdown-item"><span data-context="mutualfund" data-placeholder="Mutual Funds"
+                                    data-searchurl="https://trendlyne.com/mutual-fund/search/" >Mutual Funds</span></li><li class="dropdown-item"><span data-context="news" data-placeholder="news"
+                                    data-searchurl="https://trendlyne.com/member/api/ac_snames/news/" >News</span></li><li class="dropdown-item"><span data-context="news" data-placeholder="Fundamentals Data"
+                                    data-searchurl="https://trendlyne.com/member/api/ac_snames/fundamental/" >Fundamentals</span></li><li class="dropdown-item"><span data-context="research" data-placeholder="research reports"
+                                    data-searchurl="https://trendlyne.com/research-reports/search/">Reports</span></li><li class="dropdown-item"><span data-context="corpactions" data-placeholder="corporate actions"
+                                    data-searchurl="https://trendlyne.com/member/api/ac_snames/corpactions/">Corporate Actions</span></li><li class="dropdown-item"><span data-context="alerts" data-placeholder="alerts"
+                                    data-searchurl="https://trendlyne.com/member/api/ac_snames/alerts/">Alerts</span></li><li class="dropdown-item"><span data-context="shareholding" data-placeholder="shareholding"
+                                        data-searchurl="https://trendlyne.com/member/api/ac_snames/shareholding/">Shareholding</span></li></ul></div><input id="navbar-mobile-search" class="navbar-topsearch form-control mform-control navbar-ac tl-navbar-search-input pt075r"  name="search"
+                                placeholder="Search for a stock" data-searchurl="https://trendlyne.com/member/api/ac_snames/stock/"
+                                type="text" autocomplete="off"/><div class="input-group-addon nobdr tl-navbar-close-addon p-x-2" ><i class="fa fa-times  " ></i></div></form></div></div></div></nav></header><!-- Fixed navbar -->
+
+
+
+
+
+  <script rel="preconnect" crossorigin src="https://unpkg.com/react@16.8.4/umd/react.production.min.js"></script>
+  <script rel="preconnect" crossorigin src="https://unpkg.com/react-dom@16.8.4/umd/react-dom.production.min.js"></script>
+
+
+  <script
+    rel="preconnect"
+    src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.4/react-bootstrap.min.js"
+    crossorigin></script>
+
+
+
+
+<div style="position:relative">
+    <div id="page-loader" class="loader-container">
+        <div class="loader-container" >
+    <i class="price-time-series-loader"></i>
+</div>
+
+
+<style>
+    .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full viewport height */
+        width: 100%;
+    }
+
+    .price-time-series-loader::after {
+        content: "";
+        width: 2rem;
+        height: 2rem;
+        border: 0.2rem solid #000;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+    body.theme-mode.dark .price-time-series-loader::after {
+        content: "";
+        width: 2rem;
+        height: 2rem;
+        border: 0.2rem solid #fff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var loader = document.getElementById("page-loader");
+        if (loader) loader.style.display = "none";
+    });
+</script>
+    </div>
+    <div id="company-content" style="display: none;">
+        
+
+    <div class="container-fluid">
+        
+            
+                
+                    
+
+
+
+
+<nav class="stock-navbar stock-navbar-v2 full-width">
+    <ul class="nav navbar-nav stocknav scroll">
+        
+            
+            
+            <li class="nav-item m-l-0">
+                <a class="nav-link " href="https://trendlyne.com/equity/1127/RELIANCE/reliance-industries-ltd/">Overview</a>
+            </li>
+            
+            
+            
+                <li class="nav-item">
+                    <a class="nav-link " href="https://trendlyne.com/equity/consensus-estimates/1127/RELIANCE/reliance-industries-ltd/">
+                        <i class="sprite-stock sprite-forecaster-logo"></i>
+                    </a>
+                </li>
+            
+            
+                
+                    <li class="nav-item">
+                        <a class="nav-link " href="https://trendlyne.com/equity/stock-report/1127/RELIANCE/reliance-industries-ltd/">
+                            <i class="sprite-stock sprite-stock-report-whitemode-sm"></i>
+                        </a>
+                    </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link " 
+                        href="https://trendlyne.com/tools/buy-sell-zone/1127/RELIANCE/reliance-industries-ltd/" >
+                        Buy Sell Zone
+                    </a>
+                </li>
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" href="https://trendlyne.com/futures-options/derivative/30-Dec-2025-near/1127/RELIANCE/reliance-industries-ltd/">F&O</a>
+            </li>
+            
+
+            
+            
+            <li class="nav-item">
+                
+                <a class="nav-link " href="https://trendlyne.com/fundamentals/financials/1127/RELIANCE/reliance-industries-ltd/">Financials</a>
+                
+            </li>
+            
+            
+            
+            <li class="nav-item navs-heading-pills">
+                <div class="dropdown">
+                <a class="nav-link  dropdown-toggle fixeddp"  data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false" href="https://trendlyne.com/latest-news/1127/RELIANCE/reliance-industries-ltd/">News</a>
+                <div class="dropdown-menu dropdown-menu-full titlecase p-y-0" aria-labelledby="" style="position:fixed">
+                    <a href="https://trendlyne.com/latest-news/1127/RELIANCE/reliance-industries-ltd/" class="dropdown-item gray6e">All</a>
+                    <a href="https://trendlyne.com/latest-news/only-news/1127/RELIANCE/reliance-industries-ltd/" class="dropdown-item gray6e">News</a>
+                    
+                        <a href="https://trendlyne.com/latest-news/analyst-calls/1127/RELIANCE/reliance-industries-ltd/"  class="dropdown-item gray6e">Earnings Calls</a>
+                    
+                    
+                        <a href="https://trendlyne.com/latest-news/BSE-Announcements/1127/RELIANCE/reliance-industries-ltd/"  class="dropdown-item gray6e">Corporate Announcements</a>
+                    
+                    <a href="https://trendlyne.com/research-reports/post/RELIANCE/1127/reliance-industries-ltd/" class="dropdown-item gray6e">Research Reports</a>
+                </div>
+                <div>
+            </li>
+            
+            
+            <li class="nav-item">
+                <a class="nav-link " href="https://trendlyne.com/research-reports/stock/1127/RELIANCE/reliance-industries-ltd/">Reports</a>
+            </li>
+            
+            
+                <li class="nav-item navs-heading-pills">
+                    
+                    
+                        <div class="dropdown">
+                            <a class="nav-link  dropdown-toggle   fixeddp  "
+                             data-toggle="dropdown" 
+                                aria-haspopup="true" aria-expanded="false"
+                                href=" # ">
+                                Technicals
+                            </a>
+                            
+                                <div class="dropdown-menu dropdown-menu-full titlecase p-y-0" aria-labelledby="" style="position:fixed">
+                                    <a class="dropdown-item gray6e " href="https://trendlyne.com/equity/technical-analysis/RELIANCE/1127/reliance-industries-ltd/">
+                                        Technicals
+                                    </a>
+                                    <a class="dropdown-item gray6e p-r-2-md-up posrelative " href="https://trendlyne.com/share-price/performance/1127/RELIANCE/reliance-industries-ltd/">
+                                        Share Price History
+                                        <sup class="posabsolute">
+                                            <i class="sprite-navbar sprite-new-blue-icon mt025rem ml3"></i>
+                                        </sup>
+                                    </a>
+                                    <a class="dropdown-item gray6e " href="https://trendlyne.com/equity/delivery-analysis/1127/RELIANCE/reliance-industries-ltd/">
+                                        Delivery
+                                    </a>
+                                </div>
+                            
+                        </div>
+                    
+                </li>
+
+                
+                
+                
+            
+            
+            
+            <li class="nav-item">
+                <div class=" dropdown ">
+                    <a class="nav-link  dropdown-toggle  fixeddp "
+                         data-toggle="dropdown" 
+                        aria-haspopup="true" aria-expanded="false"
+                        href=" # "
+                    >   
+                        
+                            Shareholding
+                        
+                    </a>
+                    
+                        <div class="dropdown-menu dropdown-menu-full titlecase p-y-0" aria-labelledby="" style="position:fixed">
+                            <a class="dropdown-item gray6e " href="https://trendlyne.com/equity/share-holding/1127/RELIANCE/latest/reliance-industries-ltd/">
+                                Shareholding
+                            </a>
+
+                            <a class="dropdown-item gray6e " href="https://trendlyne.com/equity/monthly-mutual-fund-share-holding/1127/RELIANCE/latest/reliance-industries-ltd/">
+                                Monthly MF Holdings
+                            </a>
+
+                            <a class="dropdown-item gray6e
+                                "
+                                href="https://trendlyne.com/equity/bulk-block-deals/RELIANCE/1127/reliance-industries-ltd/">
+                                Bulk Block Deals
+                            </a>
+
+                            <a class="dropdown-item gray6e
+                                "
+                                href="https://trendlyne.com/equity/insider-trading-sast/all/RELIANCE/1127/reliance-industries-ltd/">
+                                Insider Trading & SAST
+                            </a>
+                        </div>
+                    
+                </div>
+            </li>
+            
+
+            
+            
+
+            
+            
+            <li class="nav-item">
+                <div class="  dropdown ">
+                    <a class="nav-link  dropdown-toggle  fixeddp "
+                         data-toggle="dropdown" 
+                        aria-haspopup="true" aria-expanded="false"
+                        href=" # ">
+                         Deals 
+                    </a>
+                    
+                        <div class="dropdown-menu dropdown-menu-full titlecase p-y-0" aria-labelledby="" style="position:fixed">
+                                <a class="dropdown-item gray6e
+                                    "
+                                    href="https://trendlyne.com/equity/bulk-block-deals/RELIANCE/1127/reliance-industries-ltd/">
+                                    Bulk Block Deals
+                                </a>
+                                <a class="dropdown-item gray6e
+                                    "
+                                    href="https://trendlyne.com/equity/insider-trading-sast/all/RELIANCE/1127/reliance-industries-ltd/">
+                                    Insider Trading & SAST
+                                </a>
+                        </div>
+                    
+                </div>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle fixeddp " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        href="#">
+                        Corporate Actions
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-full titlecase p-y-0" aria-labelledby="" style="position:fixed">
+                        <a class="dropdown-item gray6e "
+                                href="https://trendlyne.com/equity/corporate-actions/RELIANCE/1127/reliance-industries-ltd/">All</a>
+                        <a class="dropdown-item gray6e
+                            "
+                            href="https://trendlyne.com/equity/Dividend/RELIANCE/1127/reliance-industries-ltd-dividend/">Dividend</a>
+
+                        
+                            <a class="dropdown-item gray6e
+                                "
+                                href="https://trendlyne.com/equity/Bonus/RELIANCE/1127/reliance-industries-ltd-bonus/">
+                                Bonus
+                            </a>
+                        
+
+                        <a class="dropdown-item gray6e
+                            "
+                            href="https://trendlyne.com/equity/Split/RELIANCE/1127/reliance-industries-ltd-split/">Split</a>
+
+                        
+                            <a class="dropdown-item gray6e
+                                "
+                                href="https://trendlyne.com/equity/rights/RELIANCE/1127/reliance-industries-ltd-rights/">Rights</a>
+                        
+
+                        <a class="dropdown-item gray6e
+                            "
+                            href="https://trendlyne.com/equity/board-meeting/RELIANCE/1127/reliance-industries-ltd-board_meeting/">Board Meetings</a>
+                    </div>
+                </div>
+            </li>
+            
+            
+            
+            <li class="nav-item">
+                <a class="nav-link " href="https://trendlyne.com/alerts/stock-alerts/RELIANCE/1127/reliance-industries-ltd/">
+                    Alerts
+                    
+                        
+                            <sup class="text-primary posabsolute" style="top: 0.75rem; margin-left: 0.25rem;">
+                            
+                            </sup>
+                        
+                    
+                </a>
+            </li>
+            
+            
+                <li class="nav-item posrelative">
+                    <a class="nav-link active" href="https://trendlyne.com/equity/about/1127/RELIANCE/reliance-industries-ltd/">
+                        About
+                    </a>
+                </li>
+            
+        
+    </ul>
+</nav>
+
+
+                
+            
+
+            <div class="row mb15">
+                
+                    
+<header class="pt-container page-title-bgcolor"><div class="p-l-1"><ol class="breadcrumb p-b-0 p-t-1 mb0"><li class="breadcrumb-item"><a href="https://trendlyne.com/equity/1127/RELIANCE/reliance-industries-ltd/">Reliance Industries Ltd.</a></li><li class="breadcrumb-item">Company Profile</li></ol></div><div class="ptc-content pt0"><div class="ptc-flex-grow ptc-flex-col"><div class="ptc-heading-container"><h1 class="page-title-heading">About Reliance Industries - Company Information, Overview, History and Profile</h1></div></div></div></header>
+                
+            </div>
+
+        
+
+        <div class="row company-overview-section">
+            <div class="col-xs-12 p-x-0-sm-down">
+                <div id="about-the-company"
+                    data-biodata="{&quot;stock_id&quot;: 1127, &quot;biodata&quot;: &quot;Reliance Industries Limited is India&#x27;s largest private sector company on all major financial parameters. In 2004, Reliance Industries (RIL) became the first Indian private sector organisation to be listed in the Fortune Global 500 list. The Company operates world-class manufacturing facilities across the country at Allahabad, Barabanki, Dahej, Hazira, Hoshiarpur, Jamnagar, Nagothane, Nagpur, Naroda, Patalganga, Silvassa and Vadodara. The Company is engaged in activities spanning across hydrocarbon exploration and production, Oil to Chemicals, Retail and Digital Services.\r\n\r\nReliance Industries&#x27; activities span hydrocarbon exploration and production, petroleum refining and marketing, petrochemicals, retail and telecommunications. The petrochemicals segment includes production and marketing operations of petrochemical products. The refining segment includes production and marketing operations of the petroleum products. The oil and gas segment includes exploration, development and production of crude oil and natural gas. The other segment of the company includes textile, retail business and special economic zone (SEZ) development. \r\n\r\nIn year 1966, Reliance Industries Limited was founded by Shri Dhirubhai H. Ambani. The Company was started as a small textile manufacturer unit. On May 8, 1973 RIL was incorporated and conformed their name as RIL in the year 1985. Over the years, the company has transformed their business from manufacturing of textiles products into a petrochemical major. \r\n\r\nThe company has set up a texturising / twisting facilities in 1979, RIL has also set up plants for Polyester Staple Fiber (PSF) in 1986 and for Linear Alkyl Benzene (LAB) &amp; Purified Terephthalic Acid (PTA) in 1988. RIL has setup a petrochemical facility to produce HDPE and PVC at Hazira, Gujarat in technical collaboration with DuPont and BF Goodich respectively. The Hazira petrochemical plant was commissioned in 1991-92.\r\n\r\nIn the year 1995-96, the company entered the telecom industry through a joint venture with NYNEX, USA and promoted Reliance Telecom Private Limited in India. Reliance became the first corporate in Asia to issue bonds in the U.S at the year of 1996-97. The company commissioned an 80,000 tonne bottle grade PET chip plant at Hazira manufacturing complex. Reliance&#x27;s PET chips has been accepted internationally due to their high quality during the year 1997-98 and in the same year Reliance Industries Planned to invest around Rs. 5000 crores (USD 1,250 million) in building two world-scale plants at the site of the Jamnagar refinery in Gujarat. In 1998-99, RIL introduced packaged LPG in 15 kg cylinders under the brand name Reliance Gas. In 1999-2000, RIL commissioned the world&#x27;s largest 1.4 million tonnes per annum Paraxylene (PX) plant at its new integrated petrochemicals complex at Jamnagar which was planned at 1997-98. With the commissioning of the last crystallization train of the Para-xylene (PX) complex at Jamnagar in June 2017, RIL became the 2nd largest producer of PX globally. \r\n\r\nIn 2000, Reliance commissioned the world&#x27;s largest grassroots refinery in Jamnagar in a record 36 months. The Jamnagar refinery processes a wide variety of crude oils and produces a range of petroleum products for exports as well as supply in the Indian market. Reliance Petroleum Limited (RPL) was amalgamated with Reliance Industries Ltd in the year 2002-03.\r\n\r\nIn 2004-05, RIL acquired the polyester major, Trevira GmbH, headquartered in Frankfurt, Germany which has the capacity of 130,000 tonnes per annum of polyester staple fibers, polyester filament yarns and polyester chips. In the year 2006, the company set up a new export-oriented refinery through its subsidiary, Reliance Petroleum Limited (RPL). In 2006, RIL entered the organised retail segment through Reliance Retail with its first Reliance Fresh store in Hyderabad. In 2017, Reliance Retail crossed $5 billion revenue mark. Reliance Retail has adopted a multi-prong strategy and operates neighbourhood stores, supermarkets, hypermarkets, wholesale cash &amp; carry stores, specialty stores and online stores and has democratized access to all types of products and services across all segments for all Indian consumers. Reliance Retail operates over 3,300 stores pan India with nearly 13 million square feet of retail space.\r\n\r\nIn the year 2007, Indian Petrochemicals Corporation Limited (IPCL) merged with the company. Also, Reliance Retail entered the organised retail market in India with the launch of its convenience store format under the brand name of `Reliance Fresh&#x27;. During the year, the company commissioned their largest expansion project. The company expanded its polypropylene (PP) capacity by 280 KTA at Jamnagar that increased the combined capacity to 1,710 KTA. \r\n\r\nDuring the year 2007-08, the company signed an agreement to certain polyester (capacity) assets of Hualon, Malaysia. It took over the majority control of Gulf Africa Petroleum Corporation (GAPCO) and started shipping products to the East African markets. Also, the company signed MoU with GAIL (India) Ltd to explore opportunities of setting up petrochemical plants in feedstock rich countries outside India. In April 2008, the company signed gas sales and purchase agreement (GSPA) with the customers in power sector for supply of natural gas to be produced from the KG-D6 block.\r\n\r\nDuring the year, Reliance Commercial Associates Ltd, Reliance Neutraceuticals Pvt Ltd, Reliance Pharmaceuticals (India) Pvt Ltd, Reliance Petroinvestments Ltd, Gull Africa Petroleum Corporation (Mauritius), Gapco Tanzania Ltd, Gapoil Tanzania Ltd, Gapco Kenya Ltd, Gapco Uganda Ltd, Gapco Rwanda SARL, Gapoil Zanzibar Ltd, Transenergy Kenya Ltd, Recron (Malaysia) SDH BHD, Peninsula Land Kenya Ltd, Reliance International Exploration and Production INC, Wavely Investments Ltd, Reliance Digital Retail Ltd, Reliance Lifestyle Holdings Ltd, Reliance Universal Ventures Ltd, Reliance Home Store Ltd, Reliance Autozone Ltd, Reliance Trade Services Centre Ltd, Reliance Integrated Agri Solutions Ltd, Reliance Agri Products Distribution Ltd, Reliance Food Processing Solutions Ltd, Reliance Supply Chain Solutions Ltd, Reliance Digital Media Ltd, Strategic Manpower Solutions Ltd, Reliance Gems and Jewels Ltd, Reliance Leisures Ltd, Reliance Loyalty &amp; Analytics Ltd, Reliance Retail Securities and Broking Company Ltd, Delight Proteins Ltd, Reliance F&amp;B Services Ltd, Reliance Hypermart Ltd, Reliance Financial Distribution and Advisory Services Ltd, Reliance Retail Travel &amp; Forex Services Ltd, Reliance Trends Ltd, Reliance Wellness Ltd, Reliance Brands Ltd, Reliance Footprint Ltd, Abcus Retail Pvt Ltd, Bigdeal Retail Pvt Ltd, Advantage Retail Pvt Ltd and RIL (Australia) PTY Ltd became subsidiaries of the company.\r\n\r\nDuring the year 2008-09, Reliance People Serve Ltd, Reliance Infrastructure Management Services Ltd, Reliance Global Business, BV, Reliance Gas Corporation Ltd, Reliance Globalenergy Services Ltd, Reliance One Enterprises Ltd, Reliance Personal Electronics Ltd, Reliance Global Energy Services (Singapore) Pte Ltd, Reliance Polymers (India) Pvt Ltd, Reliance Polyolefins Pvt Ltd, Reliance Aromatics and Petrochemicals Pvt Ltd, Reliance Energy and Project Development Pvt Ltd, Reliance Chemicals Pvt Ltd, Reliance Universal Enterprises Pvt Ltd, International Oil Trading Ltd, Reliance Nutritional Food Processors Pvt Ltd, Reliance Review Cinema Pvt Ltd, Reliance Replay Gaming Pvt Ltd, RIL USA Inc. Reliance Commercial Land Infrastructure Pvt Ltd, Reliance Corporate IT Park Ltd, Reliance Eminent Trading &amp; Commercial Pvt Ltd, Reliance Progressive Traders Pvt Ltd, Reliance Prolific Traders Pvt Ltd, Reliance Universal Traders Pvt Ltd, Reliance Prolific Commercial Pvt Ltd, Reliance Comtrade Pvt Ltd, Reliance Ambit Trade Pvt Ltd, Reliance Petro Marketing Pvt Ltd, LPG Infrastructure (India) Pvt Ltd and Reliance Infosolution Pvt Ltd beaome subsidiaries of the company. Also, Abcus Retail Pvt Ltd ceased to be a subsidiary of the company.\r\n\r\nDuring the year, Reliance Petroleum Ltd (RPL) merged with the company with effect from April 1, 2008. From April 2, 2009, the company commenced production of hydrocarbons in its KGD6 block in the Krishna Godavari basin with the production of sweet crude of 420 API. In November 2009, the company discovered first oil exploration in the on land exploratory block CB-ONN-2003/1 (CB 10 A&amp;B) awarded under the NELP-V round of exploration bidding. In December 2009, the company discovered gas in the exploration block KG-DWN-2003/1 (KG-V-D3) of NELP-V. The deepwater block KG-DWN-2003/1 is located in the Krishna basin, about 45 kilometers off the coast in the Bay of Bengal. \r\n\r\nIn April 2010, the company commissioned a 1 MW solar Photo Voltaic power plant at Thyagaraj stadium in New Delhi. The power plant is expected to generate around 1.4 million units of electricity a year. It would cater to the power requirements of the stadium and the surplus would be fed to the grid at 11 KV. In addition, the company&#x27;s subsidiary Reliance Marcellus LLC executed definitive agreements to enter into a joint venture with United States based Atlas Energy, Inc, of Pittsburgh, Pennsylvania under which Reliance will acquire a 40% interest in Atlas&#x27; core Marcellus Shale acreage position.\r\n\r\nIn June 2010, the company entered into an agreement to acquire asubstantial stake in Infotel Broadband Services (P) Ltd, which emerged as asuccessful bidder in all the 22 circles of the auction for Broadband Wireless Access (BWA) Spectrum conducted by the DOT. The company sees the broadband opportunity as a new frontier of knowledge economy in which it can take a leadership position and provide India with an opportunity to bein forefront among the countries providing world-class 4G network and services.\r\n\r\nIn August 2010, the company through their subsidiary, Reliance Industries Investment and Holding Pvt Ltd acquired the equity shares of EIH Ltd representing 14.12% from Oberoi Hotels Pvt Ltd and certain other promoters at a total cost of Rs 1,021 crore.\r\n\r\nIn December 2010, the company entered into a joint venture agreement with Russian petrochemical company SIBUR for the production of butyl rubber in India. The joint venture facility will have an initial capacity of 100,000 tonnes of butyl rubber at the company&#x27;s integrated refining cum petrochemical site in Jamnagar and is expected to be commissioned by 2013.\r\n\r\nIn January 2011, the company&#x27;s wholly owned subsidiary, Reliance Ventures Ltd entered into an agreement with Infrastructure Leasing and Financial Services Ltd, whereby IL&amp;FS will become a strategic partner and co-promoter of a project which intends to develop a model economic township and other infrastructure facilities at Jhajjar in Haryana. \r\n\r\nIn February 2011, the company entered into a strategic partnership with BP which comprises BP taking a 30% stake in 23 oil and gas production sharing contracts that the company operates in India for a consideration of USD 7.20 billion and the formation of a 50:50 joing venture between the two companies for the sourcing and marketing of gas in India. The joint venture will also endeavour to accelerate the creation of infrastructure for receiving, transporting and marketing of natural gas in India. On 15 June 2017, RIL and BP announced that they are moving forward to develop the `R-Series&#x27; deep water gas fields in Block KGD6 off the east coast of India as first of three that are expected to be developed in an integrated manner producing from about 3 trillion cubic feet of discovered gas resources. \r\n\r\nIn March 2011, the company and D E Shaw Group agreed to establish a joint venture to build a leading financial services business in India. This joint venture will incorporate the D E Shaw Group&#x27;s investment and technology expertise with the company&#x27;s operational knowledge and extensive presence across India to offer a comprehensive array of financial services to the Indian marketplace.\r\n\r\nIn June 10, 2011, the company and their associate, Reliance Industrial Infrastructure Ltd entered into an agreement with Bharti Enterprises for acquiring Bharti&#x27;s shareholding of 74% in Bharti Axa Life Insurance Co Ltd and Bharti Axa General Insurance Co Ltd. On completion of the proposed transaction, the company and Reliance Industrial Infrastructure Ltd would effectively own 57% and 17% respectively in both insurance companies and would become Axa&#x27;s joint ventures partners in India.\r\n\r\nIn September 2011, Reliance Security Solutions Ltd, a subsidiary of the company Siemens Ltd signed an MoU to jointly develop Homeland Security Solutions for Highways in India. In November 2011, the company and BP incorporated India Gas Solutions Pvt Ltd, a 50:50 joint venture company which will focus on global sourcing and marketing of natural gas in India. The joint venture company will also develop infrastructure to accelerate transportation and marketing of natural gas within the country. India Gas Solutions Pvt Ltd will be funded with equal equity from BP and RIL.\r\n\r\nIn November 2011, AXA SA, Bharti, Reliance Industries Limited (RIL) and its associate Reliance Industrial Infrastructure Limited (RIIL) announced that they have mutually agreed to terminate their negotiations on the proposed acquisition by RIL and RIIL of Bharti&#x27;s shareholding of 74% in Bharti AXA Life Insurance Co. Ltd and Bharti AXA General Insurance Co. Ltd.\r\n\r\nIn February 2012, the company and SIBUR have agreed to form a joint venture named Reliance Sibur Elastomers Pvt Ltd to produce 100,000 tons of butyl rubber per year in Jamnagar, India. The joint venture will be the first manufacturer of butyl rubber in India and the fourth largest supplier of butyl rubber in the world.\r\n\r\nOn 29 May 2014, RIL announced its entry into the digital space by way of acquisition of control in Network 18 Media &amp; Investments Limited (NW18) including its subsidiary TV18 Broadcast. On 9 December 2014, RIL announced the formation of a joint venture with Shandong Ruyi Science and Technology Group Co. Ltd, China (`Ruyi&#x27;) (through its wholly owned subsidiary) for RIL&#x27;s textiles business which operates under the Vimal brand.\r\n\r\nRIL&#x27;s wholly owned subsidiary Reliance Jio Infocomm announced the commencement of telecom services with `Jio Welcome Offer&#x27; in September 2016. In a short period of 170 days, Jio crossed a milestone of 100 million customers on its all IP wireless broadband network.\r\n\r\nOn 17 November 2016, RIL and GE announced the signing of a global partnership agreement in the Industrial IOT (IIOT) space to provide Industrial IOT solutions to customers in oil &amp; gas, fertilizer, power, healthcare, telecom and other industries. \r\n\r\nIn September 2017, RIL won the bid to acquire the assets of Kemrock Industries &amp; Exports Limited of Vadodara (Gujarat) as a part of its efforts to enter the composites business. RIL participated in an on-line e-bidding process held by Allahabad Bank being leader of the consortium of 11 banks to sell/dispose off the assets of Kemrock Industries &amp; Exports Limited.\r\n\r\nDuring the fiscal 2018, the company spent towards Capital Expenditure amounting to Rs 79,253 crore. \r\n\r\nDuring the FY2018, Reliance Jio Infocomm Ltd, successfully refinanced long term syndicated loans aggregating USD 1.5 billion. \r\n\r\nOn 28 February 2018, TV18 Broadcast Limited (&#x27;TV18&#x27;) a subsidiary of the Company increased its equity interest in Viacom18 Media Private Limited (&#x27;Viacom18&#x27;) from 50% to 51% by acquiring in cash 1% of the equity shares held by MTV Asia Ventures (India) Pte. Ltd., Mauritius for Rs 130 crore and consequently obtained operational control over Viacom18. Accordingly, TV18 has consolidated Viacom18 as subsidiary from 01 March 2018. Consequent to this acquisition, lndiaCast Media Distribution Private Limited (&#x27;lndiaCast&#x27;), which was hitherto a Joint Venture of TV18, was accounted as subsidiary with effect from 01 March 2018.\r\n\r\nPursuant to the sale agreement signed by Reliance Exploration &amp; Production DMCC (REPDMCC), wholly owned subsidiary of the Company, for the sale of the entire 76% interest held by it in Gulf Africa Petroleum Corporation, requisite regulatory approvals, consents have been obtained and transaction successfully concluded.\r\n\r\nDuring the FY2018, the Company issued listed unsecured non-convertible redeemable Debentures amounting to Rs 20,000 crore in six tranches (Series A, B, C, D, E and F). The Company also redeemed secured non-convertible Debentures (PPD 177) amounting to Rs 134 crore during the year.\r\n\r\nDuring the year, the Company also issued 3.667% Senior Unsecured Notes amounting to US$ 800 million with 10 year maturity. \r\n\r\nThe Company has issued and allotted 308,03,34,238 equity shares to the eligible holders of equity shares on the book closure date (i.e. 09 September, 2017) as bonus equity shares by capitalizing reserves on 13 September, 2017. \r\n\r\nThe Company retained its domestic credit ratings of \&quot;CRISIL AAA\&quot; from CRISIL and \&quot;IND AAA\&quot; from India Rating and an investment grade rating for its international debt from Moody&#x27;s as Baa2 and BBB+ from S&amp;P.\r\n\r\nDuring the FY2019, the company spent towards Capital Expenditure amounting to Rs 1,32,445 crore.\r\n\r\nDuring FY 2018-19, Reliance Jio Infocomm Limited (RJIL) successfully tied up JPY 53.5 billion, the largest Samurai loan for an Asian corporate and also for a telecom company. The loan was successfully syndicated to 9 local Japanese banks aggregating to JPY 19.5 billion, thereby taking the total number of participating banks to 12. Additionally, RJIL also tied-up term loan facilities aggregating to US$1.5 billion.\r\n\r\nIn June 2018, RJIL tied up US$825 million and EUR 150 million Korea Trade Insurance Corporation (K-Sure) supported ECA financing with door to door tenor of over ten years. This transaction was the largest financing transaction globally in the telecom sector supported by K-Sure.\r\n\r\nThe Board of Reliance Jio Infocomm Limited (RJIL) approved the demerger of its passive infrastructure, tower and fiber assets into two separate SPVs. The scheme of the demerger was effective from 31 March 2019 post all requisite internal, shareholder, debt holder and regulatory approvals. The assets would be held by a separate SEBI registered Infrastructure Investment Trusts (InvIT). \r\n\r\nThe company won CII&#x27;s &#x27;Excellent Energy-efficient Unit&#x27; award at the &#x27;19th National Award for Excellence in Energy Management 2018. Also won the &#x27;Making India Energy Efficient&#x27; award for the year 2018 at Future of Energy Management Summit, Mumbai. The company also awarded &#x27;Platinum Award&#x27; at Grow Care India Safety Awards 2018.\r\n\r\nDuring the year 2018-19, the Company issued listed unsecured non-convertible redeemable debentures amounting to Rs 19,000 crore (Paid-up to the extent of Rs 17,000 crore) in five tranches (Series G, H, lA, IB and J). The Company also fully redeemed secured nonconvertible Debentures (PPD 177 and PPD 179-T3) amounting to Rs 503 crore.\r\n\r\nPursuant to a Composite Scheme of Arrangement among Reliance Jio lnfocomm Ltd (RJIL) and Jio Digital Fibre Private Limited (JDFPL) and Reliance Jio lnfratel Private Limited (RJIPL), RJIL, has demerged its optic fiber cable undertaking to JDFPL and transferred its tower infrastructure undertaking on a slump sale basis to RJIPL. JDFPL has Fair Valued its Assets through reputed International Valuer. Being shareholder of RJIL, the Company received Equity Shares and Optionally Convertible Preference Shares (OCPS) of JDFPL, pursuant to transfer of fibre business. Subsequently, the Company sold its controlling equity stake in JDFPL to a SEBI registered infrastructure investment trust of which Reliance Industrial Investments and Holdings Limited, a wholly owned subsidiary of the Company is the sponsor.\r\n\r\nReliance Ethane Holding Pte. Ltd. (REHPL), a wholly owned subsidiary of the Company, holds 100% controlling equity interest in 6 companies owning Very Large Ethane Carrier (VLEC). REHPL has entered into a binding arrangement with Mitsui O.S.K. Lines, Japan and another investor for investment by them in the 6 companies, resulting in the 6 companies being jointly controlled by REHPL and Mitsui O.S.K. Lines, Japan.\r\n\r\nDigital Media Distribution Trust, of which Reliance Content Distribution Limited (a wholly-owned subsidiary of the Company) is the sole beneficiary, has, through six SPVs 100% owned and controlled by it, 1. acquired sole control of Den Networks Limited and made a total investment of about Rs. 2707 crore for acquiring 78.06% of the total equity share capital of Den Networks Limited through preferential issue, share purchase and open offer, 2. acquired sole control of Hathway Cable and Datacom Limited and made a total investment of about Rs. 4,120 crore for acquiring 71.96% of the total equity share capital of Hathway Cable and Datacom Limited through preferential issue and open offer, 3. acquired indirect control of GTPL Hathway Limited and made a total investment of about Rs. 42 crore for acquiring 4.48% of the total equity share capital of GTPL Hathway Limited in the open offer and acquired indirect control of Hathway Bhawani Cabletel and Datacom Limited.\r\n\r\nDuring the FY2020, the company spent towards Capital Expenditure amounting to Rs 77,444 crore.\r\n\r\nDuring the fiscal 2020, The Board of Directors of the Company has approved the issue of equity shares of Rs 10/- each of the Company on rights basis to eligible equity shareholders of the Company at an issue price of Rs 1,257/- per fully paid-up equity share (including a premium of Rs 1,247/- per equity share). The Company has successfully completed the Rights Issue of Rs 53,124 crore.\r\n\r\nReliance awarded for exceptional presentation in UNIPOL PE Global Technology Conference 2019 in USA. DTA refinery was awarded `India Manufacturing Excellence Award 2019&#x27; in High Platinum Category &amp; Future Ready Factory Award by Frost and Sullivan. Reliance won the 13th CII National Award for Excellence in Water Management 2019, in the heavy industry category. Reliance was declared `Winner&#x27; at 18th Annual Greentech Safety Award 2019 for persistent commitment in the field of safety. RIL was awarded the Golden Peacock Award for Corporate Social Responsibility 2019 for improving the livelihoods of farmers, fisher-folk and livestock owners through information services. Dahej Manufacturing Division, Silvassa Manufacturing Division and Hoshiarpur Manufacturing Division awarded Apex India Environment Excellence Award, 2019 under Platinum Category. Reliance Retail has topped the list of 50 fastest growing retailers globally in Deloitte&#x27;s Global Powers of Retailing Report, 2020. \r\n\r\nCOVID-19 is significantly impacting business operation of the companies, by way of interruption in production, supply chain disruption, unavailability of personnel, closure / lock down of production facilities etc. On 24th March 2020, the Government of India ordered a nationwide lockdown for 21 days which further got extended till 3rd May 2020 to prevent community spread of COVID-19 in India resulting in significant reduction in economic activities. \r\n\r\nPursuant to the Scheme of Arrangement amongst RJIL and certain class of its creditors, approved by the Hon&#x27;ble National Company Law Tribunal, Ahmedabad bench vide order dated 13 March 2020, certain liabilities of Rs 1,04,365 crore have stood transferred to RIL with an equal amount of consideration. The Commercial Papers (listed) of the Company outstanding as on 31 March 2020 are Rs 27,709 crore. The total Non-Convertible Debentures of the Company outstanding as on 31 March,2020 are Rs 55,599 crore out of which, secured non-convertible debentures are Rs 13,886 crore.\r\n\r\nThe total Non-Convertible Debentures of the Company outstanding (before netting off of prepaid finance charges) as on 31 December 2020 are Rs 67,580 crore out of which, secured nonconvertible debentures are Rs 13,351 crore.\r\n\r\nDuring the period April 2020 to December 2020, the Company has issued listed Unsecured Non-Convertible Redeemable Debentures amounting to Rs 24,955 crore in four tranches (Series K, L, M and N) on private placement basis and redeemed listed Unsecured Non-Convertible Redeemable Debentures amounting to Rs 12,000 crore (Series B, C, E, F, PPD1 and PPD2) and listed secured Non-Convertible Redeemable Debentures amounting to Rs 500 crore (Series PPD -180 Tranche 1).\r\n\r\nDuring the quarter ended 31 December 2020, Reliance Retail Ventures Limited, a subsidiary of the Company has raised funds to the extent of Rs 39,765 crore by issuing equity shares to external investors.\r\n\r\nDuring the quarter ended 31 December 2020, Jio Platforms Limited (JPL), a subsidiary of the Company has raised funds to the extent of Rs 33,737 crore by issuing equity shares to Google International LLC.\r\n\r\nA Composite Scheme of Amalgamation and plan of merger amongst Reliance Holding USA Inc. (RHUSA), Reliance Energy Generation and Distribution Limited (REGDL) and the Company, which provided for merger of RHUSA with REGDL and merger of REGDL with the Company, was approved by the Hon&#x27;ble National Company Law Tribunal, Mumbai Bench, was effective from August 21, 2020 and accordingly, both RHUSA and REGDL became wholly owned subsidiaries of the Company.\r\n\r\nDuring the year 2020-21, the Company transferred its Petroleum Retail Marketing business to Reliance BP Mobility Limited (RBML). RBML is a fuels and mobility business with BP Global Investments Limited. bp which holds 49% equity stake in RBML and the balance 51% is held by the Company. \r\n\r\nDuring the year 2020-21, R-Cluster fields in KG D6 block commenced production and achieved peak production level of 12.8 MMSCMD\r\nin mid-April 2021, ahead of plan. In April 2021, Satellite fields also commenced production two months ahead of schedule despite COVID-19 challenges.\r\n\r\nDuring the year 2020-21, Reliance Retail Limited, Jio Platforms Limited, Reliance Jio Infocomm Limited and Reliance Global Energy\r\nServices (Singapore) Pte. Limited, were material subsidiaries of the Company. The Company along with JM Financial Asset Reconstruction Company Limited (acting in its capacity as a Trustee of `JMFARC- March 2018 - Trust&#x27;- (JMFARC) acquired, with the approved Resolution plan, joint control over Alok Industries Limited and consequently, the Company holds 40.01% equity stake and JMFARC holds 34.99% equity stake in Alok Industries Limited aggregating to 75%. \r\n\r\n\r\nOn 30 March 2022, the Board of Directors of the Company had approved the Scheme of Arrangement for Gasification between (i) the Company &amp; its shareholders and creditors and (ii) Reliance Syngas Limited &amp; its shareholders and creditors. The Gasification Scheme, inter alia, provides for transfer of the Gasification undertaking from the Company to Reliance Syngas Limited, a wholly owned subsidiary of the Company, as a going concern on slump sale basis for a lump sum consideration on the terms and conditions as detailed in the Gasification Scheme. The Appointed Date of the Gasification Scheme is March 31, 2022 which became effective from April 4, 2022.\r\n \r\nDuring the year 2021-22, the Company and Saudi Aramco mutually determined that it would be beneficial for both the parties to re-evaluate the proposed investment in O2C business. The Board of Directors of the Company had on November 19, 2021, approved\r\nwithdrawal of the Scheme of Arrangement between the Company and Reliance O2C Limited from Hon&#x27;ble National Company Law Tribunal (NCLT). NCLT, Mumbai Bench has vide its order dated December 3, 2021 approved the withdrawal of the O2C Scheme.\r\n\r\nDuring year 2022, Reliance Industrial Infrastructure Limited was reclassified from the category of `Promoter Group&#x27; of the Company to `Public&#x27;.\r\n\r\nDuring the year 2021-22, Reliance Eagleford Upstream Holding, LP (REUHLP) a wholly owned step-down subsidiary of RIL, signed an agreement with Ensign Operating III, LLC to divest its interest in certain upstream assets in the Eagleford shale play of Texas, USA.\r\nWith this transaction, RIL has divested all its shale gas assets and exited from the shale gas business in the US.\r\n\r\nThe Company commissioned R Cluster Field in December 2020, which achieved peak production of 12.9 MMSCMD with six wells. Satellite Cluster Field was commissioned in April, 2021. Accordingly, all the 5 wells opened, tested and ramped up, achieving a peak production of 6.1 MMSCMD and as a result, its production ramped up to 18 MMSCMD gas.\r\n\r\nIn FY 2023-24, Jio Financial Services Limited (JFSL) was demerged into and with the Company through Scheme of Arrangement for Demerger of Financial Services, which became effective from July 1, 2023. In accordance with the Financial Services Demerger Scheme, JFSL issued and allotted 1 (One) fully paid-up equity share of JFSL having face value of Rs 10 each for every 1 (One) fully paid-up equity share of Rs 10 each of the Company to the shareholders of the Company on July 20, 2023. Similarly, the Scheme of Arrangement between Reliance Projects &amp; Property Management Services Limited (RPPMSL) and its shareholders and creditors &amp; the Company for demerger of Digital EPC &amp; Infrastructure undertaking of RPPMSL into the Company became effective from August 9, 2023. \r\n\r\nThe Company acquired Block KG-UDWHP-2022/1 (KG-UDW2) under the OALP VIII licensing round in January 2024. 50 MWh per year capacity pilot line has been setup for manufacturing Li Battery cells, through Lithium Werks in FY 2025.&quot;, &quot;fullname&quot;: &quot;Reliance Industries Ltd.&quot;, &quot;shortname&quot;: &quot;Reliance Industries&quot;}"
+                    data-get_business_profile="{&quot;profile&quot;: &quot;Founded as Reliance Commercial Corporation by Dhirubhai Ambani in 1966, the company initially focused on polyester. Renamed Reliance Industries in 1973, it has since expanded into sectors like energy and oil &amp; gas exploration and production, refining and marketing, and petrochemicals. It operates in textiles, polymers, polyesters, fiber intermediates, aromatics, and elastomers, and provides advanced composite solutions. The company\u2019s reach extends to retail, digital services, media, and entertainment through Jio. Reliance also emphasizes emerging sectors like new energy, innovative materials, and bioenergy. RIL is a global company with operations in more than 100 countries.&quot;}"
+                    data-get_top_executive="[{&quot;name&quot;: &quot;Shri Srikanth Venkatachari&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Chief Financial Officer&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275730/shri-srikanth-venkatachari/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275730/shri-srikanth-venkatachari/&quot;, &quot;start_date&quot;: &quot;17 Apr, 2014&quot;}, {&quot;name&quot;: &quot;Shri Harish Shah&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;President(Corporate Planning &amp; Strategy)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275731/shri-harish-shah/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275731/shri-harish-shah/&quot;}, {&quot;name&quot;: &quot;Shri L. V. Merchant&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Group Controller&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275732/shri-l-v-merchant/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275732/shri-l-v-merchant/&quot;}, {&quot;name&quot;: &quot;Savithri Parekh&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Company Secretary,Compliance Officer&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL142835/savithri-parekh/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL142835/savithri-parekh/&quot;, &quot;start_date&quot;: &quot;28 Mar, 2019&quot;}, {&quot;name&quot;: &quot;Shri Sanjiv Singh&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Group President(Oil,Chemicals.)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275733/shri-sanjiv-singh/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275733/shri-sanjiv-singh/&quot;}, {&quot;name&quot;: &quot;Shri Srinivas Tuttagunta&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Chief Operating Officer(Supply,Trading)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275734/shri-srinivas-tuttagunta/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275734/shri-srinivas-tuttagunta/&quot;}, {&quot;name&quot;: &quot;Shri B Narayan&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Chief Procurement Officer&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275736/shri-b-narayan/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275736/shri-b-narayan/&quot;}, {&quot;name&quot;: &quot;Shri Ashwani Prashara&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;CHRO(Hydrocarbon.,Operation.)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275737/shri-ashwani-prashara/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275737/shri-ashwani-prashara/&quot;}, {&quot;name&quot;: &quot;Shri Mahesh Marve&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Head(Technology)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275738/shri-mahesh-marve/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275738/shri-mahesh-marve/&quot;}, {&quot;name&quot;: &quot;Shri Durga Dube&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Executive Vice President,Head(Cyber security,Informations,Risk Management)&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/ceo-salary-history/D-TL1275739/shri-durga-dube/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/ceo-salary-history/D-TL1275739/shri-durga-dube/&quot;}]"
+                    data-get_director_details="[{&quot;name&quot;: &quot;Nikhil Meswani&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Executive Director&quot;, &quot;experience&quot;: &quot;Vast experience in Petrochemical Industry &amp; Taxation Matters&quot;, &quot;qualification&quot;: &quot;Chemical Engineer&quot;, &quot;salary_gross&quot;: 2500.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00001620/nikhil-meswani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00001620/nikhil-meswani/&quot;}, {&quot;name&quot;: &quot;Hital R Meswani&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Whole Time Director&quot;, &quot;experience&quot;: &quot;Petroleum and Petrochemical Industry&quot;, &quot;qualification&quot;: &quot;BSc (Chemical Engg) &amp; BSc (Economics) / Management &amp; Technology Graduate (USA)&quot;, &quot;salary_gross&quot;: 2500.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00001623/hital-r-meswani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00001623/hital-r-meswani/&quot;, &quot;start_date&quot;: &quot;03 Aug, 1995&quot;}, {&quot;name&quot;: &quot;PMS Prasad&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Executive Director&quot;, &quot;experience&quot;: &quot;4 decades (Petrochemical, Fibres, Refining, Marketing and exploration &amp; production businesses)&quot;, &quot;qualification&quot;: &quot;BSc BE PhD (Hons)&quot;, &quot;salary_gross&quot;: 1996.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00012144/pms-prasad/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00012144/pms-prasad/&quot;}, {&quot;name&quot;: &quot;K V Choudhary&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;Graduation in Mathematics / PG in Mathematics&quot;, &quot;salary_gross&quot;: 261.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-08485334/k-v-choudhary/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-08485334/k-v-choudhary/&quot;}, {&quot;name&quot;: &quot;H Khaitan&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 247.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00005290/h-khaitan/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00005290/h-khaitan/&quot;}, {&quot;name&quot;: &quot;Shumeet Banerji&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;BA and MBA&quot;, &quot;salary_gross&quot;: 242.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-02787784/shumeet-banerji/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-02787784/shumeet-banerji/&quot;}, {&quot;name&quot;: &quot;Arundhati Bhattacharya&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;42 Yrs&quot;, &quot;qualification&quot;: &quot;PG in English Literature&quot;, &quot;salary_gross&quot;: 242.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-02011213/arundhati-bhattacharya/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-02011213/arundhati-bhattacharya/&quot;}, {&quot;name&quot;: &quot;K V Kamath&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 233.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00043501/k-v-kamath/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00043501/k-v-kamath/&quot;}, {&quot;name&quot;: &quot;ISHA MUKESH AMBANI&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Non Executive Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;Graduated / Double major in Psychology and South Asia Studies and MBA&quot;, &quot;salary_gross&quot;: 231.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-06984175/isha-mukesh-ambani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-06984175/isha-mukesh-ambani/&quot;}, {&quot;name&quot;: &quot;AKASH MUKESH AMBANI&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Non Executive Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 231.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-06984194/akash-mukesh-ambani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-06984194/akash-mukesh-ambani/&quot;}, {&quot;name&quot;: &quot;Anant M. Ambani&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Whole Time Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 231.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-07945702/anant-m-ambani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-07945702/anant-m-ambani/&quot;, &quot;start_date&quot;: &quot;26 Aug, 2023&quot;}, {&quot;name&quot;: &quot;His Excellency Yasir Othman H. Al Rumayyan&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;Alumnus&quot;, &quot;salary_gross&quot;: 227.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-09245977/his-excellency-yasir-othman-h-al-rumayyan/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-09245977/his-excellency-yasir-othman-h-al-rumayyan/&quot;}, {&quot;name&quot;: &quot;Mukesh D Ambani&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Chairman &amp; Managing Director&quot;, &quot;experience&quot;: &quot;Vast experience in Petroleum &amp; Petrochemical, Telecom &amp; Retail Industry&quot;, &quot;qualification&quot;: &quot;Chemical Engineer &amp; MBA&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00001695/mukesh-d-ambani/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00001695/mukesh-d-ambani/&quot;}, {&quot;name&quot;: &quot;Savithri Parekh&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Company Sec. &amp; Compli. Officer&quot;, &quot;experience&quot;: &quot;33 Years&quot;, &quot;qualification&quot;: &quot;BCom LLB &amp; CS&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-TL192898/savithri-parekh/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-TL192898/savithri-parekh/&quot;}, {&quot;name&quot;: &quot;Dinesh Hashmukhrai Kanabar&quot;, &quot;prev_company&quot;: &quot;&quot;, &quot;designation&quot;: &quot;Independent Director&quot;, &quot;experience&quot;: &quot;&quot;, &quot;qualification&quot;: &quot;&quot;, &quot;salary_gross&quot;: 0.0, &quot;year_end&quot;: &quot;2025&quot;, &quot;date_str&quot;: &quot;Mar 25&quot;, &quot;salaryHistoryUrl&quot;: &quot;https://trendlyne.com/equity/director-salary-history/D-00003252/dinesh-hashmukhrai-kanabar/&quot;, &quot;salaryHistoryUrlWebview&quot;: &quot;https://trendlyne.com/equity/webview/director-salary-history/D-00003252/dinesh-hashmukhrai-kanabar/&quot;}]"
+                    data-top_exec_currency="null"
+                    data-director_currency="null"
+                    data-company_logo="https://trendlyne-media-mumbai-new.s3.amazonaws.com/profilepicture/1127_profilepicture.png"
+                    data-brand_logo="[{&quot;brand_name&quot;: &quot;Trans Connect&quot;, &quot;brand_logo&quot;: &quot;https://trendlyne-media-mumbai-new.s3.amazonaws.com/companyBrandlogo/2021-09-20/476-INE002A01018-66ad3eee-1d27-49a9-8eb8-f131eaa48593-.png&quot;}, {&quot;brand_name&quot;: &quot;Jio Digital Life&quot;, &quot;brand_logo&quot;: &quot;https://trendlyne-media-mumbai-new.s3.amazonaws.com/companyBrandlogo/2021-09-20/476-INE002A01018-04ca338a-bf23-4c1f-9137-94ca197247c0-.png&quot;}, {&quot;brand_name&quot;: &quot;Reliance digital&quot;, &quot;brand_logo&quot;: &quot;https://trendlyne-media-mumbai-new.s3.amazonaws.com/companyBrandlogo/2021-09-20/476-INE002A01018-a80b6425-82a8-4384-975a-cc33f5494f44-.png&quot;}, {&quot;brand_name&quot;: &quot;Reliance Smart&quot;, &quot;brand_logo&quot;: &quot;https://trendlyne-media-mumbai-new.s3.amazonaws.com/companyBrandlogo/2021-09-20/476-INE002A01018-154d8894-eb9f-4f6d-87b4-a419478bf8d9-.png&quot;}, {&quot;brand_name&quot;: &quot;Reliance Fresh&quot;, &quot;brand_logo&quot;: &quot;https://trendlyne-media-mumbai-new.s3.amazonaws.com/companyBrandlogo/2021-09-20/476-INE002A01018-3cd93a94-8ac5-47da-875f-7de3e6113c93-.png&quot;}, {&quot;brand_name&quot;: &quot;Reliance Jewels&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Repol&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Trends&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Only Vimal&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;AJIO.COM&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Project EVE&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Avaasa&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;A1plaza&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Auto LPG&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reliance Aviation&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reliance Gas&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reliance Petroleum Retail&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Good Life&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Aarambh&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Healthy Life&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;RelianceResq digital Services Centre&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Enzo Matic&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Snac Tac&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reconnect&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;LYF&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Trends Woman&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Trends Man&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Trends Junior&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Trends Footwear&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Teamspirit&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Point Cove&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Performax&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;NETPLAY&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;John Players&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;H.Lewis&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;DNMX&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Recron&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relene&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reon&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relpipe PP-R&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relflex Elastomers&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relflex Cisamer Pbr&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relflex Stylamer Sbr&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Impramer&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Rel Wood&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relx Composites&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relab&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;R Elan&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Reliance Market&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relpet&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Qwik Mart&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Refresh&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Relstar&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Vimal Cifting&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Deo2&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;protector&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;D-creased&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Nice&quot;, &quot;brand_logo&quot;: &quot;&quot;}, {&quot;brand_name&quot;: &quot;Georgia&quot;, &quot;brand_logo&quot;: &quot;&quot;}]"
+                    data-isajaxrequest="false"
+                    data-website_url="http://www.ril.com"
+                    data-is_webview=""
+                >
+                    <div class="cen">
+                        <i class="fa"></i><br />
+                        <span class="lazy-load-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Hide loader and show content immediately since template is server-rendered
+        var loader = document.getElementById("page-loader");
+        var content = document.getElementById("company-content");
+
+        if (loader) loader.style.display = "none";
+        if (content) content.style.display = "block";
+    })();
+</script>
+
+
+    
+    <script src="https://cdn-static.trendlyne.com/static/CACHE/js/output.67199f1d9f9f.js"></script>
+
+  
+    
+  
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"></script>
+
+
+<div id="basemodal" class="tlyne-modal modal" role="dialog" aria-hidden="true"></div><div id="loginmodal" class="tlyne-modal modal login_modal_v2" role="dialog" aria-hidden="true"></div><div id="datamodal" class="modal" role="dialog" aria-hidden="true"></div><div id="bottom-modal" class="modal fade" role="dialog" aria-hidden="true"></div><div id="bottom-sheet-modal"></div><link rel="stylesheet" href="https://cdn-static.trendlyne.com/static/CACHE/css/output.8e3ae999fe28.css" type="text/css"><footer class='tl-footer-ctn hidden notvisible'><div class='tl-footer-main-ctn'><div class='footer-header'><div class='footer-title'><img 
+                        src="https://cdn-static.trendlyne.com/static/TL-logomark-v1.webp" 
+                        class="logo" 
+                        alt="Trendlyne Logo" 
+                        aria-label="Trendlyne Logo"
+                        height="64" width="74" style="margin: -15px;"
+                    />
+                    Trendlyne
+                </div><div class='footer-desc'>
+                    Stay ahead of the market
+                </div></div><div class='footer-content-ctn'><div class='ftr-ctn'><nav aria-label="Quick Links"><span class='ctn-head-title'>Quick Links <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/contact/">
+                                                Contact us
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/news-by-trendlyne/">
+                                                Blogs
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="/faq/">
+                                                FAQs
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/features/matrix/">
+                                                All Features
+                                                
+                                            </a></li></ul></nav><nav aria-label="Markets Today"><span class='ctn-head-title'>Markets Today <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/equity/1887/NIFTY/">
+                                                Nifty 50 today
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/equity/4482/BSESENSEX/">
+                                                Sensex today
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/dashboard/results/industry/">
+                                                Latest Quarterly results
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/macro-data/fii-dii/latest/cash-pastmonth/">
+                                                FII &amp; DII data today
+                                                
+                                            </a></li></ul></nav><nav aria-label="Dashboard"><span class='ctn-head-title'>Dashboard <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/equity/sector-industry-analysis/sector/day/">
+                                                Industry &amp; Sector analysis
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/equity/etf-dashboard/">
+                                                ETFs
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/mutual-fund/mf-all/?category=Multi-Cap&amp;active=multicap">
+                                                Mutual Funds
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/equity/sector-bullish-bearish-breadth/equi-weighted/">
+                                                Bullish &amp; Bearish spread
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/equity/sector-industry-analysis/global-indices/">
+                                                Global Indices
+                                                
+                                            </a></li></ul></nav><nav aria-label="Tools"><span class='ctn-head-title'>Tools <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/equity/compare-stocks/">
+                                                Compare stocks
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/web-widget/showcase">
+                                                Widgets
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/tools/data-downloader/stock-data-downloader/">
+                                                Data Downloader
+                                                
+                                            </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/tools/data-downloader/trendlyne-excel-connect/">
+                                                Excel Connect
+                                                
+                                            </a></li></ul></nav></div><div class='ftr-ctn'><nav aria-label="IPOs"><span class='ctn-head-title'>IPOs <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/ipo/dashboard/" >
+                                            Dashboard (Mainboard &amp; SME)
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/ipo/upcoming/" >
+                                            Upcoming IPOs
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/ipo/screener/recently-listed/" >
+                                            Recently Listed IPOs
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/ipo/screener/most-successful/" >
+                                            Most Successful IPOs
+                                            
+                                        </a></li></ul></nav><nav aria-label="Upcoming IPOs"><span class='ctn-head-title'>Upcoming IPOs <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="/ipo/detail/2302/global-ocean-logistics-india-ltd/" >
+                                            Global Ocean Logistics
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="/ipo/detail/2301/marc-technocrats-ltd/" >
+                                            MARC Technocrats
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="/ipo/detail/1979/ksh-international-ltd/" >
+                                            KSH International
+                                            
+                                        </a></li></ul></nav><nav aria-label="Company"><span class='ctn-head-title'>Company <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://trendlyne.com/privacy/" >
+                                            Privacy
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/terms/" >
+                                            Terms of Use
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://trendlyne.com/disclaimer/" >
+                                            Disclaimer
+                                            
+                                        </a></li></ul></nav><nav aria-label="Trendlyne Products"><span class='ctn-head-title'>Trendlyne Products <span class='title-line'></span></span><ul class='content-list'><li><a class='content-items' href="https://starfolio.trendlyne.com/" target="_blank" rel="noopener noreferrer">
+                                            Starfolio
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://smartoptions.trendlyne.com" target="_blank" rel="noopener noreferrer">
+                                            SmartOptions
+                                            
+                                        </a></li><span class='point-break'></span><li><a class='content-items' href="https://us.trendlyne.com/us/markets-today/" >
+                                            Trendlyne US
+                                            
+                                                <span class="tag">Global</span></a></li></ul></nav><nav class="mobile-app" aria-label="Mobile Downloads"><span class='ctn-head-title'>Get Mobile App <span class='title-line'></span></span><ul class='content-list'><li><div class="qr-container"><div data-toggle="tooltip" data-title="Click to expand"><i class="qr-code sprite-features sprite-features-play-store-qr-code"></i></div><div class="qr-app-text android">Android</div></div><a
+                                    href="https://play.google.com/store/apps/details?id=com.trendlyne.markets&hl=en&gl=US"
+                                    target="_blank" class="app-button-link"><i class="app-button sprite-features sprite-features-play-store"></i></a></li><li><div class="qr-container"><div data-toggle="tooltip" data-title="Click to expand"><i class="qr-code sprite-features sprite-features-app-store-qr-code"></i></div><div class="qr-app-text ios">iOS</div></div><a
+                                href="https://apps.apple.com/us/app/trendlyne-stocks-finance/id1528733628"
+                                target="_blank"
+                                class="app-button-link"
+                                ><i class="app-button sprite-features sprite-features-app-store"></i></a></li></ul></div></div></div><div class='copyright'><p class="copyright-text">
+
+Copyright &copy; 2025 Giskard Datatech Pvt Ltd
+
+                <span class="sebi-reg-no">(RA SEBI Reg No: INH000022507)</span></p><span itemscope itemtype="http://schema.org/Organization"><link itemprop="url" href='https://trendlyne.com'><div class="social-icons"><a target="_blank"
+                        href="https://twitter.com/Trendlyne"
+                        rel="noopener noreferrer nofollow"
+                        title="Twitter"
+                        style="height:1.125rem;"
+                        itemprop="sameAs"><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-twitter-icon" style="
+                        transform: scale(1.25);
+                    "></i></a><a target="_blank"
+                        href="https://in.linkedin.com/company/trendlyne"
+                        rel="noopener noreferrer nofollow"
+                        title="Linkedin"
+                        itemprop="sameAs"><i class="sprite-navbar-subnavbar sprite-navbar-subnavbar-linkedin-icon" style="
+                        transform: scale(0.85);"></i></a></div></span></div></footer><div id="show-qr-code"></div><script src="https://cdn-static.trendlyne.com/static/CACHE/js/output.d5f911e924f8.js"></script><div class='tl-noticebox'></div>
+<div id="infomodal" class="modal" role="dialog" aria-hidden="true"></div>
+<span id="google_signin_provider" data-google-login-url="https://trendlyne.com/accounts/google/login/?process=login" class="hide"></span>
+
+<div id="gdpr_cookie_loader"></div>
+
+
+
+    <script src="https://cdn-static.trendlyne.com/static/CACHE/js/output.9580fadb56e5.js"></script>
+
+    <script>
+    // Resolve name collision between jQuery UI and Twitter Bootstrap
+    $.widget.bridge('uitooltip', $.ui.tooltip);
+    </script>
+
+
+
+
+
+
+
+
+    
+
+    <script type="text/javascript" src="https://cdn-static.trendlyne.com/static/prod/vendors-84091427a3d6dcede3d3.js" ></script>
+    <script type="text/javascript" src="https://cdn-static.trendlyne.com/static/prod/AboutTheCompany-84091427a3d6dcede3d3.js" ></script>
+
+
+</body>
+</html>
+

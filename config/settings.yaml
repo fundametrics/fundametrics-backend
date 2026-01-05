@@ -1,0 +1,296 @@
+# ============================================================================
+# FUNDAMETRICS SCRAPER - CONFIGURATION
+# ============================================================================
+# This file contains all configuration for the scraper system
+# Environment-specific values should be set via .env file
+# ============================================================================
+
+# ============================================================================
+# APPLICATION
+# ============================================================================
+app:
+  name: "Fundametrics Stock Scraper"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+  debug: true
+  timezone: "Asia/Kolkata"
+
+# ============================================================================
+# DATABASE
+# ============================================================================
+database:
+  host: "${DB_HOST:localhost}"
+  port: "${DB_PORT:3306}"
+  name: "${DB_NAME:fundametrics_stock_data}"
+  user: "${DB_USER:root}"
+  password: "${DB_PASSWORD}"
+  
+  # Connection pool settings
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+  pool_recycle: 3600
+  
+  # Query settings
+  echo: false  # Set to true to log all SQL queries
+  echo_pool: false
+
+# ============================================================================
+# SCRAPER - EXTERNAL SOURCE 1
+# ============================================================================
+scrapers:
+  external_source_1:
+    enabled: true
+    base_url: "https://www.external-source-1.com"
+    
+    # Rate limiting
+    requests_per_minute: 10
+    base_delay: 6.0  # seconds
+    jitter_range: 2.0  # ±2 seconds random jitter
+    
+    # Retry settings
+    max_retries: 3
+    retry_backoff_factor: 2  # 2, 4, 8 seconds
+    
+    # Timeout settings
+    connect_timeout: 10
+    read_timeout: 30
+    
+    # Endpoints
+    endpoints:
+      company: "/company/{symbol}/"
+      financials: "/company/{symbol}/consolidated/"
+      peers: "/company/{symbol}/peers/"
+
+  # ============================================================================
+  # SCRAPER - EXTERNAL SOURCE 2
+  # ============================================================================
+  external_source_2:
+    enabled: true
+    base_url: "https://www.external-source-2.com"
+    
+    # Rate limiting
+    requests_per_minute: 15
+    base_delay: 4.0  # seconds
+    jitter_range: 2.0
+    
+    # Retry settings
+    max_retries: 3
+    retry_backoff_factor: 2
+    
+    # Timeout settings
+    connect_timeout: 10
+    read_timeout: 30
+    
+    # Endpoints
+    endpoints:
+      company: "/india/stockpricequote/{sector}/{company}/{symbol}"
+      financials: "/financials/{symbol}/results/quarterly-results/{symbol_id}"
+
+# ============================================================================
+# HTTP CLIENT
+# ============================================================================
+http:
+  # User-Agent rotation
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0"
+  
+  # Default headers
+  default_headers:
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+    Accept-Language: "en-US,en;q=0.9"
+    Accept-Encoding: "gzip, deflate, br"
+    DNT: "1"
+    Connection: "keep-alive"
+    Upgrade-Insecure-Requests: "1"
+    Sec-Fetch-Dest: "document"
+    Sec-Fetch-Mode: "navigate"
+    Sec-Fetch-Site: "none"
+  
+  # Proxy settings (optional)
+  proxy:
+    enabled: false
+    http: "${PROXY_HTTP}"
+    https: "${PROXY_HTTPS}"
+
+# ============================================================================
+# SCHEDULER
+# ============================================================================
+scheduler:
+  timezone: "Asia/Kolkata"
+  daily_run_time: "18:30"  # HH:MM in local timezone
+  max_retries: 2
+  jitter_seconds: 30
+
+# ============================================================================
+# SYMBOLS
+# ============================================================================
+symbols:
+  - MRF
+  - ONGC
+  - COALINDIA
+  - TCS
+
+# ============================================================================
+# STORAGE
+# ============================================================================
+storage:
+  # Data directories
+  data_dir: "./data"
+  raw_dir: "./data/raw"
+  processed_dir: "./data/processed"
+  backup_dir: "./data/backups"
+  cache_dir: "./data/cache"
+  
+  # HTML cache settings
+  cache:
+    enabled: true
+    retention_days: 7
+    compress: true  # gzip compression
+  
+  # Data versioning
+  versioning:
+    enabled: true
+    max_versions: 7  # Keep last 7 versions
+
+# ============================================================================
+# LOGGING
+# ============================================================================
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "DEBUG"
+  
+  # Log format
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+  
+  # Console logging
+  console:
+    enabled: true
+    colorize: true
+  
+  # File logging
+  file:
+    enabled: true
+    path: "./logs/fundametrics-scraper.log"
+    rotation: "500 MB"  # Rotate when file reaches 500MB
+    retention: "30 days"  # Keep logs for 30 days
+    compression: "zip"
+    
+  # Error file (separate file for errors)
+  error_file:
+    enabled: true
+    path: "./logs/errors.log"
+    level: "ERROR"
+    rotation: "100 MB"
+    retention: "90 days"
+  
+  # JSON logging (for log aggregation)
+  json:
+    enabled: false
+    path: "./logs/fundametrics-scraper.json"
+
+# ============================================================================
+# MONITORING
+# ============================================================================
+monitoring:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 9090
+    
+  # Health check
+  health_check:
+    enabled: true
+    interval: 60  # seconds
+  
+  # Alerts
+  alerts:
+    email:
+      enabled: false
+      smtp_host: "${SMTP_HOST}"
+      smtp_port: "${SMTP_PORT:587}"
+      smtp_user: "${SMTP_USER}"
+      smtp_password: "${SMTP_PASSWORD}"
+      from_email: "${ALERT_FROM_EMAIL}"
+      to_emails:
+        - "${ALERT_TO_EMAIL}"
+    
+    slack:
+      enabled: false
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+  
+  # Alert thresholds
+  thresholds:
+    error_rate: 0.20  # Alert if error rate > 20%
+    job_duration: 14400  # Alert if job takes > 4 hours (seconds)
+    success_rate: 0.90  # Alert if success rate < 90%
+
+# ============================================================================
+# API
+# ============================================================================
+api:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false  # Set to true in development
+  
+  # CORS settings
+  cors:
+    enabled: true
+    allow_origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+    allow_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+    allow_headers:
+      - "*"
+  
+  # Rate limiting (API requests)
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+  
+  # Authentication
+  auth:
+    enabled: false
+    jwt_secret: "${JWT_SECRET}"
+    jwt_algorithm: "HS256"
+    access_token_expire_minutes: 30
+
+# ============================================================================
+# RECOVERY
+# ============================================================================
+recovery:
+  # Checkpoint settings
+  checkpoint:
+    enabled: true
+    interval: 300  # Save checkpoint every 5 minutes (seconds)
+    path: "./data/checkpoints"
+  
+  # Retry queue
+  retry_queue:
+    enabled: true
+    max_attempts: 5
+    retry_delays:  # seconds
+      - 0      # Immediate
+      - 300    # 5 minutes
+      - 1800   # 30 minutes
+      - 7200   # 2 hours
+      - 86400  # 24 hours (next day)
+  
+  # Circuit breaker
+  circuit_breaker:
+    enabled: true
+    error_threshold: 0.20  # Open circuit if error rate > 20%
+    recovery_timeout: 1800  # Try to close after 30 minutes (seconds)
+    half_open_requests: 10  # Test with 10 requests in half-open state
+
+# =========================================================================

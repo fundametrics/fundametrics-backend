@@ -1,0 +1,58 @@
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.utils.logger[0m:[36msetup_logging[0m:[36m169[0m - [1mLogging system initialized[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.utils.logger[0m:[36msetup_logging[0m:[36m169[0m - [1mLogging system initialized[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36m__main__[0m:[36mtest_mrf_scrape[0m:[36m18[0m - [1mStarting MRF Live Scrape Verification[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.utils.rate_limiter[0m:[36m__init__[0m:[36m70[0m - [1mRateLimiter initialized: 10 req/min, 6.0s base delay, ±3.0s jitter[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.core.fetcher[0m:[36m__init__[0m:[36m72[0m - [1mFetcher initialized with 0 proxies, timeout=15.0s, max_retries=2[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.sources.screener[0m:[36m__init__[0m:[36m27[0m - [1mScreenerScraper initialized[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.sources.screener[0m:[36mscrape_stock[0m:[36m40[0m - [1mScraping Screener.in for symbol: MRF[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.sources.screener_parser[0m:[36mget_ratios[0m:[36m99[0m - [1mExtracted 9 ratios[0m
+[32m2025-12-19 09:58:41[0m | [32m[1mSUCCESS [0m | [36mscraper.sources.screener_parser[0m:[36mparse_all[0m:[36m239[0m - [32m[1mSuccessfully parsed all data for MRF Ltd[0m
+[32m2025-12-19 09:58:41[0m | [32m[1mSUCCESS [0m | [36m__main__[0m:[36mtest_mrf_scrape[0m:[36m55[0m - [32m[1mMRF Scrape Verification Completed[0m
+[32m2025-12-19 09:58:41[0m | [1mINFO    [0m | [36mscraper.core.fetcher[0m:[36mclose[0m:[36m105[0m - [1mFetcher client closed[0m
+
+==================================================
+VERIFICATION REPORT FOR: MRF Ltd (MRF)
+==================================================
+
+[PROFIT & LOSS TABLE] (Showing first row to verify headers)
+Headers Found: ['Sep 2013', 'Sep 2014', 'Mar 2016\n            \n              18m', 'Mar 2017', 'Mar 2018', 'Mar 2019', 'Mar 2020', 'Mar 2021', 'Mar 2022', 'Mar 2023', 'Mar 2024', 'Mar 2025', 'TTM']
+Row 1 Data (Sales +):
+  Sep 2013: 12131.0
+  Sep 2014: 13197.0
+  Mar 2016
+            
+              18m: 19887.0
+  Mar 2017: 13252.0
+  Mar 2018: 14775.0
+  Mar 2019: 15836.0
+  Mar 2020: 15989.0
+  Mar 2021: 15921.0
+  Mar 2022: 18989.0
+  Mar 2023: 22578.0
+  Mar 2024: 24673.0
+  Mar 2025: 27665.0
+  TTM: 28637.0
+
+[ANNOUNCEMENTS] (Showing latest 5)
+  1. None - Re-Lodgement Of Transfer Requests Of Physical Shares
+
+          
+            5 Dec - Month-ended 30 Nov 2025 report: Nil physical share transfer requests received, processed, approved, or rejected. (https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=fa94efcc-a10a-4b1b-ba2a-96afc8f50e1e.pdf)
+  2. None - Security Cover Certificate
+
+          
+            14 Nov - 14 Nov 2025: SEBI-mandated security cover certificate for MRF's listed unsecured NCDs. (https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=8ca30805-6040-40b9-b4b3-27b6e2c809b6.pdf)
+  3. None - Announcement under Regulation 30 (LODR)-Press Release / Media Release
+
+          
+            14 Nov - Q2 FY2026 consolidated income Rs 7,487 crore; PAT Rs 526 crore; interim dividend Rs 3/share. (https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=d5f90b16-3e5d-4cd9-8209-1aa881c50ac0.pdf)
+  4. None - Board Meeting Outcome for Declaration Of Interim Dividend
+
+          
+            14 Nov - Unaudited Q2/H1 results to 30 Sep 2025; H1 revenue Rs14,809.96cr; H1 PAT Rs995.82cr; interim dividend Rs31/share. (https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=3d7d2724-af97-446d-a458-a2369087abab.pdf)
+  5. 14 Nov - Corporate Action-Board approves Dividend
+
+          
+            14 Nov (https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=924519ff-7537-40ff-bec4-60012e63a984.pdf)
+
+==================================================

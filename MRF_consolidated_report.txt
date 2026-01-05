@@ -1,0 +1,136 @@
+DATA REPORT FOR: MRF
+================================================================================
+
+[COMPANY PROFILE]
+Sector: AUTOMOBILES & AUTO COMPONENTS
+Industry: AUTO TYRES & RUBBER PRODUCTS
+About: Founded in 1946 as a toy balloon manufacturing unit by K. M. Mammen Mappillai in Madras, MRF (Madras Rubber Factory) is an Indian multinational tire manufacturer headquartered in Chennai. The company ventured into tread rubber production in 1952. Incorporated as a private company in 1960, MRF partnered with Mansfield Tire & Rubber Company, USA, to manufacture tires. It went public in 1961 and began exporting tires to the USA in 1967. Today, MRF is among the top global tire manufacturers. MRF produces a wide range of rubber products, including tires, tubes, flaps, conveyor belts, tread rubber, paints, and toys. Its tires cater to various segments, including passenger cars, two-wheelers, trucks, buses, tractors, and aircraft. The company also offers tire-related services such as wheel balancing and nitrogen filling. Beyond manufacturing, MRF is actively involved in motorsports and cricket endorsements and runs initiatives like the MRF Pace Foundation and MRF Institute of Driver Development in Chennai.
+
+[MANAGEMENT]
+S DHANVANTHKUMAR - Company Secretary,Compliance Officer
+Mr. Madhu P Nainan - Executive Vice President(Finance)
+Mr. C M Cherian - Executive Vice President(R & D)
+Mrs. Meera Mammen - Vice President(Welfare)
+Mr. Suresh T Cherian - Vice President(ITS)
+Mr. Jacob Peter - Vice President(HRS)
+Mr. P John Mathew - Vice President(Engineering)
+Mr. Deepak Mathew - Vice President(Manufacturing)
+Mr. Rajat Kumar Nangia - Vice President - Sales(Sales)
+Mr. Abu Skaria Kandathil - General Manager(Materials)
+K M Mammen - Chairman & Managing Director
+Arun Mammen - Vice Chairman & Managing Director
+Rahul Mammen Mappillai - Managing Director
+Varun Mammen - Whole-time Director
+Samir Thariyan Mappillai - Whole-time Director
+Vikram Chesetty - Independent Director
+Vikram Taranath Hosangady - Independent Director
+Ramesh Rangarajan - Independent Director
+Dinshaw Keku Parakh - Independent Director
+Cibi Mammen - Non-Executive & Non-Independent Director
+Ambika Mammen - Non-Executive & Non-Independent Director
+Vimla Abraham - Independent Director
+Prasad Oommen - Independent Director
+Arun Vasu - Independent Director
+S Dhanvanth Kumar - Company Sec. & Compli. Officer
+
+[FUNDAMENTALS]
+Market Cap: 65632
+Current Price: 154750
+High / Low: 163600 / 100500
+Stock P/E: 35.4
+Book Value: 45840
+Dividend Yield: 0.15
+ROCE: 13.6
+ROE: 10.6
+Face Value: 10.0
+
+[GROWTH & PERFORMANCE]
+>> Compounded Sales Growth
+10 Years: 8%
+5 Years: 12%
+3 Years: 13%
+TTM: 10%
+
+>> Compounded Profit Growth
+10 Years: 8%
+5 Years: 6%
+3 Years: 50%
+TTM: -5%
+
+>> Stock Price CAGR
+10 Years: 15%
+5 Years: 14%
+3 Years: 20%
+1 Year: 17%
+
+>> Return on Equity
+10 Years: 12%
+5 Years: 9%
+3 Years: 10%
+Last Year: 11%
+
+[FINANCIAL TABLES]
+
+>> Quarters
+Metric | Sep 2022 | Dec 2022 | Mar 2023 | Jun 2023 | Sep 2023 | Dec 2023 | Mar 2024 | Jun 2024 | Sep 2024 | Dec 2024 | Mar 2025 | Jun 2025 | Sep 2025
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Sales + | 5826.0 | 5645.0 | 5842.0 | 6440.0 | 6217.0 | 6162.0 | 6349.0 | 7196.0 | 6881.0 | 7001.0 | 7075.0 | 7676.0 | 7379.0
+Expenses + | 5346.0 | 5083.0 | 4988.0 | 5310.0 | 5060.0 | 5108.0 | 5437.0 | 6037.0 | 5870.0 | 6166.0 | 5996.0 | 6604.0 | 6253.0
+Operating Profit | 481.0 | 562.0 | 854.0 | 1130.0 | 1157.0 | 1055.0 | 912.0 | 1160.0 | 1011.0 | 835.0 | 1079.0 | 1071.0 | 1126.0
+OPM % | 8.0 | 10.0 | 15.0 | 18.0 | 19.0 | 17.0 | 14.0 | 16.0 | 15.0 | 12.0 | 15.0 | 14.0 | 15.0
+Other Income + | 77.0 | 71.0 | 70.0 | 75.0 | 71.0 | 78.0 | 94.0 | 84.0 | 113.0 | 98.0 | 113.0 | 126.0 | 108.0
+Interest | 75.0 | 86.0 | 92.0 | 84.0 | 86.0 | 90.0 | 93.0 | 85.0 | 84.0 | 94.0 | 98.0 | 98.0 | 90.0
+Depreciation | 309.0 | 316.0 | 330.0 | 333.0 | 351.0 | 360.0 | 385.0 | 396.0 | 410.0 | 415.0 | 433.0 | 429.0 | 445.0
+Profit before tax | 174.0 | 231.0 | 501.0 | 787.0 | 791.0 | 682.0 | 527.0 | 763.0 | 631.0 | 424.0 | 661.0 | 670.0 | 699.0
+Tax % | 25.0 | 24.0 | 32.0 | 25.0 | 26.0 | 25.0 | 25.0 | 25.0 | 25.0 | 26.0 | 22.0 | 25.0 | 25.0
+Net Profit + | 130.0 | 175.0 | 341.0 | 589.0 | 587.0 | 510.0 | 396.0 | 571.0 | 471.0 | 315.0 | 512.0 | 500.0 | 526.0
+EPS in Rs | 306.19 | 412.23 | 803.19 | 1388.2 | 1383.27 | 1201.83 | 933.96 | 1346.4 | 1109.85 | 743.79 | 1207.49 | 1180.05 | 1239.4
+Raw PDF | None | None | None | None | None | None | None | None | None | None | None | None | None
+
+>> Profit & Loss
+Metric | Sep 2013 | Sep 2014 | Mar 2016 18m | Mar 2017 | Mar 2018 | Mar 2019 | Mar 2020 | Mar 2021 | Mar 2022 | Mar 2023 | Mar 2024 | Mar 2025 | TTM
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Sales + | 12248.0 | 13329.0 | 20179.0 | 13412.0 | 14954.0 | 16062.0 | 16237.0 | 16162.0 | 19317.0 | 23008.0 | 25169.0 | 28152.0 | 29130.0
+Expenses + | 10468.0 | 11384.0 | 15743.0 | 10763.0 | 12665.0 | 13744.0 | 13855.0 | 13208.0 | 17256.0 | 20604.0 | 20896.0 | 24058.0 | 25020.0
+Operating Profit | 1780.0 | 1945.0 | 4437.0 | 2649.0 | 2288.0 | 2317.0 | 2382.0 | 2954.0 | 2061.0 | 2404.0 | 4272.0 | 4095.0 | 4111.0
+OPM % | 15.0 | 15.0 | 22.0 | 20.0 | 15.0 | 14.0 | 15.0 | 18.0 | 11.0 | 10.0 | 17.0 | 15.0 | 14.0
+Other Income + | 25.0 | 63.0 | 317.0 | 327.0 | 330.0 | 416.0 | 335.0 | 205.0 | 315.0 | 245.0 | 306.0 | 406.0 | 445.0
+Interest | 196.0 | 232.0 | 361.0 | 257.0 | 259.0 | 273.0 | 301.0 | 282.0 | 263.0 | 326.0 | 361.0 | 368.0 | 380.0
+Depreciation | 374.0 | 424.0 | 737.0 | 611.0 | 707.0 | 808.0 | 982.0 | 1141.0 | 1205.0 | 1253.0 | 1430.0 | 1654.0 | 1722.0
+Profit before tax | 1235.0 | 1353.0 | 3656.0 | 2109.0 | 1653.0 | 1652.0 | 1434.0 | 1737.0 | 908.0 | 1070.0 | 2787.0 | 2479.0 | 2454.0
+Tax % | 35.0 | 33.0 | 31.0 | 30.0 | 32.0 | 32.0 | 1.0 | 26.0 | 26.0 | 28.0 | 25.0 | 25.0 | None
+Net Profit + | 809.0 | 908.0 | 2509.0 | 1486.0 | 1132.0 | 1131.0 | 1423.0 | 1277.0 | 669.0 | 769.0 | 2081.0 | 1869.0 | 1854.0
+EPS in Rs | 1906.58 | 2141.71 | 5916.93 | 3504.33 | 2668.2 | 2665.82 | 3354.22 | 3011.15 | 1577.96 | 1813.04 | 4907.26 | 4407.54 | 4370.73
+Dividend Payout % | 2.0 | 2.0 | 2.0 | 2.0 | 2.0 | 2.0 | 3.0 | 5.0 | 10.0 | 10.0 | 4.0 | 5.0 | None
+
+>> Balance Sheet
+Metric | Sep 2013 | Sep 2014 | Mar 2016 | Mar 2017 | Mar 2018 | Mar 2019 | Mar 2020 | Mar 2021 | Mar 2022 | Mar 2023 | Mar 2024 | Mar 2025 | Sep 2025
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Equity Capital | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0 | 4.0
+Reserves | 3651.0 | 4535.0 | 7220.0 | 8637.0 | 9734.0 | 10833.0 | 12210.0 | 13409.0 | 14028.0 | 14703.0 | 16699.0 | 18484.0 | 19437.0
+Borrowings + | 1599.0 | 1903.0 | 2464.0 | 2333.0 | 2163.0 | 2506.0 | 1854.0 | 2388.0 | 3229.0 | 3014.0 | 2822.0 | 3771.0 | 3631.0
+Other Liabilities + | 3023.0 | 3391.0 | 3566.0 | 4075.0 | 4577.0 | 5098.0 | 5373.0 | 6780.0 | 5799.0 | 6648.0 | 7325.0 | 7307.0 | 7248.0
+Total Liabilities | 8278.0 | 9833.0 | 13254.0 | 15048.0 | 16478.0 | 18441.0 | 19442.0 | 22582.0 | 23060.0 | 24369.0 | 26849.0 | 29567.0 | 30320.0
+Fixed Assets + | 2974.0 | 3436.0 | 4608.0 | 5502.0 | 6092.0 | 6786.0 | 8870.0 | 9441.0 | 9522.0 | 10118.0 | 12046.0 | 13221.0 | 13114.0
+CWIP | 359.0 | 628.0 | 1059.0 | 848.0 | 1079.0 | 1403.0 | 1741.0 | 1002.0 | 1233.0 | 3046.0 | 2385.0 | 1169.0 | 949.0
+Investments | 904.0 | 1081.0 | 3138.0 | 3382.0 | 4145.0 | 3855.0 | 1519.0 | 5874.0 | 3656.0 | 3085.0 | 3383.0 | 4548.0 | 4597.0
+Other Assets + | 4041.0 | 4688.0 | 4448.0 | 5316.0 | 5162.0 | 6397.0 | 7312.0 | 6265.0 | 8648.0 | 8120.0 | 9036.0 | 10629.0 | 11660.0
+Total Assets | 8278.0 | 9833.0 | 13254.0 | 15048.0 | 16478.0 | 18441.0 | 19442.0 | 22582.0 | 23060.0 | 24369.0 | 26849.0 | 29567.0 | 30320.0
+
+>> Cash Flow
+Metric | Sep 2013 | Sep 2014 | Mar 2016 | Mar 2017 | Mar 2018 | Mar 2019 | Mar 2020 | Mar 2021 | Mar 2022 | Mar 2023 | Mar 2024 | Mar 2025
+------------------------------------------------------------------------------------------------------------------------------------------
+Cash from Operating Activity + | 1499.0 | 1699.0 | 3043.0 | 1956.0 | 2413.0 | 1253.0 | 2271.0 | 4325.0 | -578.0 | 2755.0 | 3303.0 | 1868.0
+Cash from Investing Activity + | -959.0 | -1791.0 | -3408.0 | -1393.0 | -2014.0 | -1386.0 | -162.0 | -5087.0 | 169.0 | -1922.0 | -2381.0 | -2082.0
+Cash from Financing Activity + | -313.0 | 67.0 | 212.0 | -438.0 | -453.0 | 42.0 | -1032.0 | -250.0 | 424.0 | -840.0 | -868.0 | 282.0
+Net Cash Flow | 228.0 | -24.0 | -152.0 | 125.0 | -53.0 | -91.0 | 1077.0 | -1012.0 | 14.0 | -6.0 | 55.0 | 68.0
+
+>> Ratios
+Metric | Sep 2013 | Sep 2014 | Mar 2016 | Mar 2017 | Mar 2018 | Mar 2019 | Mar 2020 | Mar 2021 | Mar 2022 | Mar 2023 | Mar 2024 | Mar 2025
+------------------------------------------------------------------------------------------------------------------------------------------
+Debtor Days | 46.0 | 47.0 | 33.0 | 54.0 | 52.0 | 54.0 | 52.0 | 48.0 | 44.0 | 40.0 | 42.0 | 44.0
+Inventory Days | 83.0 | 79.0 | 62.0 | 118.0 | 88.0 | 113.0 | 110.0 | 115.0 | 120.0 | 98.0 | 108.0 | 115.0
+Days Payable | 47.0 | 50.0 | 36.0 | 69.0 | 63.0 | 64.0 | 72.0 | 129.0 | 60.0 | 58.0 | 64.0 | 57.0
+Cash Conversion Cycle | 83.0 | 76.0 | 58.0 | 103.0 | 78.0 | 102.0 | 90.0 | 34.0 | 104.0 | 80.0 | 86.0 | 101.0
+Working Capital Days | 36.0 | 30.0 | 1.0 | 4.0 | -1.0 | 2.0 | 5.0 | -41.0 | 10.0 | -8.0 | 3.0 | 8.0
+ROCE % | 29.0 | 27.0 | 49.0 | 23.0 | 17.0 | 15.0 | 13.0 | 14.0 | 6.0 | 7.0 | 17.0 | 14.0

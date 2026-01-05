@@ -1,0 +1,35 @@
+app:
+  name: fundametrics
+  environment: production
+
+data:
+  output_dir: data/processed
+  symbols_file: null     # optional external symbols file
+  persist_runs: true
+
+sources:
+  enable_screener: true
+  enable_trendlyne: true
+  enable_shareholding: true
+
+scheduler:
+  timezone: Asia/Kolkata
+  daily_run_time: "18:30"
+  jitter_seconds: 30
+  max_retries: 2
+
+api:
+  enabled: true
+
+features:
+  enable_signals: true
+
+alerts:
+  enabled: false
+  smtp_host: null
+  smtp_port: 587
+  smtp_user: null
+  smtp_password: null
+  from_email: null
+  to_emails: []
+  slack_webhook_url: null

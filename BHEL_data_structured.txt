@@ -1,0 +1,858 @@
+{
+    "symbol": "BHEL",
+    "company_profile": {
+        "sector": "GENERAL INDUSTRIALS",
+        "industry": "HEAVY ELECTRICAL EQUIPMENT",
+        "about": "Established in 1964, Bharat Heavy Electricals is an integrated power plant equipment manufacturer. The company is engaged in design, engineering, manufacturing, construction, testing, commissioning and servicing of a wide range of products and services for the core sectors of the economy, viz, Power, Transmission, Industry, Transportation, Renewable Energy, Water, Oil & Gas and Defence & Aerospace. The company utilises its 16 power plants across the country to provide its products and services across 89 countries in Asia, Africa, Australia, Europe, and the Americas.",
+        "management": [
+            {
+                "name": "Mr. Sanjay Goel",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Shri K Sadashiv Murthy",
+                "designation": "Chairman.,Executive Director,Managing Director,Chief Financial Officer",
+                "qualification": "Electrical Engineering Graduate, MBA in Finance",
+                "experience": "34"
+            },
+            {
+                "name": "Dr. Yogesh R Chhabra",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rajiv Jain",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sandeep Kataria",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Kul Bhushan Aggarwal",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sibaprasad Gangopadhyay",
+                "designation": "Executive Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Gummalla Subrahmanyam",
+                "designation": "Executive Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rajeev Singh",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Jai Prakash Srivastava",
+                "designation": "Executive Director(E, R&D)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Bethapudi Shyam Babu",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Alok Kumar Singhal",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sanjay Dayaram Goswami",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rajesh Sharma",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rakesh Kumar Chokhani",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Ajay Kumar Verma",
+                "designation": "Executive Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Jagat Singh",
+                "designation": "Executive Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Arumoy Mukherjee",
+                "designation": "Executive Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Jitendra Das",
+                "designation": "Executive Director(Industry Sector.,International Operations)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. C Venkat Rao",
+                "designation": "Executive Director(CAPEX,SS & P,CDT)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. B Shyam Babu",
+                "designation": "Executive Director(EDN)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. K Ashok",
+                "designation": "Executive Director(ISG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Pankaj Rastogi",
+                "designation": "Executive Director(Hydro Business)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Vinay Kumar Bassi",
+                "designation": "Executive Director(Regional Operations Division)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. S Prabhakar",
+                "designation": "Executive Director(HPBP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. K B Raja",
+                "designation": "Executive Director(HPEP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. G. Subrahmanyam",
+                "designation": "Executive Director(HPVP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. S M Ramanathan",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. M Arunmozhi Devan",
+                "designation": "Executive Director(BAP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Praveen Kishore",
+                "designation": "Executive Director(CPC)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Shri. Serugulathur Mahadevan Ramanathan",
+                "designation": "Director(Engineering,Research & Development)",
+                "qualification": "Mechanical Engineering, M. Tech in Stress and Vibr",
+                "experience": "37"
+            },
+            {
+                "name": "Rajesh Kumar Dwivedi",
+                "designation": "Executive Director(Finance),Chief Financial Officer",
+                "qualification": "Cost Accountants, MBA",
+                "experience": "32+"
+            },
+            {
+                "name": "Bani Varma",
+                "designation": "Executive Director(Is&P)",
+                "qualification": "Electrical Engineering",
+                "experience": "35"
+            },
+            {
+                "name": "Tajinder Gupta",
+                "designation": "Executive Director(Power)",
+                "qualification": "",
+                "experience": "36"
+            },
+            {
+                "name": "Krishna Kumar Thakur",
+                "designation": "Executive Director(Human Resources)",
+                "qualification": "Post-Graduate in Literature, PGDM-HR",
+                "experience": "25"
+            },
+            {
+                "name": "Mr. Rizwan Faisal Siddiqui",
+                "designation": "General Manager,Head(TP.)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sumeet Salhotra",
+                "designation": "General Manager,Head(Cost Optimisation Cell)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Dr Durgesh Chandra Gupta",
+                "designation": "General Manager(CQ & BE)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Dr Nishit Babyloni",
+                "designation": "General Manager,Head(TBSG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sanjiv Srivastava",
+                "designation": "General Manager(Corporate Internal Audit)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Uday Shankar",
+                "designation": "General Manager,Head(PS-ER)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sunil Diwakar",
+                "designation": "General Manager,Head(CPPP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Parthasarathi Das",
+                "designation": "General Manager,Head(Mktg. & CC,PSBG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Ranjan Kumar",
+                "designation": "General Manager,Head(HEEP & CFFP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "H Malathi",
+                "designation": "General Manager,Head(Corporate Finance)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Shyamala Venkataraman",
+                "designation": "General Manager,Head(CTM)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Vinod Jacob Sam",
+                "designation": "Executive Director(PS-SR)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rakesh Singh",
+                "designation": "Executive Director(TBG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. M Sridhar",
+                "designation": "Executive Director(Human Resources)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. A K Verma",
+                "designation": "Executive Director(COM.)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "R P S Sisodia",
+                "designation": "Executive Director(NREB)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sanjeev Kumar Roy",
+                "designation": "Executive Director(PS-HQ)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. N Ramesh Kumar",
+                "designation": "General Manager,Head(SBD)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Chavali Venkat Rao",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. K Bharaneedhar Raja",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Rajesh Kohli",
+                "designation": "Executive",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Heera Lal Bharani",
+                "designation": "General Manager(Corp. HSE)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Dipesh Palit",
+                "designation": "General Manager,Head(PS-TS)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Dr. Yogesh R Chhabra",
+                "designation": "Company Secretary",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Ravinder H Teckchandani",
+                "designation": "General Manager,Head(SSBG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. P K Upadhyay",
+                "designation": "General Manager,Head(HEP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Y Srinivasa Rao",
+                "designation": "Executive Director(PE & SD)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Swapan Kumar Bhattacharya",
+                "designation": "General Manager(Treasury,Fund Management)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Abhishek Srivastava",
+                "designation": "General Manager(HERP)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Sanjay Guha",
+                "designation": "General Manager,Head(PMG,PSBG)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. V K Singh",
+                "designation": "General Manager,Head(PS-NR)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. Yatindra Mohan",
+                "designation": "General Manager,Head(PS-WR)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Mr. V V Subrahmanyam",
+                "designation": "General Manager,Head(Corp. R&D)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Aruna Gulati",
+                "designation": "General Manager,Head(CSM & CC)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Bani Varma",
+                "designation": "Director (Industrial)",
+                "qualification": "Electrical Engineering Graduate",
+                "experience": ""
+            },
+            {
+                "name": "Tajinder Gupta",
+                "designation": "Director (Power)",
+                "qualification": "Instrumentation and Control Engineering Graduate",
+                "experience": ""
+            },
+            {
+                "name": "Shri K Sadashiv Murthy",
+                "designation": "Chairman & Managing Director",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "KRISHNA KUMAR THAKUR",
+                "designation": "Director (Human Resources)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Rajesh Kumar Dwivedi",
+                "designation": "Director (Finance)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Shri Ramesh Patlya Mawaskar",
+                "designation": "Independent Director",
+                "qualification": "MA (Public Admin.) / BCom",
+                "experience": ""
+            },
+            {
+                "name": "Vijay Mittal",
+                "designation": "Official Director (Part time)",
+                "qualification": "BTech in Electrical / PG Diploma in Energy and Sustainable Development (PGDESD) / MDPA",
+                "experience": ""
+            },
+            {
+                "name": "Arti Bhatnagar",
+                "designation": "Official Director (Part time)",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Yogesh R Chhabra",
+                "designation": "Company Sec. & Compli. Officer",
+                "qualification": "",
+                "experience": ""
+            },
+            {
+                "name": "Ashok Aseri",
+                "designation": "Independent Director",
+                "qualification": "Engineering Graduate / MBA in Human Resources",
+                "experience": "More than 27 Yrs"
+            },
+            {
+                "name": "AASHISH  CHATURVEDI",
+                "designation": "Independent Director",
+                "qualification": "BTech in Textile Technology",
+                "experience": "16 Yrs"
+            },
+            {
+                "name": "S M Ramanathan",
+                "designation": "Director (Engineering, R & D)",
+                "qualification": "Mechanical Engineering Graduate / MTech in Stress and Vibration Analysis and ICWA (Cost Accounts)",
+                "experience": "37 Yrs"
+            }
+        ]
+    },
+    "fundamentals": {
+        "face_value": 2.0
+    },
+    "growth_metrics": {},
+    "financial_tables": {
+        "quarters": {
+            "Sep 2022": {
+                "revenue": 5203.0,
+                "operating_profit": -244.0,
+                "interest": 123.0,
+                "depreciation": 59.0,
+                "profit_before_tax": -199.0,
+                "net_income": 12.0
+            },
+            "Dec 2022": {
+                "revenue": 5263.0,
+                "operating_profit": 144.0,
+                "interest": 139.0,
+                "depreciation": 62.0,
+                "profit_before_tax": 53.0,
+                "net_income": 42.0
+            },
+            "Mar 2023": {
+                "revenue": 8227.0,
+                "operating_profit": 1049.0,
+                "interest": 161.0,
+                "depreciation": 73.0,
+                "profit_before_tax": 940.0,
+                "net_income": 658.0
+            },
+            "Jun 2023": {
+                "revenue": 5003.0,
+                "operating_profit": -178.0,
+                "interest": 168.0,
+                "depreciation": 60.0,
+                "profit_before_tax": -276.0,
+                "net_income": -205.0
+            },
+            "Sep 2023": {
+                "revenue": 5125.0,
+                "operating_profit": -154.0,
+                "interest": 180.0,
+                "depreciation": 60.0,
+                "profit_before_tax": -202.0,
+                "net_income": -63.0
+            },
+            "Dec 2023": {
+                "revenue": 5504.0,
+                "operating_profit": 217.0,
+                "interest": 190.0,
+                "depreciation": 61.0,
+                "profit_before_tax": 84.0,
+                "net_income": 60.0
+            },
+            "Mar 2024": {
+                "revenue": 8260.0,
+                "operating_profit": 728.0,
+                "interest": 193.0,
+                "depreciation": 68.0,
+                "profit_before_tax": 636.0,
+                "net_income": 490.0
+            },
+            "Jun 2024": {
+                "revenue": 5485.0,
+                "operating_profit": -169.0,
+                "interest": 162.0,
+                "depreciation": 59.0,
+                "profit_before_tax": -279.0,
+                "net_income": -211.0
+            },
+            "Sep 2024": {
+                "revenue": 6584.0,
+                "operating_profit": 275.0,
+                "interest": 201.0,
+                "depreciation": 60.0,
+                "profit_before_tax": 141.0,
+                "net_income": 106.0
+            },
+            "Dec 2024": {
+                "revenue": 7277.0,
+                "operating_profit": 304.0,
+                "interest": 184.0,
+                "depreciation": 68.0,
+                "profit_before_tax": 179.0,
+                "net_income": 135.0
+            },
+            "Mar 2025": {
+                "revenue": 8993.0,
+                "operating_profit": 832.0,
+                "interest": 201.0,
+                "depreciation": 85.0,
+                "profit_before_tax": 704.0,
+                "net_income": 504.0
+            },
+            "Jun 2025": {
+                "revenue": 5487.0,
+                "operating_profit": -537.0,
+                "interest": 181.0,
+                "depreciation": 75.0,
+                "profit_before_tax": -608.0,
+                "net_income": -456.0
+            },
+            "Sep 2025": {
+                "revenue": 7512.0,
+                "operating_profit": 581.0,
+                "interest": 195.0,
+                "depreciation": 75.0,
+                "profit_before_tax": 499.0,
+                "net_income": 375.0
+            }
+        },
+        "income_statement": {
+            "Mar 2014": {
+                "revenue": 39561.0,
+                "operating_profit": 4579.0,
+                "interest": 133.0,
+                "depreciation": 985.0,
+                "profit_before_tax": 5078.0,
+                "net_income": 3502.0
+            },
+            "Mar 2015": {
+                "revenue": 31323.0,
+                "operating_profit": 2141.0,
+                "interest": 92.0,
+                "depreciation": 1082.0,
+                "profit_before_tax": 2187.0,
+                "net_income": 1450.0
+            },
+            "Mar 2016": {
+                "revenue": 25505.0,
+                "operating_profit": -1357.0,
+                "interest": 360.0,
+                "depreciation": 937.0,
+                "profit_before_tax": -1161.0,
+                "net_income": -706.0
+            },
+            "Mar 2017": {
+                "revenue": 28465.0,
+                "operating_profit": 1095.0,
+                "interest": 413.0,
+                "depreciation": 850.0,
+                "profit_before_tax": 586.0,
+                "net_income": 455.0
+            },
+            "Mar 2018": {
+                "revenue": 28827.0,
+                "operating_profit": 1653.0,
+                "interest": 330.0,
+                "depreciation": 787.0,
+                "profit_before_tax": 1215.0,
+                "net_income": 438.0
+            },
+            "Mar 2019": {
+                "revenue": 30441.0,
+                "operating_profit": 2032.0,
+                "interest": 378.0,
+                "depreciation": 476.0,
+                "profit_before_tax": 1840.0,
+                "net_income": 1002.0
+            },
+            "Mar 2020": {
+                "revenue": 21463.0,
+                "operating_profit": -133.0,
+                "interest": 613.0,
+                "depreciation": 503.0,
+                "profit_before_tax": -659.0,
+                "net_income": -1468.0
+            },
+            "Mar 2021": {
+                "revenue": 17309.0,
+                "operating_profit": -3049.0,
+                "interest": 467.0,
+                "depreciation": 473.0,
+                "profit_before_tax": -3596.0,
+                "net_income": -2700.0
+            },
+            "Mar 2022": {
+                "revenue": 21211.0,
+                "operating_profit": 828.0,
+                "interest": 448.0,
+                "depreciation": 314.0,
+                "profit_before_tax": 470.0,
+                "net_income": 445.0
+            },
+            "Mar 2023": {
+                "revenue": 23365.0,
+                "operating_profit": 1044.0,
+                "interest": 612.0,
+                "depreciation": 260.0,
+                "profit_before_tax": 716.0,
+                "net_income": 654.0
+            },
+            "Mar 2024": {
+                "revenue": 23893.0,
+                "operating_profit": 711.0,
+                "interest": 828.0,
+                "depreciation": 249.0,
+                "profit_before_tax": 243.0,
+                "net_income": 282.0
+            },
+            "Mar 2025": {
+                "revenue": 28339.0,
+                "operating_profit": 1399.0,
+                "interest": 906.0,
+                "depreciation": 272.0,
+                "profit_before_tax": 746.0,
+                "net_income": 534.0
+            },
+            "TTM": {
+                "revenue": 29269.0,
+                "operating_profit": 1180.0,
+                "interest": 762.0,
+                "depreciation": 303.0,
+                "profit_before_tax": 774.0,
+                "net_income": 559.0
+            }
+        },
+        "balance_sheet": {
+            "Mar 2014": {
+                "equity_capital": 490.0,
+                "reserves": 32681.0,
+                "total_liabilities": 75331.0,
+                "cwip": 2931.0,
+                "investments": 6.0,
+                "total_assets": 75331.0
+            },
+            "Mar 2015": {
+                "equity_capital": 490.0,
+                "reserves": 33717.0,
+                "total_liabilities": 70983.0,
+                "cwip": 2614.0,
+                "investments": 6.0,
+                "total_assets": 70983.0
+            },
+            "Mar 2016": {
+                "equity_capital": 490.0,
+                "reserves": 31825.0,
+                "total_liabilities": 65577.0,
+                "cwip": 318.0,
+                "investments": 796.0,
+                "total_assets": 65577.0
+            },
+            "Mar 2017": {
+                "equity_capital": 490.0,
+                "reserves": 31899.0,
+                "total_liabilities": 61698.0,
+                "cwip": 168.0,
+                "investments": 757.0,
+                "total_assets": 61698.0
+            },
+            "Mar 2018": {
+                "equity_capital": 734.0,
+                "reserves": 31601.0,
+                "total_liabilities": 63940.0,
+                "cwip": 203.0,
+                "investments": 429.0,
+                "total_assets": 63940.0
+            },
+            "Mar 2019": {
+                "equity_capital": 696.0,
+                "reserves": 30208.0,
+                "total_liabilities": 64490.0,
+                "cwip": 235.0,
+                "investments": 152.0,
+                "total_assets": 64490.0
+            },
+            "Mar 2020": {
+                "equity_capital": 696.0,
+                "reserves": 27964.0,
+                "total_liabilities": 60291.0,
+                "cwip": 314.0,
+                "investments": 162.0,
+                "total_assets": 60291.0
+            },
+            "Mar 2021": {
+                "equity_capital": 696.0,
+                "reserves": 25287.0,
+                "total_liabilities": 55960.0,
+                "cwip": 420.0,
+                "investments": 185.0,
+                "total_assets": 55960.0
+            },
+            "Mar 2022": {
+                "equity_capital": 696.0,
+                "reserves": 25810.0,
+                "total_liabilities": 56991.0,
+                "cwip": 431.0,
+                "investments": 205.0,
+                "total_assets": 56991.0
+            },
+            "Mar 2023": {
+                "equity_capital": 696.0,
+                "reserves": 23682.0,
+                "total_liabilities": 57664.0,
+                "cwip": 354.0,
+                "investments": 235.0,
+                "total_assets": 57664.0
+            },
+            "Mar 2024": {
+                "equity_capital": 696.0,
+                "reserves": 23742.0,
+                "total_liabilities": 59784.0,
+                "cwip": 308.0,
+                "investments": 256.0,
+                "total_assets": 59784.0
+            },
+            "Mar 2025": {
+                "equity_capital": 696.0,
+                "reserves": 24026.0,
+                "total_liabilities": 68849.0,
+                "cwip": 195.0,
+                "investments": 276.0,
+                "total_assets": 68849.0
+            },
+            "Sep 2025": {
+                "equity_capital": 696.0,
+                "reserves": 23704.0,
+                "total_liabilities": 71972.0,
+                "cwip": 275.0,
+                "investments": 282.0,
+                "total_assets": 71972.0
+            }
+        },
+        "cash_flow": {
+            "Mar 2014": {
+                "net_cash_flow": 4167.0
+            },
+            "Mar 2015": {
+                "net_cash_flow": -2071.0
+            },
+            "Mar 2016": {
+                "net_cash_flow": 275.0
+            },
+            "Mar 2017": {
+                "net_cash_flow": -473.0
+            },
+            "Mar 2018": {
+                "net_cash_flow": 1283.0
+            },
+            "Mar 2019": {
+                "net_cash_flow": -1973.0
+            },
+            "Mar 2020": {
+                "net_cash_flow": 608.0
+            },
+            "Mar 2021": {
+                "net_cash_flow": 123.0
+            },
+            "Mar 2022": {
+                "net_cash_flow": -787.0
+            },
+            "Mar 2023": {
+                "net_cash_flow": 829.0
+            },
+            "Mar 2024": {
+                "net_cash_flow": 274.0
+            },
+            "Mar 2025": {
+                "net_cash_flow": -1396.0
+            }
+        }
+    }
+}
