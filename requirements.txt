@@ -18,8 +18,8 @@ tenacity==8.2.3                  # Retry logic with exponential backoff
 # ============================================================================
 # DATA PROCESSING & VALIDATION
 # ============================================================================
-pandas>=2.2.3                    # Data manipulation (3.13 support)
-numpy>=1.26.0                    # Required for newer pandas
+pandas==2.2.3                    # Specific version with 3.13 support
+numpy==1.26.4                    # Stable numpy for financial math
 pydantic==2.5.3                  # Data validation and settings
 pydantic-settings==2.1.0         # Settings management
 PyYAML==6.0.1                    # YAML configuration parsing
