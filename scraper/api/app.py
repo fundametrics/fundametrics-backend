@@ -76,7 +76,7 @@ app.add_middleware(
 app.include_router(registry_router, tags=["Registry"])
 
 # Phase 22: MongoDB routes
-app.include_router(mongo_router, tags=["MongoDB"])
+app.include_router(mongo_router, prefix="/api", tags=["MongoDB"])
 
 # Legacy SQLite routes (fallback)
 app.include_router(router, tags=["SQLite (Legacy)"])

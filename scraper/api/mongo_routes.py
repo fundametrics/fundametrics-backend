@@ -21,7 +21,7 @@ from scraper.core.db import get_client, get_db, get_companies_col
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents
 
 limiter = Limiter(key_func=get_remote_address)
-router = APIRouter(prefix="/api")
+router = APIRouter()
 mongo_repo = MongoRepository(get_db())
 
 
