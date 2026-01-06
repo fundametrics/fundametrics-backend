@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -64,3 +65,7 @@ app.include_router(mongo_router, tags=["MongoDB"])
 # Legacy SQLite routes (fallback)
 app.include_router(router, tags=["SQLite (Legacy)"])
 app.include_router(admin_boost_router, tags=["Admin"])
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "env": os.getenv("ENV", "dev")}
