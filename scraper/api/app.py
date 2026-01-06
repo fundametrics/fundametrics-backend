@@ -11,6 +11,7 @@ from scraper.api.routes_admin_boost import router as admin_boost_router
 from scraper.api.mongo_routes import router as mongo_router  # Phase 22: MongoDB routes
 from scraper.api.registry_routes import router as registry_router  # Phase A: Registry + On-Demand
 from scraper.api.settings import get_api_settings
+from scraper.core.db import init_indexes
 
 app = FastAPI(
     title="Fundametrics API - Phase 25",
@@ -20,6 +21,15 @@ app = FastAPI(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.on_event("startup")
+async def startup_event():
+    # Initialize MongoDB indexes
+    try:
+        await init_indexes()
+    except Exception as e:
+        print(f"Index initialization failed: {e}")
 
 
 @app.middleware("http")
