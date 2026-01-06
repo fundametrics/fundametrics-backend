@@ -3,7 +3,8 @@ Two-Layer Company System API Routes
 Phase A: Registry + On-Demand Data Generation
 IMPORTANT: This is NOT analysis - we generate structured public data
 """
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Header
+import os
 from typing import Dict, Any, List
 from datetime import datetime, date
 import asyncio
@@ -23,6 +24,14 @@ ingestion_locks = set()
 
 # Daily counter (resets at midnight)
 daily_counter = {"date": None, "count": 0}
+
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "fundametrics18")
+ALLOW_ANALYZE = os.getenv("ALLOW_ANALYZE", "true").lower() == "true"
+
+
+def verify_admin(x_admin_token: str = Header(None)):
+    if x_admin_token != ADMIN_TOKEN:
+        raise HTTPException(status_code=403, detail="Admin only")
 
 
 def check_daily_limit():
@@ -207,11 +216,15 @@ async def run_data_generation_task(symbol: str):
 
 
 @router.post("/company/{symbol}/generate")
-async def generate_company_data(symbol: str, background_tasks: BackgroundTasks):
+async def generate_company_data(symbol: str, background_tasks: BackgroundTasks, x_admin_token: str = Header(None)):
     """
     Generate structured public data for a company (user-facing endpoint)
     Returns: {status: 'queued' | 'already_available' | 'already_generating' | 'limit_reached'}
     """
+    # Check if public analysis is disabled
+    if not ALLOW_ANALYZE:
+        verify_admin(x_admin_token)
+    
     try:
         # Check daily limit
         if not check_daily_limit():
@@ -271,11 +284,13 @@ async def generate_company_data(symbol: str, background_tasks: BackgroundTasks):
 
 
 @router.post("/admin/company/{symbol}/generate")
-async def admin_generate_company_data(symbol: str, background_tasks: BackgroundTasks):
+async def admin_generate_company_data(symbol: str, background_tasks: BackgroundTasks, x_admin_token: str = Header(None)):
     """
     Admin-only endpoint to generate company data (bypasses daily limit)
     For team use only - same backend, no duplication
     """
+    verify_admin(x_admin_token)
+    
     try:
         # Check if already being generated
         if symbol in ingestion_locks:
