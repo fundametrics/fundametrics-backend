@@ -6,7 +6,9 @@ Start with /stocks/{symbol} for RELIANCE as proof of concept.
 """
 
 from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from datetime import datetime, timezone
 import os
 
@@ -18,7 +20,8 @@ from scraper.core.mongo_repository import MongoRepository
 from scraper.core.db import get_client, get_db, get_companies_col
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents
 
-router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
+router = APIRouter(prefix="/api")
 mongo_repo = MongoRepository(get_db())
 
 
@@ -64,7 +67,8 @@ async def list_stocks():
 
 @router.get("/company/{symbol}")
 @router.get("/stocks/{symbol}")
-async def get_stock_detail(symbol: str):
+@limiter.limit("30/minute")
+async def get_stock_detail(symbol: str, request: Request):
     """
     Get complete company data from MongoDB
     
@@ -148,7 +152,9 @@ async def get_peers(symbol: str):
 
 
 @router.get("/search")
+@limiter.limit("30/minute")
 async def search_companies(
+    request: Request,
     q: Optional[str] = Query(None),
     query: Optional[str] = Query(None)
 ):
