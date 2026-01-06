@@ -20,8 +20,8 @@ tenacity==8.2.3                  # Retry logic with exponential backoff
 # ============================================================================
 pandas==2.2.3
 numpy==1.26.4
-pydantic==2.5.3
-pydantic-settings==2.1.0
+pydantic==2.7.4
+pydantic-settings==2.2.1
 PyYAML==6.0.1
 
 # ============================================================================
