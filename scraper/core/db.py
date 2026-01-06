@@ -93,8 +93,7 @@ async def init_indexes():
     financials_annual = get_financials_annual_col()
     await financials_annual.create_index(
         [("symbol", ASCENDING), ("year", ASCENDING), ("statement_type", ASCENDING)],
-        unique=True,
-        name="symbol_year_statement_unique"
+        unique=True
     )
     await financials_annual.create_index("symbol")
     logger.info("✅ Financials Annual indexes created")
@@ -103,8 +102,7 @@ async def init_indexes():
     financials_quarterly = get_financials_quarterly_col()
     await financials_quarterly.create_index(
         [("symbol", ASCENDING), ("quarter", ASCENDING), ("statement_type", ASCENDING)],
-        unique=True,
-        name="symbol_quarter_statement_unique"
+        unique=True
     )
     await financials_quarterly.create_index("symbol")
     logger.info("✅ Financials Quarterly indexes created")
@@ -113,8 +111,7 @@ async def init_indexes():
     metrics = get_metrics_col()
     await metrics.create_index(
         [("symbol", ASCENDING), ("period", ASCENDING), ("metric_name", ASCENDING)],
-        unique=True,
-        name="symbol_period_metric_unique"
+        unique=True
     )
     await metrics.create_index("symbol")
     await metrics.create_index("metric_name")
@@ -125,8 +122,7 @@ async def init_indexes():
     ownership = get_ownership_col()
     await ownership.create_index(
         [("symbol", ASCENDING), ("quarter", ASCENDING)],
-        unique=True,
-        name="symbol_quarter_unique"
+        unique=True
     )
     await ownership.create_index("symbol")
     logger.info("✅ Ownership indexes created")
