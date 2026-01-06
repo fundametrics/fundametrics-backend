@@ -79,7 +79,7 @@ app.include_router(registry_router, tags=["Registry"])
 app.include_router(mongo_router, prefix="/api", tags=["MongoDB"])
 
 # Legacy SQLite routes (fallback)
-app.include_router(router, tags=["SQLite (Legacy)"])
+app.include_router(router, prefix="/api", tags=["SQLite (Legacy)"])
 app.include_router(admin_boost_router, tags=["Admin"])
 
 @app.get("/health")

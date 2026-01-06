@@ -15,12 +15,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+registry_router = APIRouter(prefix="/api") # For Step 5 Search
 
 # Safety: Prevent VPS overload
 MAX_ANALYSES_PER_DAY = 20
 
 # In-memory lock to prevent duplicate ingestion
 ingestion_locks = set()
+global_ingestion_lock = asyncio.Lock()
 
 # Daily counter (resets at midnight)
 daily_counter = {"date": None, "count": 0}
@@ -177,10 +179,10 @@ async def get_company_status(symbol: str):
 async def run_data_generation_task(symbol: str):
     """Background task to generate structured company data"""
     try:
-        logger.info(f"Starting data generation for {symbol}")
-        
-        # Run ingestion (data generation)
-        result = await ingest_symbol(symbol)
+        # Run ingestion (data generation) with global lock to prevent VPS overload
+        async with global_ingestion_lock:
+            logger.info(f"🚀 Starting global-locked data generation for {symbol}")
+            result = await ingest_symbol(symbol)
         
         # Update registry and Save data
         db = get_db()
@@ -351,6 +353,7 @@ async def get_admin_stats():
     }
 
 
+@registry_router.get("/search")
 @router.get("/search/registry")
 async def search_registry(q: str = ""):
     """

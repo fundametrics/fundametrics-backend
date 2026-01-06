@@ -181,19 +181,38 @@ async def search_companies(
         }
     
     try:
-        companies = await mongo_repo.search_companies(search_term.strip(), limit=25)
+        db = get_db()
+        registry_col = db["companies_registry"]
+        companies_col = db["companies"]
+        
+        # Search in registry (includes non-ingested companies)
+        search_regex = {"$regex": search_term.strip(), "$options": "i"}
+        registry_results = await registry_col.find(
+            {
+                "$or": [
+                    {"symbol": search_regex},
+                    {"name": search_regex}
+                ]
+            },
+            {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
+        ).limit(25).to_list(length=25)
+        
+        # Get analyzed symbols to determine status
+        analyzed_cursor = companies_col.find({}, {"symbol": 1, "_id": 0})
+        analyzed_symbols = {doc["symbol"] async for doc in analyzed_cursor}
         
         results = [
             {
-                "symbol": c.get("symbol", c.get("_id")),  # Fallback to _id if symbol missing (unlikely)
-                "name": c.get("name", "Unknown"),
-                "sector": c.get("sector", "Not disclosed")
+                "symbol": c["symbol"],
+                "name": c["name"],
+                "sector": c.get("sector", "General"),
+                "status": "available" if c["symbol"] in analyzed_symbols else "not_available"
             }
-            for c in companies
+            for c in registry_results
         ]
         
         return {
-            "query": query,
+            "query": search_term,
             "results": results,
             "disclaimer": "Search results are informational only and do not constitute investment advice."
         }
