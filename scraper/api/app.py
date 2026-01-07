@@ -65,7 +65,8 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "https://fundametrics.in",
         "https://www.fundametrics.in",
-        "https://funda-metrics.pages.dev", # Example Cloudflare Pages URL
+        "https://fundametrics-frontend.pages.dev",  # Cloudflare Pages
+        "https://funda-metrics.pages.dev",  # Legacy (if exists)
     ],
     allow_credentials=True,
     allow_methods=["*"],
