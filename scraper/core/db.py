@@ -88,6 +88,13 @@ async def init_indexes():
     await companies.create_index("industry")
     await companies.create_index([("name", TEXT)])
     logger.info("✅ Companies indexes created")
+
+    # Companies Registry collection
+    registry = get_db()["companies_registry"]
+    await registry.create_index("symbol", unique=True)
+    await registry.create_index([("name", TEXT)])
+    await registry.create_index("sector")
+    logger.info("✅ Companies Registry indexes created")
     
     # Financials Annual collection
     financials_annual = get_financials_annual_col()

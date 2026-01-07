@@ -186,7 +186,9 @@ async def search_companies(
         companies_col = db["companies"]
         
         # Search in registry (includes non-ingested companies)
+        # Search in registry (includes non-ingested companies)
         search_regex = {"$regex": search_term.strip(), "$options": "i"}
+        # Fetch more to allow for deduplication
         registry_results = await registry_col.find(
             {
                 "$or": [
@@ -195,21 +197,41 @@ async def search_companies(
                 ]
             },
             {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
-        ).limit(25).to_list(length=25)
+        ).limit(100).to_list(length=100)
         
         # Get analyzed symbols to determine status
         analyzed_cursor = companies_col.find({}, {"symbol": 1, "_id": 0})
         analyzed_symbols = {doc["symbol"] async for doc in analyzed_cursor}
         
-        results = [
-            {
+        # Deduplication Logic
+        unique_results = {}
+        for c in registry_results:
+            # Normalize name: remove common suffixes and punctuation
+            raw_name = c.get("name", "")
+            norm_name = raw_name.lower().replace(".", "").replace(",", "").replace(" limited", "").replace(" ltd", "").replace(" (india)", "").strip()
+            
+            is_avail = c["symbol"] in analyzed_symbols
+            status = "available" if is_avail else "not_available"
+            
+            candidate = {
                 "symbol": c["symbol"],
                 "name": c["name"],
                 "sector": c.get("sector", "General"),
-                "status": "available" if c["symbol"] in analyzed_symbols else "not_available"
+                "status": status
             }
-            for c in registry_results
-        ]
+            
+            if norm_name not in unique_results:
+                unique_results[norm_name] = candidate
+            else:
+                # If existing is unavailable but this one is available, replace it
+                if unique_results[norm_name]["status"] == "not_available" and status == "available":
+                    unique_results[norm_name] = candidate
+                # Or if symbol matches query better (optional, but keep simple for now)
+
+        results = list(unique_results.values())
+        # Sort: Available first, then alphabetical
+        results.sort(key=lambda x: (x["status"] != "available", x["name"]))
+        results = results[:50] # Return top 50 matches
         
         return {
             "query": search_term,
