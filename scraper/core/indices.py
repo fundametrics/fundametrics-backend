@@ -25,6 +25,26 @@ INDEX_CONSTITUENTS: Dict[str, List[str]] = {
         "HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK", 
         "INDUSINDBK", "AUANK", "BANDHANBNK", "FEDERALBNK", "IDFCFIRSTB",
         "PNB", "BANKBARODA"
+    ],
+    "NIFTY IT": [
+        "TCS", "INFY", "HCLTECH", "WIPRO", "LTIM", "TECHM", 
+        "PERSISTENT", "COFORGE", "MPHASIS", "LTTS"
+    ],
+    "NIFTY AUTO": [
+        "MARUTI", "M&M", "TATAMOTORS", "BAJAJ-AUTO", "EICHERMOT", 
+        "TVSMOTOR", "HEROMOTOCO", "BHARATFORG", "ASHOKLEY", "TIINDIA"
+    ],
+    "NIFTY FMCG": [
+        "ITC", "HINDUNILVR", "NESTLEIND", "BRITANNIA", "TATACONSUM", 
+        "GODREJCP", "DABUR", "VBL", "MARICO", "COLPAL"
+    ],
+    "NIFTY METAL": [
+        "TATASTEEL", "JSWSTEEL", "HINDALCO", "VEDL", "JINDALSTEL", 
+        "NMDC", "SAIL", "COALINDIA", "APLAPOLLO", "JSL"
+    ],
+    "NIFTY PHARMA": [
+        "SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN", 
+        "AUROPHARMA", "ALKEM", "TORNTPHARM", "ZYDUSLIFE", "MANKIND"
     ]
 }
 
