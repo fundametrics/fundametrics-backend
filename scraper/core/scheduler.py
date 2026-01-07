@@ -59,6 +59,28 @@ async def auto_ingest_job():
         try:
             # We bypass daily limits for autopilot (it's "Admin" level)
             result = await ingest_symbol(target_symbol)
+            
+            # CRITICAL: Save the result to DB!
+            storage_payload = result.get("storage_payload")
+            if storage_payload:
+                await companies_col.update_one(
+                    {"symbol": target_symbol},
+                    {"$set": storage_payload},
+                    upsert=True
+                )
+                
+                # Also verify sector is updated in registry (optional but good)
+                try:
+                    meta = storage_payload.get("fundametrics_response", {}).get("metadata", {})
+                    sector = meta.get("sector")
+                    if sector:
+                        await registry_col.update_one(
+                            {"symbol": target_symbol},
+                            {"$set": {"sector": sector}}
+                        )
+                except:
+                    pass
+                    
             logger.info(f"✅ Autopilot success: {target_symbol}")
         except Exception as e:
             logger.error(f"❌ Autopilot failed for {target_symbol}: {e}")
