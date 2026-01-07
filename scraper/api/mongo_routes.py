@@ -708,21 +708,20 @@ async def get_index_constituents_mongo(index_name: str):
     if not symbols:
         raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
     
-    col = get_companies_col()
-    cursor = col.find({"symbol": {"$in": symbols}}, {"symbol": 1, "name": 1, "sector": 1})
+    # Use repo to get formatted details including price
+    results = await mongo_repo.get_companies_detail(symbols)
     
-    results = []
-    async for doc in cursor:
-        results.append({
-            "symbol": doc.get("symbol"),
-            "name": doc.get("name") or doc.get("symbol"),
-            "sector": doc.get("sector") or "Market Weighted"
-        })
+    # Sort results to match index order (optional but nice)
+    symbol_map = {c["symbol"]: c for c in results}
+    ordered_results = []
+    for s in symbols:
+        if s in symbol_map:
+            ordered_results.append(symbol_map[s])
         
     return {
         "index": index_name.upper(),
-        "count": len(results),
-        "constituents": results
+        "count": len(ordered_results),
+        "constituents": ordered_results
     }
 
 

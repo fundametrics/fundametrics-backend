@@ -177,6 +177,7 @@ class MongoRepository:
                 "sector": doc.get("sector", "Unknown"),
                 "industry": doc.get("industry", "Unknown"),
                 "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap"]),
+                "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price"]),
                 "pe": quick_get(["Pe Ratio", "P/E Ratio", "fundametrics_pe_ratio", "pe_ratio", "price_to_earnings", "Stock P/E"]),
                 "roe": quick_get(["ROE", "Return On Equity", "fundametrics_return_on_equity", "roe", "return_on_equity"]),
                 "roce": quick_get(["ROCE", "Return On Capital Employed", "fundametrics_return_on_capital_employed", "roce", "return_on_capital_employed"]),
