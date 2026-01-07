@@ -30,6 +30,13 @@ async def startup_event():
         await init_indexes()
     except Exception as e:
         print(f"Index initialization failed: {e}")
+        
+    # Start Autopilot Scheduler
+    try:
+        from scraper.core.scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        print(f"Scheduler startup failed: {e}")
 
 
 @app.middleware("http")
