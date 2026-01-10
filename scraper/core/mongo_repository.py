@@ -133,9 +133,14 @@ class MongoRepository:
                                     if val is not None: return val
                 return None
 
-            # Zomato Name Fix
-            name = doc.get("name", "Unknown")
-            if doc.get("symbol") == "ZOMATO":
+            # Zomato Name Fix & General Fallback
+            name = doc.get("name")
+            symbol = doc.get("symbol", str(doc.get("_id")))
+            
+            if not name or name == "Unknown":
+                name = symbol
+                
+            if symbol == "ZOMATO":
                 name = "Eternal Ltd"
             
             # Optimization: Build simpler lookup map once
