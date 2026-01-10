@@ -464,6 +464,29 @@ def _build_ui_response(
         "book_value": "book_value"
     }
 
+    # Fallback to fundametrics_response blob if collections are empty
+    if not income_statements:
+        fr = company.get("fundametrics_response", {})
+        financials = fr.get("financials", {})
+        if financials:
+            is_stmt = financials.get("income_statement", {})
+            bs_stmt = financials.get("balance_sheet", {})
+            cf_stmt = financials.get("cash_flow", {})
+            rt_stmt = financials.get("ratios_table", {})
+            
+            for stmt in [is_stmt, bs_stmt, cf_stmt, rt_stmt]:
+                if not stmt: continue
+                for period, items in stmt.items():
+                    if not isinstance(items, dict): continue
+                    for k, v in items.items():
+                        val = v.get("value") if isinstance(v, dict) else v
+                        if val is None: continue
+                        
+                        target_key = CHART_MAP.get(k, k.lower().replace(' ', '_'))
+                        if target_key not in metrics_map:
+                            metrics_map[target_key] = []
+                        metrics_map[target_key].append({"period": period, "value": val})
+
     def add_to_map(data_dict, period):
         for k, v in data_dict.items():
             period_str = str(period)
@@ -482,6 +505,24 @@ def _build_ui_response(
     for stmt in cash_flows:
         add_to_map(stmt["data"], stmt["year"])
     
+    # Sort chronological for charts
+    def _sort_key(p_dict):
+        p = p_dict["period"]
+        if p == "TTM": return "9999-12-31"
+        try:
+            parts = p.split()
+            if len(parts) == 2:
+                month_map = {"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06",
+                            "Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"}
+                return f"{parts[1]}-{month_map.get(parts[0], '00')}-01"
+            if len(p) == 4 and p.isdigit():
+                return f"{p}-03-31"
+        except: pass
+        return p
+
+    for m_key in metrics_map:
+        metrics_map[m_key].sort(key=_sort_key)
+        
     yearly_financials = metrics_map
     
     # Build fundametrics_metrics (for Executive Snapshot & Insights)
