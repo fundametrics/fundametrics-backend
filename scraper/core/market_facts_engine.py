@@ -207,6 +207,35 @@ class MarketFactsEngine:
         # We'll rely on our scraped data or internal computation if possible.
         return {}
 
+    async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:
+        """Fetch current price and change for an index (e.g., ^NSEI)."""
+        try:
+            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{index_symbol}?interval=1d"
+            response = await self._fetcher.fetch_json(url, timeout=3.0)
+            if response and "chart" in response and response["chart"]["result"]:
+                result = response["chart"]["result"][0]
+                meta = result.get("meta", {})
+                price = meta.get("regularMarketPrice")
+                prev_close = meta.get("previousClose")
+                
+                if price is not None:
+                    change = 0.0
+                    change_pct = 0.0
+                    if prev_close:
+                        change = price - prev_close
+                        change_pct = (change / prev_close) * 100
+                        
+                    return {
+                        "price": float(price),
+                        "change": round(change, 2),
+                        "change_percent": round(change_pct, 2),
+                        "symbol": index_symbol,
+                        "currency": meta.get("currency", "INR")
+                    }
+        except Exception as exc:
+            self._log.warning("Failed to fetch index price for {}: {}", index_symbol, exc)
+        return {}
+
     def _compute_market_cap(self, price: Optional[float], shares: Optional[float]) -> Optional[float]:
         """
         Compute market cap internally from price and shares.

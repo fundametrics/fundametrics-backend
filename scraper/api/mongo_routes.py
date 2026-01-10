@@ -19,7 +19,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://admin:Mohit%4015@cluster0.tbhv
 
 from scraper.core.mongo_repository import MongoRepository
 from scraper.core.db import get_client, get_db, get_companies_col
-from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents
+from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_INDEX_MAP
 from scraper.core.fetcher import Fetcher
 from scraper.core.market_facts_engine import MarketFactsEngine
 from scraper.utils.rate_limiter import RateLimiter
@@ -832,6 +832,32 @@ def get_available_indices():
     return list(INDEX_CONSTITUENTS.keys())
 
 
+@router.get("/indices/prices")
+async def get_indices_overview():
+    """Get live prices for all core indices."""
+    import asyncio
+    tasks = []
+    names = []
+    for name, symbol in YAHOO_INDEX_MAP.items():
+        names.append(name)
+        tasks.append(market_engine.fetch_index_price(symbol))
+    
+    results = await asyncio.gather(*tasks)
+    
+    response = []
+    for name, data in zip(names, results):
+        if data:
+            response.append({
+                "id": name,
+                "label": name,
+                "price": data.get("price"),
+                "change": data.get("change"),
+                "changePercent": data.get("change_percent"),
+                "symbol": data.get("symbol")
+            })
+    return response
+
+
 @router.get("/indices/{index_name}/constituents")
 async def get_index_constituents_mongo(index_name: str):
     """Get constituent symbols and basic metadata for an index from MongoDB."""
@@ -841,11 +867,27 @@ async def get_index_constituents_mongo(index_name: str):
     
     results = await mongo_repo.get_companies_detail(symbols)
     
+    # Enrich with live prices for the first 12 symbols (top leaders)
+    # to avoid hitting rate limits or slowing down the response too much.
+    top_symbols = symbols[:12]
+    import asyncio
+    price_tasks = [market_engine._fetch_delayed_price(s) for s in top_symbols]
+    live_prices = await asyncio.gather(*price_tasks)
+    
+    price_map = {}
+    for sym, p_data in zip(top_symbols, live_prices):
+        if p_data and "current_price" in p_data:
+            price_map[sym] = p_data["current_price"]
+
     symbol_map = {c["symbol"]: c for c in results}
     ordered_results = []
     for s in symbols:
         if s in symbol_map:
-            ordered_results.append(symbol_map[s])
+            c_data = symbol_map[s]
+            # Inject live price if available
+            if s in price_map:
+                c_data["currentPrice"] = price_map[s]
+            ordered_results.append(c_data)
         
     return {
         "index": index_name.upper(),
