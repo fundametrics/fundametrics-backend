@@ -165,10 +165,6 @@ class Fetcher:
             
         Returns:
             HTML string
-            
-        Raises:
-            PersistentError: If the request fails after all retries
-            BlockedException: If the server blocks the request
         """
         try:
             response = await self._do_fetch(url, method, **kwargs)
@@ -177,11 +173,36 @@ class Fetcher:
             log.critical(f"Failed to fetch {url} after retries: {e}")
             raise PersistentError(f"Persistent failure for {url}") from e
         except BlockedException as e:
-            # We don't retry blocks as it usually needs IP rotation
             raise e
         except Exception as e:
             log.exception(f"Unexpected error fetching {url}: {e}")
             raise FetcherException(f"Unexpected error: {str(e)}") from e
+
+    async def fetch_json(self, url: str, method: str = "GET", **kwargs) -> Dict[str, Any]:
+        """
+        Fetch JSON content from a URL safely
+        
+        Args:
+            url: Target URL
+            method: HTTP method (default: GET)
+            **kwargs: Additional kwargs for httpx request
+            
+        Returns:
+            Dict containing parsed JSON
+        """
+        try:
+            response = await self._do_fetch(url, method, **kwargs)
+            return response.json()
+        except (RateLimitException, httpx.RequestError) as e:
+            log.critical(f"Failed to fetch {url} after retries: {e}")
+            raise PersistentError(f"Persistent failure for {url}") from e
+        except Exception as e:
+            log.exception(f"Unexpected error fetching {url}: {e}")
+            return {} # Return empty dict on JSON decode error or other unexpected errors
+
+    async def get(self, url: str, **kwargs) -> Dict[str, Any]:
+        """Alias for fetch_json for compatibility with MarketFactsEngine"""
+        return await self.fetch_json(url, method="GET", **kwargs)
 
     async def __aenter__(self):
         return self

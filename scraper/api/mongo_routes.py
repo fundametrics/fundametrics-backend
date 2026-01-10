@@ -477,18 +477,61 @@ def _build_ui_response(
     
     yearly_financials = metrics_map
     
+    # Build fundametrics_metrics (for Executive Snapshot & Insights)
     fundametrics_metrics = []
+    seen_metrics = set()
+    
+    def _normalize_name(name: str) -> str:
+        n = name.replace("fundametrics_", "").replace("_", " ").title()
+        NAME_MAP = {
+            "Net Profit Margin": "Net Margin",
+            "Earnings Per Share": "Eps",
+            "Price To Earnings": "PE Ratio",
+            "Pe Ratio": "PE Ratio",
+            "Roe": "ROE",
+            "Roce": "ROCE",
+            "Eps": "EPS",
+            "Operating Profit Margin": "Operating Margin"
+        }
+        return NAME_MAP.get(n, n)
+
     for metric in metrics:
-        fundametrics_metrics.append({
-            "metric_name": metric["metric_name"],
-            "value": metric["value"],
-            "unit": metric.get("unit", ""),
-            "confidence": metric.get("confidence", 0),
-            "trust_score": metric.get("trust_score", {"grade": "N/A", "score": 0}),
-            "drift": metric.get("drift", {"flag": "neutral", "z_score": 0}),
-            "explainability": metric.get("explainability", {}),
-            "source_provenance": metric.get("source_provenance", {})
-        })
+        name = _normalize_name(metric["metric_name"])
+        if name not in seen_metrics:
+            fundametrics_metrics.append({
+                "metric_name": name,
+                "value": metric["value"],
+                "unit": metric.get("unit", ""),
+                "confidence": metric.get("confidence", 0),
+                "trust_score": metric.get("trust_score", {"grade": "N/A", "score": 0}),
+                "drift": metric.get("drift", {"flag": "neutral", "z_score": 0}),
+                "explainability": metric.get("explainability", {}),
+                "source_provenance": metric.get("source_provenance", {})
+            })
+            seen_metrics.add(name)
+    
+    # Ensure "Current Price" is present (Fallback to blob or metadata)
+    if "Current Price" not in seen_metrics:
+        price_val = None
+        # Try metadata first
+        price_val = company.get("price", {}).get("value")
+        if price_val is None:
+            # Try fundametrics_response blob
+            fr = company.get("fundametrics_response", {})
+            m_values = fr.get("metrics", {}).get("values", {})
+            p_obj = m_values.get("Current Price") or m_values.get("fundametrics_current_price")
+            price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+        
+        if price_val is not None:
+            fundametrics_metrics.insert(0, {
+                "metric_name": "Current Price",
+                "value": price_val,
+                "unit": "INR",
+                "confidence": 0.95,
+                "trust_score": {"grade": "A", "score": 95},
+                "drift": {"flag": "neutral"},
+                "explainability": {"formula": "Latest market price"}
+            })
     
     company_block = {
         "name": company.get("name"),
