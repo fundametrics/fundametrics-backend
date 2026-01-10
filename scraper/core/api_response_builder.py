@@ -324,10 +324,20 @@ class FundametricsResponseBuilder:
                  metrics_values["market_cap"] = MetricValue(
                     value=float(existing_mcap),
                     unit="Cr",
-                    statement_id=None,
-                    computed=False
+                     statement_id=None,
+                     computed=False
                  )
-            
+
+            # Explicitly expose Share Price as a metric
+            if share_price is not None:
+                metrics_values["Current Price"] = MetricValue(
+                    value=float(share_price),
+                    unit="INR",
+                    statement_id=None,
+                    computed=False,
+                    reason="Latest market close price"
+                )
+             
             # --- STRATEGIC BACKFILL: Use Scraped Ratios if Computed are Missing ---
             # This ensures we display PE, ROE, ROCE even if 'Price' or 'Equity' derivation failed.
             ratios_table = (self.canonical_financials or {}).get("ratios_table", {})
