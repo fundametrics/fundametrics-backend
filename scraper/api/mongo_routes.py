@@ -25,7 +25,7 @@ import logging
 
 log = logging.getLogger(__name__)
 fetcher = Fetcher()
-market_engine = MarketFactsEngine(fetcher=fetcher, log=log)
+market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
