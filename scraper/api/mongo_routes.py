@@ -11,6 +11,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from datetime import datetime, timezone
 import os
+import logging
 
 # MongoDB connection string (hardcoded for Phase 22 testing)
 # In production, this should come from environment variables
