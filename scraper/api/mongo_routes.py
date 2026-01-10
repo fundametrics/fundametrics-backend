@@ -104,9 +104,6 @@ async def get_stock_detail(symbol: str, request: Request):
         
         import asyncio
         
-        # Concurrent fetch and Market Engine metadata
-        market_task = market_engine.fetch_market_facts(symbol.upper())
-        
         # 2. Get financials and metrics concurrently
         income_task = mongo_repo.get_financials_annual(symbol, "income_statement")
         balance_task = mongo_repo.get_financials_annual(symbol, "balance_sheet")
@@ -114,12 +111,20 @@ async def get_stock_detail(symbol: str, request: Request):
         metrics_task = mongo_repo.get_metrics(symbol)
         ownership_task = mongo_repo.get_ownership(symbol)
         
+        # Optimize: Don't wait for live market facts in the main call.
+        # The frontend fetches detailed market facts separately.
+        # We perform MongoDB lookups only for maximum speed (~20ms).
         results = await asyncio.gather(
-            market_task, income_task, balance_task, cash_task, metrics_task, ownership_task
+            income_task, balance_task, cash_task, metrics_task, ownership_task
         )
         
-        market_facts, income_statements, balance_sheets, cash_flows, metrics, ownership = results
-        live_market = market_engine.build_market_block(market_facts)
+        income_statements, balance_sheets, cash_flows, metrics, ownership = results
+        
+        # Use simple fallback market block (no external call)
+        live_market = {
+             "price": {"value": None, "currency": "INR"}, 
+             "metadata": {"source": "db_fallback", "data_type": "historical"}
+        }
 
         # Fallback: Extract from stored blob if normalized collections are empty
         fundametrics_response = company.get("fundametrics_response", {})
