@@ -482,7 +482,10 @@ def _build_ui_response(
     seen_metrics = set()
     
     def _normalize_name(name: str) -> str:
+        # Clean: remove prefix, replace _ with space, title case
         n = name.replace("fundametrics_", "").replace("_", " ").title()
+        
+        # Aggressive normalization for core snapshot metrics
         NAME_MAP = {
             "Net Profit Margin": "Net Margin",
             "Earnings Per Share": "Eps",
@@ -490,6 +493,8 @@ def _build_ui_response(
             "Pe Ratio": "PE Ratio",
             "Roe": "ROE",
             "Roce": "ROCE",
+            "Return On Equity": "ROE",
+            "Return On Capital Employed": "ROCE",
             "Eps": "EPS",
             "Operating Profit Margin": "Operating Margin"
         }
@@ -498,21 +503,24 @@ def _build_ui_response(
     for metric in metrics:
         name = _normalize_name(metric["metric_name"])
         if name not in seen_metrics:
-            fundametrics_metrics.append({
-                "metric_name": name,
-                "value": metric["value"],
-                "unit": metric.get("unit", ""),
-                "confidence": metric.get("confidence", 0),
-                "trust_score": metric.get("trust_score", {"grade": "N/A", "score": 0}),
-                "drift": metric.get("drift", {"flag": "neutral", "z_score": 0}),
-                "explainability": metric.get("explainability", {}),
-                "source_provenance": metric.get("source_provenance", {})
-            })
-            seen_metrics.add(name)
+            # We only show metrics with values
+            val = metric.get("value")
+            if val is not None:
+                fundametrics_metrics.append({
+                    "metric_name": name,
+                    "value": val,
+                    "unit": metric.get("unit", ""),
+                    "confidence": metric.get("confidence", 0),
+                    "trust_score": metric.get("trust_score", {"grade": "N/A", "score": 0}),
+                    "drift": metric.get("drift", {"flag": "neutral", "z_score": 0}),
+                    "explainability": metric.get("explainability", {}),
+                    "source_provenance": metric.get("source_provenance", {})
+                })
+                seen_metrics.add(name)
     
-    # Ensure "Current Price" is present (Fallback to blob or metadata)
+    # Ensure "Current Price" is handled
+    price_val = None
     if "Current Price" not in seen_metrics:
-        price_val = None
         # Try metadata first
         price_val = company.get("price", {}).get("value")
         if price_val is None:
@@ -523,7 +531,7 @@ def _build_ui_response(
             price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
         
         if price_val is not None:
-            fundametrics_metrics.insert(0, {
+            fundametrics_metrics.append({
                 "metric_name": "Current Price",
                 "value": price_val,
                 "unit": "INR",
@@ -532,6 +540,39 @@ def _build_ui_response(
                 "drift": {"flag": "neutral"},
                 "explainability": {"formula": "Latest market price"}
             })
+            seen_metrics.add("Current Price")
+
+    # Priority Sort for Snapshot (Executive Snapshot renders top 12)
+    PRIORITY = [
+        "Current Price",
+        "Market Cap",
+        "PE Ratio",
+        "ROE",
+        "ROCE",
+        "Dividend Yield",
+        "Debt To Equity",
+        "EPS",
+        "Operating Margin",
+        "Net Margin",
+        "Sales Growth 5Y",
+        "Profit Growth 5Y"
+    ]
+    
+    sorted_metrics = []
+    # 1. Add prioritized ones in exact order
+    for p_name in PRIORITY:
+        for m in fundametrics_metrics:
+            if m["metric_name"] == p_name:
+                sorted_metrics.append(m)
+                break
+    
+    # 2. Add everything else alphabetically
+    snapshot_names = {sm["metric_name"] for sm in sorted_metrics}
+    remaining = [m for m in fundametrics_metrics if m["metric_name"] not in snapshot_names]
+    remaining.sort(key=lambda x: x["metric_name"])
+    sorted_metrics.extend(remaining)
+    
+    fundametrics_metrics = sorted_metrics
     
     company_block = {
         "name": company.get("name"),
