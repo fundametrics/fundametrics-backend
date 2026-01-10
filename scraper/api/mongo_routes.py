@@ -21,10 +21,12 @@ from scraper.core.db import get_client, get_db, get_companies_col
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents
 from scraper.core.fetcher import Fetcher
 from scraper.core.market_facts_engine import MarketFactsEngine
-import logging
+from scraper.utils.rate_limiter import RateLimiter
 
 log = logging.getLogger(__name__)
-fetcher = Fetcher()
+# Faster rate limit for API usage (120 requests/minute, minimal delay)
+api_rate_limiter = RateLimiter(requests_per_minute=120, base_delay=0.2, jitter_range=0.1)
+fetcher = Fetcher(rate_limiter=api_rate_limiter)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)

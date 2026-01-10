@@ -159,14 +159,19 @@ class MarketFactsEngine:
                     
                     price = meta.get("regularMarketPrice")
                     if price is not None:
+                        self._log.debug("Price found for {}: {}", yahoo_symbol, price)
                         return {
                             "current_price": float(price),
                             "delay_minutes": 15,
                             "currency": meta.get("currency", "INR"),
                             "timestamp": meta.get("regularMarketTime")
                         }
+                    else:
+                        self._log.debug("No regularMarketPrice in meta for {}", yahoo_symbol)
+                else:
+                    self._log.debug("Invalid/empty response from Yahoo for {}: {}", yahoo_symbol, response)
             except Exception as exc:
-                self._log.debug("Yahoo fetch failed for {}{}: {}", symbol, suffix, exc)
+                self._log.warning("Yahoo fetch failed for {}{}: {}", symbol, suffix, exc)
                 continue
                 
         return {}
