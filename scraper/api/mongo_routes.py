@@ -106,9 +106,7 @@ async def get_stock_detail(symbol: str, request: Request):
         # Fallback: Extract from stored blob if normalized collections are empty
         fundametrics_response = company.get("fundametrics_response", {})
         if not income_statements and "financials" in fundametrics_response:
-             # Basic extraction - in real app we might want proper normalization
-             # For now, just pass empty lists and let _build_ui_response handle using the raw response if possible
-             # OR better: Return the pre-built fundametrics_response directly if it exists!
+             # Basic extraction
              pass
         
         if fundametrics_response and (not income_statements and not metrics):
@@ -160,16 +158,6 @@ async def search_companies(
 ):
     """
     Search companies by name or symbol
-    
-    Args:
-        q or query: Search string
-        
-    Returns:
-        {
-            "query": str,
-            "results": List[{symbol, name, sector}],
-            "disclaimer": str
-        }
     """
     search_term = q or query or ""
     
@@ -185,10 +173,7 @@ async def search_companies(
         registry_col = db["companies_registry"]
         companies_col = db["companies"]
         
-        # Search in registry (includes non-ingested companies)
-        # Search in registry (includes non-ingested companies)
         search_regex = {"$regex": search_term.strip(), "$options": "i"}
-        # Fetch more to allow for deduplication
         registry_results = await registry_col.find(
             {
                 "$or": [
@@ -199,14 +184,11 @@ async def search_companies(
             {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
         ).limit(100).to_list(length=100)
         
-        # Get analyzed symbols to determine status
         analyzed_cursor = companies_col.find({}, {"symbol": 1, "_id": 0})
         analyzed_symbols = {doc["symbol"] async for doc in analyzed_cursor}
         
-        # Deduplication Logic
         unique_results = {}
         for c in registry_results:
-            # Normalize name: remove common suffixes and punctuation
             raw_name = c.get("name", "")
             norm_name = raw_name.lower().replace(".", "").replace(",", "").replace(" limited", "").replace(" ltd", "").replace(" (india)", "").strip()
             
@@ -223,15 +205,12 @@ async def search_companies(
             if norm_name not in unique_results:
                 unique_results[norm_name] = candidate
             else:
-                # If existing is unavailable but this one is available, replace it
                 if unique_results[norm_name]["status"] == "not_available" and status == "available":
                     unique_results[norm_name] = candidate
-                # Or if symbol matches query better (optional, but keep simple for now)
 
         results = list(unique_results.values())
-        # Sort: Available first, then alphabetical
         results.sort(key=lambda x: (x["status"] != "available", x["name"]))
-        results = results[:50] # Return top 50 matches
+        results = results[:50]
         
         return {
             "query": search_term,
@@ -254,29 +233,32 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
     ratios = metrics_block.get("ratios", {})
     
     combined_metrics: Dict[str, Dict[str, Any]] = {}
+
+    def _normalize_name(name: str) -> str:
+        # Clean: remove prefix, replace _ with space, title case
+        n = name.replace("fundametrics_", "").replace("_", " ").title()
+        
+        # Hard-coded maps for frontend consistency
+        NAME_MAP = {
+            "Net Profit Margin": "Net Margin",
+            "Earnings Per Share": "Eps",
+            "Price To Earnings": "PE Ratio",
+            "Pe Ratio": "PE Ratio",
+            "Roe": "ROE",
+            "Roce": "ROCE",
+            "Eps": "EPS",
+            "Operating Profit Margin": "Operating Margin",
+            "Market Cap": "Market Cap",
+            "Debt To Equity": "Debt To Equity"
+        }
+        return NAME_MAP.get(n, n)
     
     for source in [ratios, raw_metrics]:
         if not isinstance(source, dict): continue
         for key, data in source.items():
             if not isinstance(data, dict): continue
             
-            display_name = key.replace("fundametrics_", "").replace("_", " ").title()
-            
-            # Normalization map for consistency with MetricCardDense and Snapshot
-            NAME_MAP = {
-                "Net Profit Margin": "Net Margin",
-                "Earnings Per Share": "Eps",
-                "Price To Earnings": "Pe Ratio",
-                "Operating Profit Margin": "Operating Margin",
-                "Operating Margin": "Operating Margin",
-                "Return On Equity": "ROE",
-                "Return On Capital Employed": "ROCE",
-                "Market Cap": "Market Cap",
-                "Debt To Equity": "Debt To Equity",
-                "fundametrics_operating_margin": "Operating Margin",
-                "fundametrics_debt_to_equity": "Debt To Equity"
-            }
-            display_name = NAME_MAP.get(display_name, display_name)
+            display_name = _normalize_name(key)
             
             # Extract confidence and trust score
             raw_conf = data.get("confidence", {})
@@ -298,8 +280,12 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
     existing_list = fr.get("fundametrics_metrics", [])
     if existing_list:
         for m in existing_list:
-            if isinstance(m, dict) and m.get("metric_name") and m["metric_name"] not in combined_metrics:
-                combined_metrics[m["metric_name"]] = m
+            if isinstance(m, dict) and m.get("metric_name"):
+                name = _normalize_name(m["metric_name"])
+                if name not in combined_metrics:
+                    m_copy = m.copy()
+                    m_copy["metric_name"] = name
+                    combined_metrics[name] = m_copy
 
     fundametrics_metrics = list(combined_metrics.values())
 
@@ -323,52 +309,27 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
         "roce": "roce",
         "EPS in Rs": "eps",
         "eps": "eps",
-        "Profit before tax": "profit_before_tax",
         "profit_before_tax": "profit_before_tax",
-        "Tax %": "tax_pct",
         "tax_pct": "tax_pct",
-        "Other Income": "other_income",
         "other_income": "other_income",
-        "Interest": "interest",
         "interest": "interest",
-        "Depreciation": "depreciation",
         "depreciation": "depreciation",
-        "Expenses": "expenses",
         "expenses": "expenses",
-        "Net Profit Margin": "net_profit_margin",
         "net_profit_margin": "net_profit_margin",
-        "Equity Capital": "equity_capital",
         "equity_capital": "equity_capital",
-        "Total Liabilities": "total_liabilities",
         "total_liabilities": "total_liabilities",
-        "Fixed Assets": "fixed_assets",
         "fixed_assets": "fixed_assets",
-        "CWIP": "cwip",
         "cwip": "cwip",
-        "Investments": "investments",
         "investments": "investments",
-        "Other Assets": "other_assets",
         "other_assets": "other_assets",
-        "Total Assets": "total_assets",
         "total_assets": "total_assets",
-        "Cash from Operating Activity": "cash_flow_operating",
         "cash_flow_operating": "cash_flow_operating",
-        "Cash from Investing Activity": "cash_flow_investing",
         "cash_flow_investing": "cash_flow_investing",
-        "Cash from Financing Activity": "cash_flow_financing",
         "cash_flow_financing": "cash_flow_financing",
-        "Net Cash Flow": "net_cash_flow",
         "net_cash_flow": "net_cash_flow",
-        "Book Value": "book_value",
         "book_value": "book_value",
-        "Price to Earnings": "pe_ratio",
-        "price_to_earnings": "pe_ratio",
         "pe_ratio": "pe_ratio",
-        "Dividend Yield": "dividend_yield",
-        "Dividend Yield %": "dividend_yield",
-        "dividend_yield": "dividend_yield",
-        "Face Value": "face_value",
-        "face_value": "face_value"
+        "dividend_yield": "dividend_yield"
     }
 
     yearly_financials = {}
@@ -393,11 +354,9 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
                 if target_key not in seen_points:
                     seen_points[target_key] = {}
                 
-                # Keep first value for period (prioritize earlier statements)
                 if period not in seen_points[target_key]:
                     seen_points[target_key][period] = val
 
-    # Helper for sorting periods
     def _sort_key(p_dict):
         p = p_dict["period"]
         if p == "TTM": return "9999-12-31"
@@ -450,19 +409,12 @@ def _build_ui_response(
 ) -> Dict[str, Any]:
     """
     Build Phase 20 UI-compatible response from MongoDB data
-    
-    This matches the structure expected by the frontend components.
     """
     symbol = company.get("symbol", company.get("_id"))
     
-    # Build yearly_financials (for tables & charts)
     yearly_financials = {}
-    
-    # Organize by year
-    # group by metric
     metrics_map = {}
     
-    # Key mapping for frontend consistency
     CHART_MAP = {
         "Sales": "revenue",
         "Revenue": "revenue",
@@ -507,10 +459,9 @@ def _build_ui_response(
 
     def add_to_map(data_dict, period):
         for k, v in data_dict.items():
-            # Handle period formatting (e.g. 2024 -> "Mar 2024" or just stringify)
             period_str = str(period)
             if len(period_str) == 4 and period_str.isdigit():
-                period_str = f"Mar {period_str}" # Heuristic for annual
+                period_str = f"Mar {period_str}"
 
             target_key = CHART_MAP.get(k, k.lower().replace(' ', '_'))
             if target_key not in metrics_map:
@@ -526,7 +477,6 @@ def _build_ui_response(
     
     yearly_financials = metrics_map
     
-    # Build fundametrics_metrics (for Executive Snapshot & Insights)
     fundametrics_metrics = []
     for metric in metrics:
         fundametrics_metrics.append({
@@ -540,7 +490,6 @@ def _build_ui_response(
             "source_provenance": metric.get("source_provenance", {})
         })
     
-    # Build company block
     company_block = {
         "name": company.get("name"),
         "sector": company.get("sector"),
@@ -548,10 +497,8 @@ def _build_ui_response(
         "about": company.get("about", "")
     }
     
-    # Build shareholding block
     shareholding_block = { "status": "unavailable", "summary": {}, "insights": [] }
     if ownership:
-        # Extract from summary key or top level props
         summary = ownership.get("summary", {})
         if not summary:
             summary = {
@@ -575,7 +522,6 @@ def _build_ui_response(
             }])
         }
     
-    # Handle last_updated which might be string or datetime
     last_updated = company.get("last_updated")
     if isinstance(last_updated, str):
         scraped_at = last_updated
@@ -584,7 +530,6 @@ def _build_ui_response(
     else:
         scraped_at = datetime.now(timezone.utc).isoformat()
 
-    # Build metadata
     metadata_block = {
         "scraped_at": scraped_at,
         "financial_period_label": "Latest Available",
@@ -600,7 +545,6 @@ def _build_ui_response(
         "ai_summary_generated": False
     }
     
-    # Build reliability block (Phase 24)
     coverage_score = 0.0
     missing_blocks = []
     reliability_status = "poor"
@@ -616,8 +560,6 @@ def _build_ui_response(
         else:
             reliability_status = "poor"
     
-    # Simple staleness check for financials (heuristic)
-    # In a full impl we'd check against ingestion timestamp in trust_report
     is_stale = False
     generated_at = trust_report.get("generated_at") if trust_report else None
     if generated_at:
@@ -628,12 +570,11 @@ def _build_ui_response(
                 gen_dt = generated_at
             
             days_old = (datetime.now(timezone.utc) - gen_dt).days
-            if days_old > 365: # Financials block stale after 1 year
+            if days_old > 365:
                 is_stale = True
         except:
             pass
 
-    # Build final response
     response = {
         "symbol": symbol,
         "company": company_block,
@@ -708,10 +649,8 @@ async def get_index_constituents_mongo(index_name: str):
     if not symbols:
         raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
     
-    # Use repo to get formatted details including price
     results = await mongo_repo.get_companies_detail(symbols)
     
-    # Sort results to match index order (optional but nice)
     symbol_map = {c["symbol"]: c for c in results}
     ordered_results = []
     for s in symbols:
@@ -730,7 +669,6 @@ async def list_coverage_mongo():
     """Summarize data coverage across all processed companies in MongoDB."""
     companies = await mongo_repo.get_all_companies()
     
-    # In a real app we'd compute this properly, for now just summarize what we have
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "totals": {
