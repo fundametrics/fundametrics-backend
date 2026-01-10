@@ -144,14 +144,18 @@ class MarketFactsEngine:
 
     async def _fetch_delayed_price(self, symbol: str) -> Dict[str, Any]:
         """Fetch delayed price data from Yahoo Finance."""
-        # Try NSE suffix first, then BSE
-        for suffix in [".NS", ".BO", ""]:
+        # Try NSE suffix first, then BSE. Use short timeout to avoid blocking UI.
+        for suffix in [".NS", ".BO"]:
             try:
                 yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol
-                url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
+                # query2 is often more reliable/less throttled than query1
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
                 
-                # We use fetch_json from our fetcher
-                response = await self._fetcher.fetch_json(url)
+                # Use a specific short timeout for live market data (3s)
+                # and bypass long tenacity retries by setting max_retries=0 if possible, 
+                # but our fetcher doesn't easily support per-request max_retries.
+                # So we use a short timeout and catch the exception quickly.
+                response = await self._fetcher.fetch_json(url, timeout=3.0)
                 
                 if response and "chart" in response and response["chart"]["result"]:
                     result = response["chart"]["result"][0]
@@ -166,12 +170,9 @@ class MarketFactsEngine:
                             "currency": meta.get("currency", "INR"),
                             "timestamp": meta.get("regularMarketTime")
                         }
-                    else:
-                        self._log.debug("No regularMarketPrice in meta for {}", yahoo_symbol)
-                else:
-                    self._log.debug("Invalid/empty response from Yahoo for {}: {}", yahoo_symbol, response)
             except Exception as exc:
                 self._log.warning("Yahoo fetch failed for {}{}: {}", symbol, suffix, exc)
+                # If we timed out or failed, don't wait too long for the next suffix
                 continue
                 
         return {}
@@ -181,8 +182,8 @@ class MarketFactsEngine:
         # This data is often already in the chart result meta
         try:
             yahoo_symbol = f"{symbol}.NS"
-            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
-            response = await self._fetcher.fetch_json(url)
+            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
+            response = await self._fetcher.fetch_json(url, timeout=3.0)
             
             if response and "chart" in response and response["chart"]["result"]:
                 meta = response["chart"]["result"][0].get("meta", {})
