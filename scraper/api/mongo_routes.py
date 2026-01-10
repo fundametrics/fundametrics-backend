@@ -796,22 +796,25 @@ def _build_ui_response(
 
 @router.get("/debug/yahoo/{symbol}")
 async def debug_yahoo(symbol: str):
-    """Debug route to test Yahoo Finance connectivity on Render"""
+    """Debug route to test Yahoo Finance connectivity on Render with raw httpx"""
+    import httpx
     for suffix in [".NS", ".BO", ""]:
         yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol
-        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
+        url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
         try:
             start = datetime.now()
-            response = await fetcher.fetch_json(url)
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(url)
+                data = response.json()
             elapsed = (datetime.now() - start).total_seconds()
-            if response and "chart" in response and response["chart"]["result"]:
+            if data and "chart" in data and data["chart"]["result"]:
                 return {
                     "yahoo_symbol": yahoo_symbol,
                     "status": "success",
                     "elapsed": elapsed,
-                    "price": response["chart"]["result"][0]["meta"].get("regularMarketPrice")
+                    "price": data["chart"]["result"][0]["meta"].get("regularMarketPrice")
                 }
-            return {"yahoo_symbol": yahoo_symbol, "status": "invalid_response", "response": str(response)[:500]}
+            return {"yahoo_symbol": yahoo_symbol, "status": "invalid_response", "data": str(data)[:500]}
         except Exception as e:
             return {"yahoo_symbol": yahoo_symbol, "status": "error", "error": str(e), "type": type(e).__name__}
     return {"status": "failed_all"}
