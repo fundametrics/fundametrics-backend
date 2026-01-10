@@ -19,6 +19,13 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://admin:Mohit%4015@cluster0.tbhv
 from scraper.core.mongo_repository import MongoRepository
 from scraper.core.db import get_client, get_db, get_companies_col
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents
+from scraper.core.fetcher import Fetcher
+from scraper.core.market_facts_engine import MarketFactsEngine
+import logging
+
+log = logging.getLogger(__name__)
+fetcher = Fetcher()
+market_engine = MarketFactsEngine(fetcher=fetcher, log=log)
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
@@ -92,16 +99,24 @@ async def get_stock_detail(symbol: str, request: Request):
                 detail=f"Company {symbol} not found in database. Please ingest it first."
             )
         
-        # 2. Get financials (all statement types)
-        income_statements = await mongo_repo.get_financials_annual(symbol, "income_statement")
-        balance_sheets = await mongo_repo.get_financials_annual(symbol, "balance_sheet")
-        cash_flows = await mongo_repo.get_financials_annual(symbol, "cash_flow")
+        import asyncio
         
-        # 3. Get metrics
-        metrics = await mongo_repo.get_metrics(symbol)
+        # Concurrent fetch and Market Engine metadata
+        market_task = market_engine.fetch_market_facts(symbol.upper())
         
-        # 4. Get ownership
-        ownership = await mongo_repo.get_ownership(symbol)
+        # 2. Get financials and metrics concurrently
+        income_task = mongo_repo.get_financials_annual(symbol, "income_statement")
+        balance_task = mongo_repo.get_financials_annual(symbol, "balance_sheet")
+        cash_task = mongo_repo.get_financials_annual(symbol, "cash_flow")
+        metrics_task = mongo_repo.get_metrics(symbol)
+        ownership_task = mongo_repo.get_ownership(symbol)
+        
+        results = await asyncio.gather(
+            market_task, income_task, balance_task, cash_task, metrics_task, ownership_task
+        )
+        
+        market_facts, income_statements, balance_sheets, cash_flows, metrics, ownership = results
+        live_market = market_engine.build_market_block(market_facts)
 
         # Fallback: Extract from stored blob if normalized collections are empty
         fundametrics_response = company.get("fundametrics_response", {})
@@ -112,7 +127,7 @@ async def get_stock_detail(symbol: str, request: Request):
         if fundametrics_response and (not income_statements and not metrics):
              # Fast path: Transform the stored Fundametrics Response blob to UI structure
              trust_report = await mongo_repo.get_trust_report(symbol)
-             return _transform_fundametrics_response(symbol, company, fundametrics_response, trust_report)
+             return _transform_fundametrics_response(symbol, company, fundametrics_response, trust_report, live_market=live_market)
 
         # 4.5 Get trust report (Phase 24)
         trust_report = await mongo_repo.get_trust_report(symbol)
@@ -125,7 +140,8 @@ async def get_stock_detail(symbol: str, request: Request):
             cash_flows=cash_flows,
             metrics=metrics,
             ownership=ownership,
-            trust_report=trust_report
+            trust_report=trust_report,
+            live_market=live_market
         )
         
         return response
@@ -222,7 +238,7 @@ async def search_companies(
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
-def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust_report: Optional[Dict] = None) -> Dict[str, Any]:
+def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust_report: Optional[Dict] = None, live_market: Optional[Dict] = None) -> Dict[str, Any]:
     """
     Transform the internal Fundametrics Response blob (from ResponseBuilder) 
     into the UI-compatible structure expected by the Phase 20/23 Frontend.
@@ -288,6 +304,31 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
                     combined_metrics[name] = m_copy
 
     fundametrics_metrics = list(combined_metrics.values())
+    
+    # Inject live price into the metrics list
+    price_val = None
+    if live_market and live_market.get("price") and live_market["price"].get("value"):
+        price_val = live_market["price"]["value"]
+        
+    if price_val is not None:
+        # Check if already in the list
+        found = False
+        for m in fundametrics_metrics:
+            if m["metric_name"] == "Current Price":
+                m["value"] = price_val
+                found = True
+                break
+        
+        if not found:
+            fundametrics_metrics.insert(0, {
+                "metric_name": "Current Price",
+                "value": price_val,
+                "unit": "INR",
+                "confidence": 0.95,
+                "trust_score": {"grade": "A", "score": 95},
+                "drift": {"flag": "neutral"},
+                "explainability": {"formula": "Latest market price"}
+            })
 
     # 2. Map Yearly Financials (with Chart Key Mapping)
     CHART_MAP = {
@@ -388,6 +429,7 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
         "ai_summary": fr.get("ai_summary", {"paragraphs": []}),
         "signals": fr.get("signals", []),
         "news": fr.get("news", []),
+        "live_market": live_market,
         "management": fr.get("management", []),
         "reliability": {
             "coverage_score": trust_report.get("coverage_score", 0) if trust_report else 0,
@@ -405,7 +447,8 @@ def _build_ui_response(
     cash_flows: List[Dict],
     metrics: List[Dict],
     ownership: Optional[Dict],
-    trust_report: Optional[Dict] = None
+    trust_report: Optional[Dict] = None,
+    live_market: Optional[Dict] = None
 ) -> Dict[str, Any]:
     """
     Build Phase 20 UI-compatible response from MongoDB data
@@ -568,15 +611,20 @@ def _build_ui_response(
     
     # Ensure "Current Price" is handled
     price_val = None
+    if live_market and live_market.get("price") and live_market["price"].get("value"):
+        price_val = live_market["price"]["value"]
+    
     if "Current Price" not in seen_metrics:
-        # Try metadata first
-        price_val = company.get("price", {}).get("value")
+        # If not from live_market, try metadata/blob
         if price_val is None:
-            # Try fundametrics_response blob
-            fr = company.get("fundametrics_response", {})
-            m_values = fr.get("metrics", {}).get("values", {})
-            p_obj = m_values.get("Current Price") or m_values.get("fundametrics_current_price")
-            price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+            # Try metadata first
+            price_val = company.get("price", {}).get("value")
+            if price_val is None:
+                # Try fundametrics_response blob
+                fr = company.get("fundametrics_response", {})
+                m_values = fr.get("metrics", {}).get("values", {})
+                p_obj = m_values.get("Current Price") or m_values.get("fundametrics_current_price")
+                price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
         
         if price_val is not None:
             fundametrics_metrics.append({
@@ -589,6 +637,12 @@ def _build_ui_response(
                 "explainability": {"formula": "Latest market price"}
             })
             seen_metrics.add("Current Price")
+    elif price_val is not None:
+        # Update existing Current Price with live value if available
+        for m in fundametrics_metrics:
+            if m["metric_name"] == "Current Price":
+                m["value"] = price_val
+                break
 
     # Priority Sort for Snapshot (Executive Snapshot renders top 12)
     PRIORITY = [

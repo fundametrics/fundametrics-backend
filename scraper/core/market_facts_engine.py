@@ -143,62 +143,62 @@ class MarketFactsEngine:
         return market_block
 
     async def _fetch_delayed_price(self, symbol: str) -> Dict[str, Any]:
-        """Fetch delayed price data from public source."""
-        try:
-            # Implementation would fetch from NSE/BSE public APIs or financial data providers
-            # For now, return mock structure that would be populated by actual fetch
-            url = f"https://api.example.com/market/price/{symbol}"
-            response = await self._fetcher.get(url)
-            
-            if response:
-                return {
-                    "current_price": response.get("price"),
-                    "delay_minutes": response.get("delay", 20),
-                    "currency": "INR",
-                    "timestamp": response.get("timestamp")
-                }
+        """Fetch delayed price data from Yahoo Finance."""
+        # Try NSE suffix first, then BSE
+        for suffix in [".NS", ".BO", ""]:
+            try:
+                yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol
+                url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
                 
-        except Exception as exc:
-            self._log.debug("Failed to fetch delayed price for {}: {}", symbol, exc)
-            
+                # We use fetch_json from our fetcher
+                response = await self._fetcher.fetch_json(url)
+                
+                if response and "chart" in response and response["chart"]["result"]:
+                    result = response["chart"]["result"][0]
+                    meta = result.get("meta", {})
+                    
+                    price = meta.get("regularMarketPrice")
+                    if price is not None:
+                        return {
+                            "current_price": float(price),
+                            "delay_minutes": 15,
+                            "currency": meta.get("currency", "INR"),
+                            "timestamp": meta.get("regularMarketTime")
+                        }
+            except Exception as exc:
+                self._log.debug("Yahoo fetch failed for {}{}: {}", symbol, suffix, exc)
+                continue
+                
         return {}
 
     async def _fetch_52_week_range(self, symbol: str) -> Dict[str, Any]:
-        """Fetch 52-week high/low data from public source."""
+        """Fetch 52-week high/low data from Yahoo Finance."""
+        # This data is often already in the chart result meta
         try:
-            # Implementation would fetch from exchange APIs or financial data providers
-            url = f"https://api.example.com/market/range/{symbol}"
-            response = await self._fetcher.get(url)
+            yahoo_symbol = f"{symbol}.NS"
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
+            response = await self._fetcher.fetch_json(url)
             
-            if response:
-                return {
-                    "fifty_two_week_high": response.get("high_52w"),
-                    "fifty_two_week_low": response.get("low_52w"),
-                    "currency": "INR"
-                }
+            if response and "chart" in response and response["chart"]["result"]:
+                meta = response["chart"]["result"][0].get("meta", {})
+                high = meta.get("fiftyTwoWeekHigh")
+                low = meta.get("fiftyTwoWeekLow")
                 
+                if high is not None and low is not None:
+                    return {
+                        "fifty_two_week_high": float(high),
+                        "fifty_two_week_low": float(low),
+                        "currency": meta.get("currency", "INR")
+                    }
         except Exception as exc:
             self._log.debug("Failed to fetch 52-week range for {}: {}", symbol, exc)
             
         return {}
 
     async def _fetch_shares_outstanding(self, symbol: str) -> Dict[str, Any]:
-        """Fetch shares outstanding data from public source."""
-        try:
-            # Implementation would fetch from company filings or financial data providers
-            url = f"https://api.example.com/company/shares/{symbol}"
-            response = await self._fetcher.get(url)
-            
-            if response:
-                return {
-                    "shares_outstanding": response.get("total_shares"),
-                    "share_class": "equity",
-                    "as_of_date": response.get("date")
-                }
-                
-        except Exception as exc:
-            self._log.debug("Failed to fetch shares outstanding for {}: {}", symbol, exc)
-            
+        """Fetch shares outstanding data."""
+        # Yahoo Finance doesn't easily expose this in the chart API.
+        # We'll rely on our scraped data or internal computation if possible.
         return {}
 
     def _compute_market_cap(self, price: Optional[float], shares: Optional[float]) -> Optional[float]:
