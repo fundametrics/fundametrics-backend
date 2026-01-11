@@ -179,8 +179,8 @@ class MongoRepository:
             results.append({
                 "symbol": doc.get("symbol", str(doc.get("_id"))),
                 "name": name,
-                "sector": doc.get("sector", "Unknown"),
-                "industry": doc.get("industry", "Unknown"),
+                "sector": doc.get("sector") if doc.get("sector") and doc.get("sector") != "Unknown" else "General",
+                "industry": doc.get("industry") if doc.get("industry") and doc.get("industry") != "Unknown" else "General",
                 "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap"]),
                 "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price"]),
                 "pe": quick_get(["Pe Ratio", "P/E Ratio", "fundametrics_pe_ratio", "pe_ratio", "price_to_earnings", "Stock P/E"]),
