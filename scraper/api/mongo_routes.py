@@ -6,7 +6,7 @@ Start with /stocks/{symbol} for RELIANCE as proof of concept.
 """
 
 from typing import Dict, Any, List, Optional
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from datetime import datetime, timezone
@@ -921,3 +921,50 @@ async def list_coverage_mongo():
             for c in companies
         ]
     }
+
+@router.get("/sitemap.xml")
+@limiter.limit("10/minute")
+async def get_sitemap(request: Request):
+    """
+    Generate dynamic sitemap.xml for SEO
+    """
+    base_url = "https://fundametrics.in"
+    
+    # 1. Get all symbols
+    symbols = await mongo_repo.get_all_symbols()
+    
+    # 2. Build XML
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    
+    # Static pages
+    static_pages = [
+        "",
+        "/stocks",
+        "/about"
+    ]
+    
+    current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    for page in static_pages:
+        prio = '1.0' if page == '' else '0.8'
+        xml.append(f"""  <url>
+    <loc>{base_url}{page}</loc>
+    <lastmod>{current_date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>{prio}</priority>
+  </url>""")
+
+    # Company pages
+    for symbol in symbols:
+        if not symbol or symbol.startswith("--"): continue
+        xml.append(f"""  <url>
+    <loc>{base_url}/stocks/{symbol}</loc>
+    <lastmod>{current_date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>""")
+    
+    xml.append('</urlset>')
+    
+    return Response(content="\n".join(xml), media_type="application/xml")
