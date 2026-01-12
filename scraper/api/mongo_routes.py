@@ -25,8 +25,8 @@ from scraper.core.market_facts_engine import MarketFactsEngine
 from scraper.utils.rate_limiter import RateLimiter
 
 log = logging.getLogger(__name__)
-# Faster rate limit for API usage (120 requests/minute, minimal delay)
-api_rate_limiter = RateLimiter(requests_per_minute=120, base_delay=0.2, jitter_range=0.1)
+# Faster rate limit for API usage (300 requests/minute, minimal delay)
+api_rate_limiter = RateLimiter(requests_per_minute=300, base_delay=0.05, jitter_range=0.05)
 fetcher = Fetcher(rate_limiter=api_rate_limiter)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 

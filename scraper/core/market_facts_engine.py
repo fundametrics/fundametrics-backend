@@ -147,15 +147,14 @@ class MarketFactsEngine:
         # Try NSE suffix first, then BSE. Use short timeout to avoid blocking UI.
         for suffix in [".NS", ".BO"]:
             try:
+                import urllib.parse
                 yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol
+                quoted_symbol = urllib.parse.quote(yahoo_symbol)
                 # query2 is often more reliable/less throttled than query1
-                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{quoted_symbol}?interval=1d"
                 
-                # Use a specific short timeout for live market data (3s)
-                # and bypass long tenacity retries by setting max_retries=0 if possible, 
-                # but our fetcher doesn't easily support per-request max_retries.
-                # So we use a short timeout and catch the exception quickly.
-                response = await self._fetcher.fetch_json(url, timeout=3.0)
+                # Use a specific short timeout for live market data (2.5s)
+                response = await self._fetcher.fetch_json(url, timeout=2.5)
                 
                 if response and "chart" in response and response["chart"]["result"]:
                     result = response["chart"]["result"][0]
