@@ -863,9 +863,21 @@ async def get_indices_overview():
     return response
 
 
+# In-memory cache for index constituents (Phase 26 optimization)
+# key: index_name, value: (timestamp, response_dict)
+INDEX_CACHE = {}
+CACHE_TTL = 600 # 10 minutes
+
 @router.get("/indices/{index_name}/constituents")
 async def get_index_constituents_mongo(index_name: str):
-    """Get constituent symbols and basic metadata for an index from MongoDB."""
+    """Get constituent symbols and basic metadata for an index from MongoDB with caching."""
+    # Check cache
+    now = datetime.now()
+    if index_name in INDEX_CACHE:
+        ts, cached_data = INDEX_CACHE[index_name]
+        if (now - ts).total_seconds() < CACHE_TTL:
+            return cached_data
+
     symbols = get_constituents(index_name)
     if not symbols:
         raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
@@ -873,7 +885,6 @@ async def get_index_constituents_mongo(index_name: str):
     results = await mongo_repo.get_companies_detail(symbols)
     
     # Enrich with live prices for the first 12 symbols (top leaders)
-    # to avoid hitting rate limits or slowing down the response too much.
     top_symbols = symbols[:12]
     import asyncio
     price_tasks = [market_engine._fetch_delayed_price(s) for s in top_symbols]
@@ -894,11 +905,16 @@ async def get_index_constituents_mongo(index_name: str):
                 c_data["currentPrice"] = price_map[s]
             ordered_results.append(c_data)
         
-    return {
+    response_data = {
         "index": index_name.upper(),
         "count": len(ordered_results),
         "constituents": ordered_results
     }
+    
+    # Update cache
+    INDEX_CACHE[index_name] = (now, response_data)
+    
+    return response_data
 
 
 @router.get("/coverage")
