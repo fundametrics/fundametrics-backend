@@ -985,11 +985,11 @@ async def get_sitemap(request: Request):
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     
-    # Static pages
+    # Static pages (Standardized with trailing slashes to match redirects)
     static_pages = [
         "",
-        "/stocks",
-        "/about"
+        "/stocks/",
+        "/about/"
     ]
     
     current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
