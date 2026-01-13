@@ -144,8 +144,10 @@ class MarketFactsEngine:
 
     async def _fetch_delayed_price(self, symbol: str) -> Dict[str, Any]:
         """Fetch delayed price data from Yahoo Finance."""
-        # Try NSE suffix first, then BSE. Use short timeout to avoid blocking UI.
-        for suffix in [".NS", ".BO"]:
+        # Index symbols (starting with ^) should be used as-is.
+        # Stocks usually need .NS or .BO suffix.
+        suffixes = [""] if symbol.startswith("^") else [".NS", ".BO"]
+        for suffix in suffixes:
             try:
                 import urllib.parse
                 yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol

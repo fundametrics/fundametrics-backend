@@ -49,6 +49,7 @@ class MongoRepository:
         companies = get_companies_col()
         cursor = companies.find({"symbol": {"$not": {"$regex": "^--"}}}, {
             "symbol": 1, "name": 1, "sector": 1, "industry": 1,
+            "fundametrics_response.company": 1,
             "fundametrics_response.fundametrics_metrics": 1,
             "fundametrics_response.metrics.values": 1,
             "fundametrics_response.metrics.ratios": 1
@@ -63,6 +64,7 @@ class MongoRepository:
         companies = get_companies_col()
         cursor = companies.find({"symbol": {"$in": symbols}}, {
             "symbol": 1, "name": 1, "sector": 1, "industry": 1,
+            "fundametrics_response.company": 1,
             "fundametrics_response.fundametrics_metrics": 1,
             "fundametrics_response.metrics.values": 1,
             "fundametrics_response.metrics.ratios": 1

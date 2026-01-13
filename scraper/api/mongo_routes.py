@@ -208,21 +208,35 @@ async def search_companies(
             {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
         ).limit(100).to_list(length=100)
         
-        analyzed_cursor = companies_col.find({}, {"symbol": 1, "_id": 0})
-        analyzed_symbols = {doc["symbol"] async for doc in analyzed_cursor}
+        # Enrichment: Get accurate sectors for analyzed companies
+        analyzed_cursor = companies_col.find({}, {"symbol": 1, "sector": 1, "fundametrics_response.company.sector": 1, "_id": 0})
+        analyzed_sectors = {}
+        async for doc in analyzed_cursor:
+            sym = doc.get("symbol")
+            if not sym: continue
+            s = doc.get("sector")
+            if not s or s == "Unknown":
+                s = doc.get("fundametrics_response", {}).get("company", {}).get("sector") or "General"
+            analyzed_sectors[sym] = s
         
         unique_results = {}
         for c in registry_results:
+            symbol = c["symbol"]
             raw_name = c.get("name", "")
             norm_name = raw_name.lower().replace(".", "").replace(",", "").replace(" limited", "").replace(" ltd", "").replace(" (india)", "").strip()
             
-            is_avail = c["symbol"] in analyzed_symbols
+            is_avail = symbol in analyzed_sectors
             status = "available" if is_avail else "not_available"
             
+            # Prefer analyzed sector
+            sector = analyzed_sectors.get(symbol) or c.get("sector", "General")
+            if not sector or sector == "Unknown":
+                sector = "General"
+            
             candidate = {
-                "symbol": c["symbol"],
-                "name": c["name"],
-                "sector": c.get("sector", "General"),
+                "symbol": symbol,
+                "name": c.get("name"),
+                "sector": sector,
                 "status": status
             }
             
