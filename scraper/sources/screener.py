@@ -26,8 +26,7 @@ class ScreenerScraper:
         self.base_url = "https://www.screener.in"
         # Mapping for symbols that don't match Screener's expected URL pattern
         self._SYMBOL_MAP = {
-            "TATAMOTORS": "TMCV",
-            # Add other known discrepancies here
+            # "TATAMOTORS": "TMCV", # REMOVED: Incorrect mapping causing data failure
         }
         log.info("External financial data scraper initialized")
 
@@ -53,6 +52,8 @@ class ScreenerScraper:
             if not html:
                 log.error(f"Failed to retrieve HTML for {symbol}")
                 return {}
+            
+            log.info(f"Retrieved {len(html)} bytes of HTML for {symbol}")
                 
             # Parse the HTML
             parser = ScreenerParser(html, symbol=symbol)

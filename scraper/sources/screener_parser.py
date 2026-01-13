@@ -47,6 +47,8 @@ class ScreenerParser:
         "Profit After Tax": "net_income",
         "PAT": "net_income",
         "Net Income": "net_income",
+        "Net Profit Margin %": "net_profit_margin",
+        "Net Profit Margin": "net_profit_margin",
         "EPS in Rs": "eps",
         "Dividend Payout %": "dividend_payout_pct",
         

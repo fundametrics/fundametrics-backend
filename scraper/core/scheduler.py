@@ -94,10 +94,10 @@ async def auto_ingest_job():
 def start_scheduler():
     """Start the background scheduler"""
     if not scheduler.running:
-        # Run every 5 minutes = ~288 companies/day (Safe Target: 300)
+        # Run every 2 minutes = ~720 attempts/day (Target: 300 successes)
         scheduler.add_job(
             auto_ingest_job, 
-            IntervalTrigger(minutes=5), 
+            IntervalTrigger(minutes=2), 
             id="auto_ingest", 
             replace_existing=True
         )
