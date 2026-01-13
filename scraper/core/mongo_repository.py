@@ -176,11 +176,21 @@ class MongoRepository:
                     if k in metric_lookup: return metric_lookup[k]
                 return None
 
+            # Sector/Industry Fallbacks (Fix for '20 Microns' consistency issue)
+            fr_comp = fr.get("company", {})
+            sector = doc.get("sector")
+            if not sector or sector == "Unknown":
+                sector = fr_comp.get("sector") or "General"
+                
+            industry = doc.get("industry")
+            if not industry or industry == "Unknown":
+                industry = fr_comp.get("industry") or "General"
+
             results.append({
                 "symbol": doc.get("symbol", str(doc.get("_id"))),
                 "name": name,
-                "sector": doc.get("sector") if doc.get("sector") and doc.get("sector") != "Unknown" else "General",
-                "industry": doc.get("industry") if doc.get("industry") and doc.get("industry") != "Unknown" else "General",
+                "sector": sector,
+                "industry": industry,
                 "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap"]),
                 "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price"]),
                 "pe": quick_get(["Pe Ratio", "P/E Ratio", "fundametrics_pe_ratio", "pe_ratio", "price_to_earnings", "Stock P/E"]),

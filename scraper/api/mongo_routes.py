@@ -684,11 +684,12 @@ def _build_ui_response(
     
     fundametrics_metrics = sorted_metrics
     
+    fr_comp = company.get("fundametrics_response", {}).get("company", {})
     company_block = {
-        "name": company.get("name"),
-        "sector": company.get("sector"),
-        "industry": company.get("industry"),
-        "about": company.get("about", "")
+        "name": company.get("name") or fr_comp.get("name") or symbol,
+        "sector": company.get("sector") if (company.get("sector") and company.get("sector") != "Unknown") else fr_comp.get("sector") or "General",
+        "industry": company.get("industry") if (company.get("industry") and company.get("industry") != "Unknown") else fr_comp.get("industry") or "General",
+        "about": company.get("about") or fr_comp.get("about", "")
     }
     
     shareholding_block = { "status": "unavailable", "summary": {}, "insights": [] }
@@ -837,9 +838,21 @@ def get_available_indices():
     return list(INDEX_CONSTITUENTS.keys())
 
 
+# Cache for index prices (Phase 26 optimization)
+INDEX_PRICES_CACHE = None
+INDEX_PRICES_TS = None
+PRICES_CACHE_TTL = 600 # 10 minutes
+
 @router.get("/indices/prices")
 async def get_indices_overview():
-    """Get live prices for all core indices."""
+    """Get live prices for all core indices with caching."""
+    global INDEX_PRICES_CACHE, INDEX_PRICES_TS
+    
+    now = datetime.now()
+    if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
+        if (now - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
+            return INDEX_PRICES_CACHE
+
     import asyncio
     tasks = []
     names = []
@@ -860,6 +873,11 @@ async def get_indices_overview():
                 "changePercent": data.get("change_percent"),
                 "symbol": data.get("symbol")
             })
+    
+    # Update cache
+    INDEX_PRICES_CACHE = response
+    INDEX_PRICES_TS = now
+    
     return response
 
 
