@@ -16,7 +16,6 @@ import logging
 from scraper.core.db import get_client, get_db, get_companies_col, get_mongo_uri
 
 # Initialize indices for first run
-MONGO_URI = get_mongo_uri()
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_INDEX_MAP
 from scraper.core.fetcher import Fetcher
 from scraper.core.market_facts_engine import MarketFactsEngine
