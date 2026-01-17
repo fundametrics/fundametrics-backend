@@ -12,6 +12,7 @@ from slowapi.util import get_remote_address
 from datetime import datetime, timezone
 import os
 import logging
+import asyncio
 
 from scraper.core.db import get_client, get_db, get_companies_col, get_mongo_uri
 

@@ -19,10 +19,11 @@ _db = None
 
 def get_mongo_uri() -> str:
     """Get MongoDB URI from environment"""
-    uri = os.getenv("MONGO_URI")
+    # Check multiple common env var names for compatibility
+    uri = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI") or os.getenv("MONGODB_URL")
     if not uri:
-        logger.error("MONGO_URI environment variable not set!")
-        raise ValueError("MONGO_URI environment variable is required")
+        logger.error("MongoDB environment variable (MONGO_URI, MONGODB_URI, or MONGODB_URL) not set!")
+        raise ValueError("MongoDB connection string is required in environment variables")
     return uri
 
 def get_client() -> AsyncIOMotorClient:
