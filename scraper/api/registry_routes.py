@@ -63,9 +63,10 @@ def increment_daily_counter():
     daily_counter["count"] += 1
 
 
-# In-memory cache for registry endpoint (5 minutes TTL)
+# In-memory cache for registry endpoint (5 minutes TTL, max 50 entries)
 registry_cache = {}
 REGISTRY_CACHE_TTL = 300  # 5 minutes
+REGISTRY_CACHE_MAX_SIZE = 50  # Prevent memory leaks
 
 
 @router.get("/companies/registry")
@@ -141,7 +142,13 @@ async def list_company_registry(skip: int = 0, limit: int = 50):
             "companies": result
         }
         
-        # Store in cache
+        # Store in cache with LRU eviction
+        if len(registry_cache) >= REGISTRY_CACHE_MAX_SIZE:
+            # Remove oldest entry (simple LRU)
+            oldest_key = min(registry_cache.keys(), key=lambda k: registry_cache[k][1])
+            del registry_cache[oldest_key]
+            logger.debug(f"✓ Evicted oldest cache entry: {oldest_key}")
+        
         registry_cache[cache_key] = (response, now)
         logger.info(f"✓ Registry cached for skip={skip}, limit={limit}")
         
