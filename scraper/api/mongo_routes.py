@@ -20,11 +20,17 @@ MONGO_URI = get_mongo_uri()
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_INDEX_MAP
 from scraper.core.fetcher import Fetcher
 from scraper.core.market_facts_engine import MarketFactsEngine
-from scraper.utils.rate_limiter import RateLimiter
+from scraper.utils.rate_limiter import RateLimiter, AdaptiveRateLimiter
 
 log = logging.getLogger(__name__)
-# Faster rate limit for API usage (300 requests/minute, minimal delay)
-api_rate_limiter = RateLimiter(requests_per_minute=300, base_delay=0.05, jitter_range=0.05)
+# Conservative rate limit for Yahoo Finance (60 requests/minute, 1s base delay)
+api_rate_limiter = AdaptiveRateLimiter(
+    requests_per_minute=60, 
+    base_delay=1.0, 
+    jitter_range=0.5,
+    backoff_factor=3.0,
+    recovery_factor=1.05
+)
 fetcher = Fetcher(rate_limiter=api_rate_limiter)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 
@@ -854,43 +860,53 @@ def get_available_indices():
 INDEX_PRICES_CACHE = None
 INDEX_PRICES_TS = None
 PRICES_CACHE_TTL = 600 # 10 minutes
+_indices_lock = asyncio.Lock()
 
 @router.get("/indices/prices")
 async def get_indices_overview():
-    """Get live prices for all core indices with caching."""
+    """Get live prices for all core indices with caching and concurrency protection."""
     global INDEX_PRICES_CACHE, INDEX_PRICES_TS
     
+    # Check cache first
     now = datetime.now()
     if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
         if (now - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
             return INDEX_PRICES_CACHE
 
-    import asyncio
-    tasks = []
-    names = []
-    for name, symbol in YAHOO_INDEX_MAP.items():
-        names.append(name)
-        tasks.append(market_engine.fetch_index_price(symbol))
-    
-    results = await asyncio.gather(*tasks)
-    
-    response = []
-    for name, data in zip(names, results):
-        if data:
-            response.append({
-                "id": name,
-                "label": name,
-                "price": data.get("price"),
-                "change": data.get("change"),
-                "changePercent": data.get("change_percent"),
-                "symbol": data.get("symbol")
-            })
-    
-    # Update cache
-    INDEX_PRICES_CACHE = response
-    INDEX_PRICES_TS = now
-    
-    return response
+    async with _indices_lock:
+        # Double-check cache inside lock to prevent redundant fetches
+        if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
+            if (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
+                return INDEX_PRICES_CACHE
+
+        import asyncio
+        tasks = []
+        names = []
+        for name, symbol in YAHOO_INDEX_MAP.items():
+            names.append(name)
+            tasks.append(market_engine.fetch_index_price(symbol))
+        
+        # We use gather but the Fetcher's RateLimiter ensures we respect Yahoo's limits
+        results = await asyncio.gather(*tasks)
+        
+        response = []
+        for name, data in zip(names, results):
+            if data:
+                response.append({
+                    "id": name,
+                    "label": name,
+                    "price": data.get("price"),
+                    "change": data.get("change"),
+                    "changePercent": data.get("change_percent"),
+                    "symbol": data.get("symbol")
+                })
+        
+        # Update cache if we got some results
+        if response:
+            INDEX_PRICES_CACHE = response
+            INDEX_PRICES_TS = datetime.now()
+        
+    return response if response else (INDEX_PRICES_CACHE or [])
 
 
 # In-memory cache for index constituents (Phase 26 optimization)

@@ -105,10 +105,11 @@ class Fetcher:
         log.info("Fetcher client closed")
 
     @retry(
-        stop=stop_after_attempt(3), # Initial + 2 retries = 3 total attempts
-        wait=wait_exponential(multiplier=2, min=4, max=20),
+        stop=stop_after_attempt(5), # Initial + 4 retries = 5 total attempts
+        wait=wait_exponential(multiplier=2, min=5, max=60),
         retry=retry_if_exception_type((httpx.RequestError, RateLimitException)),
-        before_sleep=before_sleep_log(log, "WARNING")
+        before_sleep=before_sleep_log(log, "WARNING"),
+        reraise=True
     )
     async def _do_fetch(self, url: str, method: str = "GET", **kwargs) -> httpx.Response:
         """Internal method with retry logic and proxy rotation"""
