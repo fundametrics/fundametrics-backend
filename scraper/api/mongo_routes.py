@@ -18,6 +18,7 @@ from scraper.core.db import get_client, get_db, get_companies_col, get_mongo_uri
 # Initialize indices for first run
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_INDEX_MAP
 from scraper.core.fetcher import Fetcher
+from scraper.core.mongo_repository import MongoRepository
 from scraper.core.market_facts_engine import MarketFactsEngine
 from scraper.utils.rate_limiter import RateLimiter, AdaptiveRateLimiter
 
