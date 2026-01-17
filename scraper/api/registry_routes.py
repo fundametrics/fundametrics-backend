@@ -63,12 +63,29 @@ def increment_daily_counter():
     daily_counter["count"] += 1
 
 
+# In-memory cache for registry endpoint (5 minutes TTL)
+registry_cache = {}
+REGISTRY_CACHE_TTL = 300  # 5 minutes
+
+
 @router.get("/companies/registry")
 async def list_company_registry(skip: int = 0, limit: int = 50):
     """
     List all companies from registry with their data availability status and metrics
+    Cached for 5 minutes to improve performance
     """
     try:
+        # Check cache first
+        cache_key = f"{skip}:{limit}"
+        now = datetime.utcnow().timestamp()
+        
+        if cache_key in registry_cache:
+            cached_data, cached_time = registry_cache[cache_key]
+            if now - cached_time < REGISTRY_CACHE_TTL:
+                logger.info(f"✓ Registry cache hit for skip={skip}, limit={limit}")
+                return cached_data
+        
+        # Cache miss - fetch from DB
         db = get_db()
         registry_col = db["companies_registry"]
         mongo_repo = MongoRepository(db)
@@ -116,13 +133,19 @@ async def list_company_registry(skip: int = 0, limit: int = 50):
         # Get total count
         total = await registry_col.count_documents({})
         
-        return {
+        response = {
             "total": total,
             "skip": skip,
             "limit": limit,
             "count": len(result),
             "companies": result
         }
+        
+        # Store in cache
+        registry_cache[cache_key] = (response, now)
+        logger.info(f"✓ Registry cached for skip={skip}, limit={limit}")
+        
+        return response
     
     except Exception as e:
         logger.error(f"Failed to fetch registry: {str(e)}")
