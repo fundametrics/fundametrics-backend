@@ -21,9 +21,8 @@ def get_mongo_uri() -> str:
     """Get MongoDB URI from environment"""
     uri = os.getenv("MONGO_URI")
     if not uri:
-        # Phase 22: Hardcoded for testing (remove in production)
-        uri = "mongodb+srv://admin:Mohit%4015@cluster0.tbhvlm3.mongodb.net/fundametrics?retryWrites=true&w=majority"
-        logger.info("Using hardcoded MongoDB URI for Phase 22 testing")
+        logger.error("MONGO_URI environment variable not set!")
+        raise ValueError("MONGO_URI environment variable is required")
     return uri
 
 def get_client() -> AsyncIOMotorClient:

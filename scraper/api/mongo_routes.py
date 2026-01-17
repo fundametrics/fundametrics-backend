@@ -13,12 +13,10 @@ from datetime import datetime, timezone
 import os
 import logging
 
-# MongoDB connection string (hardcoded for Phase 22 testing)
-# In production, this should come from environment variables
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://admin:Mohit%4015@cluster0.tbhvlm3.mongodb.net/fundametrics?retryWrites=true&w=majority")
+from scraper.core.db import get_client, get_db, get_companies_col, get_mongo_uri
 
-from scraper.core.mongo_repository import MongoRepository
-from scraper.core.db import get_client, get_db, get_companies_col
+# Initialize indices for first run
+MONGO_URI = get_mongo_uri()
 from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_INDEX_MAP
 from scraper.core.fetcher import Fetcher
 from scraper.core.market_facts_engine import MarketFactsEngine
