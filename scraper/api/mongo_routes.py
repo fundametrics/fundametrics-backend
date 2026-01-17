@@ -36,7 +36,15 @@ market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
-mongo_repo = MongoRepository(get_db())
+class LazyMongoRepository:
+    """Proxy that initializes MongoRepository on first access to prevent boot crashes"""
+    _instance = None
+    def __getattr__(self, name):
+        if self._instance is None:
+            self._instance = MongoRepository(get_db())
+        return getattr(self._instance, name)
+
+mongo_repo = LazyMongoRepository()
 
 
 @router.get("/companies")
