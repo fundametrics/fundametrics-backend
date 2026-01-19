@@ -105,9 +105,10 @@ class Fetcher:
         log.info("Fetcher client closed")
 
     @retry(
-        stop=stop_after_attempt(5), # Initial + 4 retries = 5 total attempts
+        stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=5, max=60),
-        retry=retry_if_exception_type((httpx.RequestError, RateLimitException)),
+        # Only retry on network issues or rate limits, NOT 404/403 which are permanent errors
+        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException, RateLimitException)),
         before_sleep=before_sleep_log(log, "WARNING"),
         reraise=True
     )

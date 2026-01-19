@@ -208,7 +208,8 @@ class MarketFactsEngine:
             
         try:
             symbols_str = ",".join(symbols)
-            url = f"https://query2.finance.yahoo.com/v6/finance/quote?symbols={symbols_str}"
+            # Use v7 on query1 which is more stable for indices
+            url = f"https://query1.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
             response = await self._fetcher.fetch_json(url, timeout=5.0)
             
             if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
