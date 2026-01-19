@@ -930,14 +930,16 @@ async def get_index_constituents_mongo(index_name: str):
     
     # Enrich with live prices for the first 12 symbols (top leaders)
     top_symbols = symbols[:12]
-    import asyncio
-    price_tasks = [market_engine._fetch_delayed_price(s) for s in top_symbols]
-    live_prices = await asyncio.gather(*price_tasks)
+    # Suffix for Yahoo
+    yahoo_symbols = [f"{s}.NS" if not s.endswith(".NS") else s for s in top_symbols]
+    
+    # Optimized: Batch fetch prices in ONE request
+    live_prices = await market_engine.fetch_batch_prices(yahoo_symbols)
     
     price_map = {}
     for sym, p_data in zip(top_symbols, live_prices):
-        if p_data and "current_price" in p_data:
-            price_map[sym] = p_data["current_price"]
+        if p_data and p_data.get("price"):
+            price_map[sym] = p_data.get("price")
 
     symbol_map = {c["symbol"]: c for c in results}
     ordered_results = []

@@ -54,51 +54,41 @@ class MarketFactsEngine:
 
     async def fetch_market_facts(self, symbol: str) -> MarketFacts:
         """
-        Fetch market facts for a given symbol.
-        
-        Args:
-            symbol: Stock symbol (e.g., "BHEL", "RELIANCE")
-            
-        Returns:
-            MarketFacts: Immutable market facts data structure
+        Fetch market facts for a given symbol using a single batch-efficient request.
         """
+        # NSE symbols need .NS suffix for Yahoo
+        yahoo_symbol = f"{symbol}.NS" if not symbol.endswith(".NS") and not symbol.endswith(".BO") else symbol
+        
         self._log.info("Fetching market facts for {}", symbol)
         
-        # Fetch all market data concurrently
-        price_data, range_data, shares_data = await asyncio.gather(
-            self._fetch_delayed_price(symbol),
-            self._fetch_52_week_range(symbol),
-            self._fetch_shares_outstanding(symbol),
-            return_exceptions=True
-        )
+        # Optimized: Fetch ALL data in ONE request using fetch_batch_prices
+        batch_results = await self.fetch_batch_prices([yahoo_symbol])
+        data = batch_results[0] if batch_results else {}
         
-        # Extract values with error handling
-        current_price = self._extract_float(price_data, "current_price")
-        price_delay = self._extract_int(price_data, "delay_minutes", default=20)
-        high_52w = self._extract_float(range_data, "fifty_two_week_high")
-        low_52w = self._extract_float(range_data, "fifty_two_week_low")
-        shares_outstanding = self._extract_shares(shares_data)
+        current_price = data.get("price")
+        high_52w = data.get("fifty_two_week_high")
+        low_52w = data.get("fifty_two_week_low")
+        shares_outstanding = data.get("shares_outstanding")
         
         # Compute market cap internally
         market_cap = self._compute_market_cap(current_price, shares_outstanding)
         
         market_facts = MarketFacts(
             current_price=current_price,
-            price_currency="INR",
-            price_delay_minutes=price_delay,
+            price_currency=data.get("currency", "INR"),
+            price_delay_minutes=15,
             fifty_two_week_high=high_52w,
             fifty_two_week_low=low_52w,
             shares_outstanding=shares_outstanding,
             market_cap=market_cap,
-            market_cap_currency="INR",
+            market_cap_currency=data.get("currency", "INR"),
             last_updated=datetime.now(timezone.utc)
         )
         
         self._log.info(
-            "Market facts retrieved for {}: price={}, delay={} min, market_cap={}",
-            symbol, current_price, price_delay, market_cap
+            "Market facts retrieved for {}: price={}, market_cap={}",
+            symbol, current_price, market_cap
         )
-        
         return market_facts
 
     def build_market_block(self, market_facts: MarketFacts) -> Dict[str, Any]:
@@ -235,6 +225,9 @@ class MarketFactsEngine:
                             "price": r.get("regularMarketPrice"),
                             "change": r.get("regularMarketChange"),
                             "change_percent": r.get("regularMarketChangePercent"),
+                            "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
+                            "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
+                            "shares_outstanding": r.get("sharesOutstanding"),
                             "symbol": sym,
                             "currency": r.get("currency", "INR")
                         })
