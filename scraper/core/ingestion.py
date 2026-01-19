@@ -167,19 +167,31 @@ async def ingest_symbol(symbol: str, *, allowlist: Iterable[str] | None = None) 
 
     ingest_started = datetime.now(timezone.utc)
 
-    fetcher = Fetcher()
+    from scraper.core.rate_limiters import yahoo_limiter, screener_limiter, trendlyne_limiter
+    
+    # We use specialized fetchers for each source to respect their specific limits
+    yahoo_fetcher = Fetcher(rate_limiter=yahoo_limiter)
+    screener_fetcher = Fetcher(rate_limiter=screener_limiter)
+    trendlyne_fetcher = Fetcher(rate_limiter=trendlyne_limiter)
+    news_fetcher = Fetcher(rate_limiter=yahoo_limiter) # News also from Yahoo/Google
+    
     try:
         tasks = {
-            "financials": _fetch_financials(normalised_symbol, fetcher),
-            "profile": _fetch_profile(normalised_symbol, fetcher),
-            "market": _fetch_market(normalised_symbol, fetcher),
-            "news": _fetch_news(normalised_symbol, normalised_symbol, fetcher),
+            "financials": _fetch_financials(normalised_symbol, screener_fetcher),
+            "profile": _fetch_profile(normalised_symbol, trendlyne_fetcher),
+            "market": _fetch_market(normalised_symbol, yahoo_fetcher),
+            "news": _fetch_news(normalised_symbol, normalised_symbol, news_fetcher),
         }
 
         results = await asyncio.gather(*tasks.values(), return_exceptions=True)
         raw_blocks = dict(zip(tasks.keys(), results))
     finally:
-        await fetcher.close()
+        await asyncio.gather(
+            yahoo_fetcher.close(),
+            screener_fetcher.close(),
+            trendlyne_fetcher.close(),
+            news_fetcher.close()
+        )
 
     warnings: List[Dict[str, str]] = []
     payload: Dict[str, Any] = {

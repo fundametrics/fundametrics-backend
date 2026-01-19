@@ -208,34 +208,50 @@ class MarketFactsEngine:
         # We'll rely on our scraped data or internal computation if possible.
         return {}
 
+    async def fetch_batch_prices(self, symbols: List[str]) -> List[Dict[str, Any]]:
+        """
+        Fetch current prices and changes for multiple symbols in ONE request.
+        Much more efficient for index prices/headers to avoid 429 errors.
+        """
+        if not symbols:
+            return []
+            
+        try:
+            symbols_str = ",".join(symbols)
+            url = f"https://query2.finance.yahoo.com/v6/finance/quote?symbols={symbols_str}"
+            response = await self._fetcher.fetch_json(url, timeout=5.0)
+            
+            if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
+                results = response["quoteResponse"]["result"]
+                parsed_results = []
+                
+                # Create a map for easy lookup
+                result_map = {r.get("symbol"): r for r in results}
+                
+                for sym in symbols:
+                    r = result_map.get(sym)
+                    if r:
+                        parsed_results.append({
+                            "price": r.get("regularMarketPrice"),
+                            "change": r.get("regularMarketChange"),
+                            "change_percent": r.get("regularMarketChangePercent"),
+                            "symbol": sym,
+                            "currency": r.get("currency", "INR")
+                        })
+                    else:
+                        parsed_results.append({})
+                        
+                return parsed_results
+        except Exception as exc:
+            self._log.warning("Batch price fetch failed for {}: {}", symbols, exc)
+            
+        return [{} for _ in symbols]
+
     async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:
         """Fetch current price and change for an index (e.g., ^NSEI)."""
-        try:
-            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{index_symbol}?interval=1d"
-            response = await self._fetcher.fetch_json(url, timeout=3.0)
-            if response and "chart" in response and response["chart"]["result"]:
-                result = response["chart"]["result"][0]
-                meta = result.get("meta", {})
-                price = meta.get("regularMarketPrice")
-                prev_close = meta.get("previousClose")
-                
-                if price is not None:
-                    change = 0.0
-                    change_pct = 0.0
-                    if prev_close:
-                        change = price - prev_close
-                        change_pct = (change / prev_close) * 100
-                        
-                    return {
-                        "price": float(price),
-                        "change": round(change, 2),
-                        "change_percent": round(change_pct, 2),
-                        "symbol": index_symbol,
-                        "currency": meta.get("currency", "INR")
-                    }
-        except Exception as exc:
-            self._log.warning("Failed to fetch index price for {}: {}", index_symbol, exc)
-        return {}
+        # Optimized: delegates to batch fetcher for consistent behavior
+        results = await self.fetch_batch_prices([index_symbol])
+        return results[0] if results else {}
 
     def _compute_market_cap(self, price: Optional[float], shares: Optional[float]) -> Optional[float]:
         """

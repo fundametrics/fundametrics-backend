@@ -176,7 +176,8 @@ class AdaptiveRateLimiter(RateLimiter):
         jitter_range: float = 2.0,
         burst_size: Optional[int] = None,
         backoff_factor: float = 2.0,
-        recovery_factor: float = 1.1
+        recovery_factor: float = 1.2,
+        max_delay: float = 15.0
     ):
         """
         Initialize adaptive rate limiter
@@ -187,19 +188,21 @@ class AdaptiveRateLimiter(RateLimiter):
             jitter_range: Random jitter range
             burst_size: Maximum burst size
             backoff_factor: Multiply delay by this on rate limit (default: 2.0)
-            recovery_factor: Divide delay by this on success (default: 1.1)
+            recovery_factor: Divide delay by this on success (default: 1.2)
+            max_delay: Maximum delay allowed (default: 15.0s)
         """
         super().__init__(requests_per_minute, base_delay, jitter_range, burst_size)
         
         self.initial_delay = base_delay
         self.backoff_factor = backoff_factor
         self.recovery_factor = recovery_factor
+        self.max_delay_limit = max_delay
         self.consecutive_successes = 0
         self.consecutive_failures = 0
         
         log.info(
             f"AdaptiveRateLimiter initialized with backoff={backoff_factor}, "
-            f"recovery={recovery_factor}"
+            f"recovery={recovery_factor}, max_delay={max_delay}s"
         )
     
     def on_rate_limit_error(self):
@@ -215,8 +218,8 @@ class AdaptiveRateLimiter(RateLimiter):
         old_delay = self.base_delay
         self.base_delay *= self.backoff_factor
         
-        # Cap at 60 seconds
-        self.base_delay = min(60.0, self.base_delay)
+        # Cap at max delay limit
+        self.base_delay = min(self.max_delay_limit, self.base_delay)
         
         log.warning(
             f"Rate limit hit! Increasing delay from {old_delay:.2f}s to "
@@ -233,7 +236,7 @@ class AdaptiveRateLimiter(RateLimiter):
         self.consecutive_failures = 0
         
         # Only recover after multiple successes
-        if self.consecutive_successes >= 5 and self.base_delay > self.initial_delay:
+        if self.consecutive_successes >= 2 and self.base_delay > self.initial_delay:
             old_delay = self.base_delay
             self.base_delay /= self.recovery_factor
             

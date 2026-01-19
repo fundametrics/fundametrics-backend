@@ -21,18 +21,8 @@ from scraper.core.indices import INDEX_CONSTITUENTS, get_constituents, YAHOO_IND
 from scraper.core.fetcher import Fetcher
 from scraper.core.mongo_repository import MongoRepository
 from scraper.core.market_facts_engine import MarketFactsEngine
-from scraper.utils.rate_limiter import RateLimiter, AdaptiveRateLimiter
-
-log = logging.getLogger(__name__)
-# Conservative rate limit for Yahoo Finance (60 requests/minute, 1s base delay)
-api_rate_limiter = AdaptiveRateLimiter(
-    requests_per_minute=60, 
-    base_delay=1.0, 
-    jitter_range=0.5,
-    backoff_factor=3.0,
-    recovery_factor=1.05
-)
-fetcher = Fetcher(rate_limiter=api_rate_limiter)
+from scraper.core.rate_limiters import yahoo_limiter
+fetcher = Fetcher(rate_limiter=yahoo_limiter)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)
@@ -888,19 +878,18 @@ async def get_indices_overview():
             if (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
                 return INDEX_PRICES_CACHE
 
-        import asyncio
-        tasks = []
         names = []
-        for name, symbol in YAHOO_INDEX_MAP.items():
+        symbols = []
+        for name, sym in YAHOO_INDEX_MAP.items():
             names.append(name)
-            tasks.append(market_engine.fetch_index_price(symbol))
+            symbols.append(sym)
         
-        # We use gather but the Fetcher's RateLimiter ensures we respect Yahoo's limits
-        results = await asyncio.gather(*tasks)
+        # Optimized: ONE batch request instead of multi-gather (avoids 429s)
+        results = await market_engine.fetch_batch_prices(symbols)
         
         response = []
         for name, data in zip(names, results):
-            if data:
+            if data and data.get("price"):
                 response.append({
                     "id": name,
                     "label": name,
