@@ -59,37 +59,36 @@ class HeaderManager:
         self.current_ua = random.choice(self.user_agents)
         log.debug("HeaderManager initialized")
 
-    def get_headers(self, referer: Optional[str] = None, additional_headers: Optional[Dict] = None) -> Dict[str, str]:
+    def get_headers(self, mode: str = "json", referer: Optional[str] = None, additional_headers: Optional[Dict] = None) -> Dict[str, str]:
         """
-        Generate a fresh set of headers with advanced fingerprinting
+        Generate a fresh set of headers with context-aware fingerprinting.
+        mode: 'json' for API calls, 'html' for page scraping
         """
         ua = random.choice(self.user_agents)
         
-        # Base headers
-        headers = DEFAULT_HEADERS.copy()
-        headers["User-Agent"] = ua
-        
-        # Advanced Fingerprinting Rotation
-        # 1. Rotate Accept-Language
-        languages = [
-            "en-US,en;q=0.9",
-            "en-GB,en;q=0.8",
-            "en-IN,en;q=0.9,hi;q=0.8",
-            "en;q=0.7,en-US;q=0.3"
-        ]
-        headers["Accept-Language"] = random.choice(languages)
-        
-        # 2. Add Sec-Fetch headers (common in modern browsers)
-        headers["Sec-Fetch-Dest"] = "document"
-        headers["Sec-Fetch-Mode"] = "navigate"
-        headers["Sec-Fetch-Site"] = "none"
-        headers["Sec-Fetch-User"] = "?1"
-        
-        # 3. Add Sec-Ch-Ua based on User-Agent (simplified)
-        if "Chrome" in ua:
-            headers["Sec-Ch-Ua"] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"'
-            headers["Sec-Ch-Ua-Mobile"] = "?0"
-            headers["Sec-Ch-Ua-Platform"] = '"Windows"' if "Windows" in ua else '"macOS"'
+        headers = {
+            "User-Agent": ua,
+            "Accept-Language": random.choice([
+                "en-US,en;q=0.9",
+                "en-GB,en;q=0.8",
+                "en-IN,en;q=0.9,hi;q=0.8"
+            ]),
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "DNT": "1",
+            "Sec-Fetch-Site": "same-site" if "yahoo" in (referer or "") else "none",
+        }
+
+        if mode == "json":
+            headers["Accept"] = "application/json, text/plain, */*"
+            headers["Sec-Fetch-Mode"] = "cors"
+            headers["Sec-Fetch-Dest"] = "empty"
+        else:
+            headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+            headers["Sec-Fetch-Mode"] = "navigate"
+            headers["Sec-Fetch-Dest"] = "document"
+            headers["Sec-Fetch-User"] = "?1"
+            headers["Upgrade-Insecure-Requests"] = "1"
 
         if referer:
             headers["Referer"] = referer

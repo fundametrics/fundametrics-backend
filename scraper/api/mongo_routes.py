@@ -873,19 +873,19 @@ async def get_indices_overview():
             return INDEX_PRICES_CACHE
 
     async with _indices_lock:
-        # Double-check cache inside lock
+        # Double-check inside lock
         if INDEX_PRICES_TS:
             if (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
                 return INDEX_PRICES_CACHE or []
 
+        # Lock in the attempt timestamp BEFORE calling to avoid concurrent retry storm
+        INDEX_PRICES_TS = datetime.now()
+        
         names = list(YAHOO_INDEX_MAP.keys())
         symbols = list(YAHOO_INDEX_MAP.values())
         
-        # Lock in the attempt timestamp IMMEDIATELY to block other concurrent requests
-        INDEX_PRICES_TS = datetime.now()
-        
         try:
-            # programmablly fetch with 1 retry (fast-fail)
+            # programmably fetch with 1 retry (fast-fail)
             results = await market_engine.fetch_batch_prices(symbols)
             
             response = []
@@ -906,6 +906,7 @@ async def get_indices_overview():
             
         except Exception as e:
             logging.error(f"Indices circuit-breaker active. Fetch failed: {e}")
+            # Keep previous cache if available, but timestamp is updated so we won't retry for TTL duration
             return INDEX_PRICES_CACHE or []
 
 

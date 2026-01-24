@@ -210,17 +210,16 @@ class MarketFactsEngine:
             symbols_str = ",".join(symbols)
             url = f"https://query2.finance.yahoo.com/v6/finance/quote?symbols={symbols_str}"
             
-            # Fetch default browser headers from manager
-            api_headers = self._fetcher.header_manager.get_headers()
+            # Fetch specifically formatted JSON headers to match browser behaviour
+            api_headers = self._fetcher.header_manager.get_headers(mode="json")
             
-            # Add/Override specific Yahoo API requirements
+            # Additional Yahoo specific context
             api_headers.update({
-                "Accept": "application/json",
                 "Origin": "https://finance.yahoo.com",
                 "Referer": "https://finance.yahoo.com/"
             })
             
-            response = await self._fetcher.fetch_json(url, timeout=7.0, headers=api_headers)
+            response = await self._fetcher.fetch_json(url, timeout=10.0, headers=api_headers)
             
             if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
                 results = response["quoteResponse"]["result"]
