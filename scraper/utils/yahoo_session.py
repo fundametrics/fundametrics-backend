@@ -1,5 +1,6 @@
 import asyncio
 import httpx
+import random
 from datetime import datetime
 from typing import Optional, Dict
 from scraper.utils.logger import get_logger
@@ -8,7 +9,7 @@ log = get_logger(__name__)
 class YahooSession:
     """
     Manages Yahoo Finance sessions (Cookies + Crumbs) for reliable API access.
-    Matches the pattern used by robust libraries to bypass 429/401 blocks.
+    Ensures identical fingerprints across the session lifecycle.
     """
     _instance = None
     _lock = asyncio.Lock()
@@ -17,10 +18,16 @@ class YahooSession:
         self.cookies: Optional[Dict] = None
         self.crumb: Optional[str] = None
         self.last_update: Optional[datetime] = None
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        
+        # Lock in ONE User-Agent for the entire session lifecycle
+        # Using a verified modern Chrome string
+        self.ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        
+        self.base_headers = {
+            "User-Agent": self.ua,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
+            "Connection": "keep-alive"
         }
 
     @classmethod
@@ -39,13 +46,13 @@ class YahooSession:
     async def _refresh_session(self):
         """Perform the Cookie/Crumb dance with Yahoo"""
         try:
-            log.info("Refreshing Yahoo Finance session (Cookie + Crumb)...")
-            async with httpx.AsyncClient(headers=self.headers, timeout=10.0, follow_redirects=True) as client:
-                # 1. Get initial cookie from the landing page
+            log.info("Refreshing Yahoo Finance session (Consistent Fingerprint)...")
+            async with httpx.AsyncClient(headers=self.base_headers, timeout=15.0, follow_redirects=True) as client:
+                # 1. Get initial cookie
                 response = await client.get("https://fc.yahoo.com/")
                 self.cookies = dict(response.cookies)
                 
-                # 2. Get the crumb
+                # 2. Get the crumb using the SAME cookies and UA
                 crumb_response = await client.get(
                     "https://query2.finance.yahoo.com/v1/test/getcrumb",
                     cookies=self.cookies
@@ -53,21 +60,27 @@ class YahooSession:
                 if crumb_response.status_code == 200:
                     self.crumb = crumb_response.text
                     self.last_update = datetime.now()
-                    log.success("Yahoo session refreshed successfully. Crumb obtained.")
+                    log.success(f"Yahoo session active. Crumb: {self.crumb[:5]}...")
                 else:
-                    log.warning(f"Failed to get Yahoo crumb: {crumb_response.status_code}")
+                    log.warning(f"Failed to get crumb: {crumb_response.status_code}")
                     self.crumb = None 
                     
         except Exception as e:
-            log.error(f"Error during Yahoo session refresh: {e}")
+            log.error(f"Yahoo session failure: {e}")
             self.crumb = None
 
     def get_api_params(self, base_params: Optional[Dict] = None) -> Dict:
-        """Add session crumb to API parameters"""
         params = base_params or {}
         if self.crumb:
             params["crumb"] = self.crumb
         return params
+
+    def get_headers(self, additional: Optional[Dict] = None) -> Dict:
+        """Returns headers with the session-serialized User-Agent"""
+        h = self.base_headers.copy()
+        if additional:
+            h.update(additional)
+        return h
 
     def get_cookies(self) -> Optional[Dict]:
         return self.cookies

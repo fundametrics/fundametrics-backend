@@ -961,14 +961,27 @@ async def get_index_constituents_mongo(index_name: str):
             for sym, p_data in zip(top_symbols, live_prices):
                 if p_data and p_data.get("price"):
                     price_map[sym] = p_data.get("price")
+            
+            if not price_map:
+                logging.warning(f"Yahoo blocked live feed for {index_name}. Attempting DB fallback...")
+                # DB Fallback: prices from the companies collection directly
+                for c in results:
+                    if c["symbol"] in top_symbols and c.get("currentPrice"):
+                        price_map[c["symbol"]] = c["currentPrice"]
+                        
         except Exception as e:
             logging.error(f"Failed to fetch constituent prices for {index_name}: {e}")
+            # Silently fallback to DB values if available in results
+            for c in results:
+                if c["symbol"] in top_symbols and c.get("currentPrice"):
+                    price_map[c["symbol"]] = c["currentPrice"]
 
         symbol_map = {c["symbol"]: c for c in results}
         ordered_results = []
         for s in symbols:
             if s in symbol_map:
                 c_data = symbol_map[s]
+                # Priority: Live Price -> DB Price -> Existing Field
                 if s in price_map:
                     c_data["currentPrice"] = price_map[s]
                 ordered_results.append(c_data)

@@ -220,10 +220,14 @@ class MarketFactsEngine:
                 url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
                 
                 # Fetch specifically formatted JSON headers to match browser behaviour
-                api_headers = self._fetcher.header_manager.get_headers(mode="json")
-                api_headers.update({
+                # IMPORTANT: Use the User-Agent from the session to avoid mismatch
+                api_headers = session.get_headers({
+                    "Accept": "application/json, text/plain, */*",
                     "Origin": "https://finance.yahoo.com",
-                    "Referer": "https://finance.yahoo.com/"
+                    "Referer": "https://finance.yahoo.com/",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Site": "same-site"
                 })
                 
                 # Use crumb and cookies if available
