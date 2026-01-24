@@ -925,35 +925,43 @@ CACHE_TTL = 1800 # 30 minutes
 _constituents_lock = asyncio.Lock()
 
 @router.get("/indices/{index_name}/constituents")
-async def get_index_constituents_mongo(index_name: str):
+async def get_index_constituents_mongo(
+    index_name: str,
+    limit: Optional[int] = Query(None, ge=1, le=100)
+):
     """Get constituent symbols and basic metadata for an index from MongoDB with caching."""
     index_name = index_name.upper()
+    cache_key = f"{index_name}_{limit}"
     
     # Check cache
     now = datetime.now()
-    if index_name in INDEX_CACHE:
-        ts, cached_data = INDEX_CACHE[index_name]
+    if cache_key in INDEX_CACHE:
+        ts, cached_data = INDEX_CACHE[cache_key]
         if (now - ts).total_seconds() < CACHE_TTL:
             return cached_data
 
     async with _constituents_lock:
         # Double-check inside lock
-        if index_name in INDEX_CACHE:
-            ts, cached_data = INDEX_CACHE[index_name]
+        if cache_key in INDEX_CACHE:
+            ts, cached_data = INDEX_CACHE[cache_key]
             if (now - ts).total_seconds() < CACHE_TTL:
                 return cached_data
 
         # Mark as fetched to avoid immediate retries on failure
-        INDEX_CACHE[index_name] = (datetime.now(), INDEX_CACHE.get(index_name, [None, None])[1])
+        INDEX_CACHE[cache_key] = (datetime.now(), INDEX_CACHE.get(cache_key, [None, None])[1])
 
         symbols = get_constituents(index_name)
         if not symbols:
             raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
         
-        results = await mongo_repo.get_companies_detail(symbols)
+        # Apply limit if provided
+        request_symbols = symbols[:limit] if limit else symbols
         
-        # Enrich with live prices for the first 12 symbols (top leaders)
-        top_symbols = symbols[:12]
+        results = await mongo_repo.get_companies_detail(request_symbols)
+        
+        # Enrich top symbols with live prices (max 12 for performance)
+        enrich_limit = min(len(request_symbols), 12)
+        top_symbols = request_symbols[:enrich_limit]
         yahoo_symbols = [f"{s}.NS" if not s.endswith(".NS") else s for s in top_symbols]
         
         price_map = {}
@@ -965,25 +973,22 @@ async def get_index_constituents_mongo(index_name: str):
                     price_map[sym] = p_data.get("price")
             
             if not price_map:
-                logging.warning(f"Yahoo blocked live feed for {index_name}. Attempting DB fallback...")
-                # DB Fallback: prices from the companies collection directly
+                # DB Fallback: prices from the results directly
                 for c in results:
                     if c["symbol"] in top_symbols and c.get("currentPrice"):
                         price_map[c["symbol"]] = c["currentPrice"]
                         
         except Exception as e:
             logging.error(f"Failed to fetch constituent prices for {index_name}: {e}")
-            # Silently fallback to DB values if available in results
             for c in results:
                 if c["symbol"] in top_symbols and c.get("currentPrice"):
                     price_map[c["symbol"]] = c["currentPrice"]
 
         symbol_map = {c["symbol"]: c for c in results}
         ordered_results = []
-        for s in symbols:
+        for s in request_symbols:
             if s in symbol_map:
                 c_data = symbol_map[s]
-                # Priority: Live Price -> DB Price -> Existing Field
                 if s in price_map:
                     c_data["currentPrice"] = price_map[s]
                 ordered_results.append(c_data)
@@ -994,8 +999,8 @@ async def get_index_constituents_mongo(index_name: str):
             "constituents": ordered_results
         }
         
-        # Update cache with full data
-        INDEX_CACHE[index_name] = (datetime.now(), response_data)
+        # Update cache
+        INDEX_CACHE[cache_key] = (datetime.now(), response_data)
         return response_data
 
 
