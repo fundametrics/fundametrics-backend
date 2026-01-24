@@ -54,8 +54,8 @@ YAHOO_INDEX_MAP = {
     "SENSEX": "^BSESN",
     "BANK NIFTY": "^NSEBANK",
     "NIFTY IT": "^CNXIT",
-    "NIFTY AUTO": "^CNXAUTO",
-    "NIFTY PHARMA": "^CNXPHARMA",
+    "NASDAQ": "^IXIC",
+    "S&P 500": "^GSPC"
 }
 
 def get_constituents(index_name: str) -> List[str]:

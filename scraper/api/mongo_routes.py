@@ -866,19 +866,15 @@ async def get_indices_overview():
     """Get live prices for all core indices with caching and concurrency protection."""
     global INDEX_PRICES_CACHE, INDEX_PRICES_TS
     
-    # Check cache first
-    # Resilient Fetch Strategy: Logic to ensure indices are NEVER empty
-    global INDEX_PRICES_CACHE, INDEX_PRICES_TS
-    
     now = datetime.now()
-    # Pre-seeded fallback data if fetch fails or cache is empty
+    # Updated pre-seeded fallback data with global indices
     HARD_FALLBACK = [
         {"id": "NIFTY 50", "label": "NIFTY 50", "price": 24345.50, "change": 12.45, "changePercent": 0.05, "symbol": "^NSEI"},
         {"id": "SENSEX", "label": "SENSEX", "price": 80123.15, "change": -45.60, "changePercent": -0.06, "symbol": "^BSESN"},
         {"id": "BANK NIFTY", "label": "BANK NIFTY", "price": 52678.90, "change": 156.30, "changePercent": 0.30, "symbol": "^NSEBANK"},
         {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"},
-        {"id": "NIFTY AUTO", "label": "NIFTY AUTO", "price": 25123.40, "change": 89.20, "changePercent": 0.36, "symbol": "^CNXAUTO"},
-        {"id": "NIFTY PHARMA", "label": "NIFTY PHARMA", "price": 21890.65, "change": 34.55, "changePercent": 0.16, "symbol": "^CNXPHARMA"}
+        {"id": "NASDAQ", "label": "NASDAQ", "price": 18567.40, "change": 112.30, "changePercent": 0.61, "symbol": "^IXIC"},
+        {"id": "S&P 500", "label": "S&P 500", "price": 5823.15, "change": 24.50, "changePercent": 0.42, "symbol": "^GSPC"}
     ]
 
     if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
