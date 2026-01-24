@@ -70,60 +70,69 @@ REGISTRY_CACHE_MAX_SIZE = 50  # Prevent memory leaks
 
 
 @router.get("/companies/registry")
-async def list_company_registry(skip: int = 0, limit: int = 50):
+async def list_company_registry(
+    skip: int = 0, 
+    limit: int = 50,
+    status: Optional[str] = Query(None, description="Filter: 'pending' to show only non-ingested companies")
+):
     """
-    List all companies from registry with their data availability status and metrics
-    Cached for 5 minutes to improve performance
+    List companies from registry with availability status.
+    If status='pending', only show companies NOT yet in the 'companies' collection.
     """
     try:
-        # Check cache first
-        cache_key = f"{skip}:{limit}"
+        # Check cache (only for non-filtered requests to keep it simple)
+        cache_key = f"{skip}:{limit}:{status}"
         now = datetime.utcnow().timestamp()
         
         if cache_key in registry_cache:
             cached_data, cached_time = registry_cache[cache_key]
             if now - cached_time < REGISTRY_CACHE_TTL:
-                logger.info(f"✓ Registry cache hit for skip={skip}, limit={limit}")
                 return cached_data
         
-        # Cache miss - fetch from DB
         db = get_db()
         registry_col = db["companies_registry"]
+        companies_col = db["companies"]
         mongo_repo = MongoRepository(db)
         
+        query = {}
+        if status == "pending":
+            # Find all symbols already analyzed
+            analyzed_cursor = companies_col.find({}, {"symbol": 1, "_id": 0})
+            analyzed_symbols = [doc["symbol"] async for doc in analyzed_cursor]
+            query = {"symbol": {"$nin": analyzed_symbols}}
+            
         # Get registry companies
         registry_cursor = registry_col.find(
-            {},
+            query,
             {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
         ).skip(skip).limit(limit)
         
         registry_companies = await registry_cursor.to_list(length=limit)
         symbols = [c["symbol"] for c in registry_companies]
         
-        # Fetch detailed metrics for those already ingested
+        # Fetch detailed metrics for those already ingested (if any in this slice)
         detailed_data = await mongo_repo.get_companies_detail(symbols)
         detailed_map = {d["symbol"]: d for d in detailed_data}
         
-        # Build response with status and metrics
+        # Build response
         result = []
         for company in registry_companies:
             symbol = company["symbol"]
             detail = detailed_map.get(symbol)
             
+            # Since we might be filtering for pending, status check is still useful
             if detail:
-                status = "available"
+                item_status = "available"
             elif symbol in ingestion_locks:
-                status = "generating"
+                item_status = "generating"
             else:
-                status = "not_available"
+                item_status = "not_available"
             
-            # Merge Registry info with Detailed Metrics
             result.append({
                 "symbol": symbol,
                 "name": company["name"],
                 "sector": detail.get("sector") if detail else company.get("sector", "General"),
-                "status": status,
-                # Metrics (None if not available)
+                "status": item_status,
                 "marketCap": detail.get("marketCap") if detail else None,
                 "pe": detail.get("pe") if detail else None,
                 "roe": detail.get("roe") if detail else None,
@@ -131,8 +140,7 @@ async def list_company_registry(skip: int = 0, limit: int = 50):
                 "debt": detail.get("debt") if detail else None
             })
         
-        # Get total count
-        total = await registry_col.count_documents({})
+        total = await registry_col.count_documents(query)
         
         response = {
             "total": total,
@@ -142,16 +150,12 @@ async def list_company_registry(skip: int = 0, limit: int = 50):
             "companies": result
         }
         
-        # Store in cache with LRU eviction
+        # Cache management
         if len(registry_cache) >= REGISTRY_CACHE_MAX_SIZE:
-            # Remove oldest entry (simple LRU)
             oldest_key = min(registry_cache.keys(), key=lambda k: registry_cache[k][1])
             del registry_cache[oldest_key]
-            logger.debug(f"✓ Evicted oldest cache entry: {oldest_key}")
         
         registry_cache[cache_key] = (response, now)
-        logger.info(f"✓ Registry cached for skip={skip}, limit={limit}")
-        
         return response
     
     except Exception as e:
