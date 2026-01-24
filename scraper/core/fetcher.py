@@ -14,6 +14,7 @@ Production-grade HTTP client for web scraping with:
 
 import asyncio
 import httpx
+import random
 from typing import Dict, Any, Optional, Union, List
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, before_sleep_log
 
@@ -65,7 +66,6 @@ class Fetcher:
         
         # Shuffle proxies for random start
         if self.proxies:
-            import random
             random.shuffle(self.proxies)
 
         self.client = self._create_client()
