@@ -5,7 +5,7 @@ IMPORTANT: This is NOT analysis - we generate structured public data
 """
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Header, Query
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime, date
 import asyncio
 from scraper.core.db import get_db
