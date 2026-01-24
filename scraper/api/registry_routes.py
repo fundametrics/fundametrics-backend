@@ -3,7 +3,7 @@ Two-Layer Company System API Routes
 Phase A: Registry + On-Demand Data Generation
 IMPORTANT: This is NOT analysis - we generate structured public data
 """
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Header
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Header, Query
 import os
 from typing import Dict, Any, List
 from datetime import datetime, date
