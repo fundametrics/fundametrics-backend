@@ -893,7 +893,15 @@ async def get_indices_overview():
         symbols = list(YAHOO_INDEX_MAP.values())
         
         try:
-            results = await market_engine.fetch_batch_prices(symbols)
+            # High-velocity circuit breaker: Max 3s for live tickers
+            try:
+                results = await asyncio.wait_for(
+                    market_engine.fetch_batch_prices(symbols),
+                    timeout=3.0
+                )
+            except asyncio.TimeoutError:
+                logging.warning("Yahoo timeout on index prices, using fallback.")
+                results = [{} for _ in symbols]
             
             response = []
             for name, data in zip(names, results):
