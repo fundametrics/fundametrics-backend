@@ -206,48 +206,63 @@ class MarketFactsEngine:
         if not symbols:
             return []
             
-        try:
-            symbols_str = ",".join(symbols)
-            url = f"https://query2.finance.yahoo.com/v6/finance/quote?symbols={symbols_str}"
-            
-            # Fetch specifically formatted JSON headers to match browser behaviour
-            api_headers = self._fetcher.header_manager.get_headers(mode="json")
-            
-            # Additional Yahoo specific context
-            api_headers.update({
-                "Origin": "https://finance.yahoo.com",
-                "Referer": "https://finance.yahoo.com/"
-            })
-            
-            response = await self._fetcher.fetch_json(url, timeout=10.0, headers=api_headers)
-            
-            if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
-                results = response["quoteResponse"]["result"]
-                parsed_results = []
+        from scraper.utils.yahoo_session import YahooSession
+        session = await YahooSession.get_instance()
+        await session.refresh_if_needed()
+        
+        # Subdomains to try in order
+        subdomains = ["query2", "query1"]
+        last_err = None
+        
+        for sub in subdomains:
+            try:
+                symbols_str = ",".join(symbols)
+                url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
                 
-                # Create a map for easy lookup
-                result_map = {r.get("symbol"): r for r in results}
+                # Fetch specifically formatted JSON headers to match browser behaviour
+                api_headers = self._fetcher.header_manager.get_headers(mode="json")
+                api_headers.update({
+                    "Origin": "https://finance.yahoo.com",
+                    "Referer": "https://finance.yahoo.com/"
+                })
                 
-                for sym in symbols:
-                    r = result_map.get(sym)
-                    if r:
-                        parsed_results.append({
-                            "price": r.get("regularMarketPrice"),
-                            "change": r.get("regularMarketChange"),
-                            "change_percent": r.get("regularMarketChangePercent"),
-                            "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
-                            "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
-                            "shares_outstanding": r.get("sharesOutstanding"),
-                            "symbol": sym,
-                            "currency": r.get("currency", "INR")
-                        })
-                    else:
-                        parsed_results.append({})
-                        
-                return parsed_results
-        except Exception as exc:
-            self._log.warning("Batch price fetch failed for {}: {}", symbols, exc)
-            
+                # Usecrumb if available
+                params = session.get_api_params()
+                
+                response = await self._fetcher.fetch_json(
+                    url, 
+                    timeout=10.0, 
+                    headers=api_headers,
+                    params=params
+                )
+                
+                if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
+                    results = response["quoteResponse"]["result"]
+                    parsed_results = []
+                    
+                    result_map = {r.get("symbol"): r for r in results}
+                    for sym in symbols:
+                        r = result_map.get(sym)
+                        if r:
+                            parsed_results.append({
+                                "price": r.get("regularMarketPrice"),
+                                "change": r.get("regularMarketChange"),
+                                "change_percent": r.get("regularMarketChangePercent"),
+                                "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
+                                "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
+                                "shares_outstanding": r.get("sharesOutstanding"),
+                                "symbol": sym,
+                                "currency": r.get("currency", "INR")
+                            })
+                        else:
+                            parsed_results.append({})
+                    return parsed_results
+            except Exception as e:
+                last_err = e
+                self._log.debug(f"Yahoo subdomain {sub} failed: {e}. Trying next...")
+                continue
+                
+        self._log.warning("All Yahoo subdomains failing for {}: {}", symbols, last_err)
         return [{} for _ in symbols]
 
     async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:
