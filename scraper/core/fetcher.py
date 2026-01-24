@@ -104,58 +104,53 @@ class Fetcher:
         await self.client.aclose()
         log.info("Fetcher client closed")
 
-    @retry(
-        stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=2, min=5, max=60),
-        # Only retry on network issues or rate limits, NOT 404/403 which are permanent errors
-        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException, RateLimitException)),
-        before_sleep=before_sleep_log(log, "WARNING"),
-        reraise=True
-    )
     async def _do_fetch(self, url: str, method: str = "GET", **kwargs) -> httpx.Response:
-        """Internal method with retry logic and proxy rotation"""
+        """Internal method with dynamic retry and rate limit handling"""
         
-        # Apply rate limiting
-        await self.rate_limiter.acquire()
+        attempt = 0
+        last_exc = None
         
-        referer = kwargs.pop("referer", None)
-        if "headers" not in kwargs:
-            kwargs["headers"] = self.header_manager.get_headers(referer=referer)
+        while attempt < self.max_retries:
+            attempt += 1
+            await self.rate_limiter.acquire()
             
-        try:
-            log.debug(f"Fetching {method} {url}")
-            response = await self.client.request(method, url, **kwargs)
-            
-            if response.status_code in (429, 401):
-                log.warning(f"Rate limited or Auth error ({response.status_code}) for {url}")
-                if hasattr(self.rate_limiter, 'on_rate_limit_error'):
-                    self.rate_limiter.on_rate_limit_error()
-                # Treat 401 as a rate limit issue to trigger backoff
-                raise RateLimitException(f"Server returned {response.status_code} for {url}")
+            try:
+                referer = kwargs.pop("referer", None)
+                if "headers" not in kwargs:
+                    kwargs["headers"] = self.header_manager.get_headers(referer=referer)
                 
-            if response.status_code == 200:
-                if hasattr(self.rate_limiter, 'on_success'):
-                    self.rate_limiter.on_success()
+                log.debug(f"Attempt {attempt}/{self.max_retries} fetching {url}")
+                response = await self.client.request(method, url, **kwargs)
+                
+                if response.status_code in (429, 401):
+                    log.warning(f"Rate limited or Auth error ({response.status_code}) for {url}")
+                    if hasattr(self.rate_limiter, 'on_rate_limit_error'):
+                        self.rate_limiter.on_rate_limit_error()
+                    raise RateLimitException(f"Server returned {response.status_code}")
+                
+                if response.status_code == 200:
+                    if hasattr(self.rate_limiter, 'on_success'):
+                        self.rate_limiter.on_success()
+                    return response
+                
+                if response.status_code == 403:
+                    raise BlockedException(f"403 Forbidden for {url}")
+                
+                response.raise_for_status()
                 return response
-                
-            if response.status_code == 403:
-                log.error(f"Access forbidden (403) for {url}")
-                if self.proxies:
-                    log.info("Attempting proxy rotation due to 403 block")
-                    # Close old client and create new one
-                    old_client = self.client
-                    self.client = self._rotate_proxy()
-                    await old_client.aclose()
-                raise BlockedException(f"Server returned 403 for {url}")
-                
-            log.error(f"Received unexpected status code {response.status_code} for {url}")
-            response.raise_for_status()
-            return response
 
-        except (httpx.RequestError, BlockedException) as e:
-            if isinstance(e, httpx.RequestError):
-                log.error(f"Request Error: {type(e).__name__} for {url}")
-            raise e 
+            except (RateLimitException, httpx.RequestError) as e:
+                last_exc = e
+                if attempt == self.max_retries:
+                    break
+                
+                # Exponential backoff: 2^attempt + jitter
+                sleep_time = (2 ** attempt) + random.uniform(0, 1)
+                log.warning(f"Fetch failed: {e}. Retrying in {sleep_time:.2f}s...")
+                await asyncio.sleep(sleep_time)
+        
+        log.error(f"Failed to fetch {url} after {self.max_retries} attempts.")
+        raise last_exc or Exception(f"Failed to fetch {url}")
 
     async def fetch_html(self, url: str, method: str = "GET", **kwargs) -> str:
         """
