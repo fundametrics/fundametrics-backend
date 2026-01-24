@@ -69,6 +69,13 @@ REGISTRY_CACHE_TTL = 300  # 5 minutes
 REGISTRY_CACHE_MAX_SIZE = 50  # Prevent memory leaks
 
 
+def clear_registry_cache():
+    """Clear the registry cache to reflect status changes immediately"""
+    global registry_cache
+    registry_cache = {}
+    logger.info("Registry cache cleared")
+
+
 @router.get("/companies/registry")
 async def list_company_registry(
     skip: int = 0, 
@@ -249,6 +256,9 @@ async def run_data_generation_task(symbol: str):
         # Release lock
         if symbol in ingestion_locks:
             ingestion_locks.remove(symbol)
+        
+        # Clear cache to reflect "Available" status
+        clear_registry_cache()
 
 
 @router.post("/company/{symbol}/generate")
@@ -304,6 +314,9 @@ async def generate_company_data(symbol: str, background_tasks: BackgroundTasks, 
         # Queue background task
         background_tasks.add_task(run_data_generation_task, symbol)
         
+        # Clear cache to reflect "Generating" status
+        clear_registry_cache()
+        
         return {
             "status": "queued",
             "message": "Generating structured company data. This usually takes 1-2 minutes.",
@@ -351,6 +364,9 @@ async def admin_generate_company_data(symbol: str, background_tasks: BackgroundT
         
         # Queue background task (same function, no duplication)
         background_tasks.add_task(run_data_generation_task, symbol)
+        
+        # Clear cache to reflect "Generating" status
+        clear_registry_cache()
         
         return {
             "status": "queued",
