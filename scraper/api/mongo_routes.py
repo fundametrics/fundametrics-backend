@@ -858,7 +858,7 @@ def get_available_indices():
 # Cache for index prices (Phase 26 optimization)
 INDEX_PRICES_CACHE = None
 INDEX_PRICES_TS = None
-PRICES_CACHE_TTL = 600 # 10 minutes
+PRICES_CACHE_TTL = 1800 # 30 minutes
 _indices_lock = asyncio.Lock()
 
 @router.get("/indices/prices")
@@ -912,7 +912,7 @@ async def get_indices_overview():
 # In-memory cache for index constituents (Phase 26 optimization)
 # key: index_name, value: (timestamp, response_dict)
 INDEX_CACHE = {}
-CACHE_TTL = 600 # 10 minutes
+CACHE_TTL = 1800 # 30 minutes
 
 _constituents_lock = asyncio.Lock()
 

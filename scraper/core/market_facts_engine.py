@@ -208,17 +208,19 @@ class MarketFactsEngine:
             
         try:
             symbols_str = ",".join(symbols)
-            # Use v6 which is legendary for NOT requiring auth/crumbs
             url = f"https://query2.finance.yahoo.com/v6/finance/quote?symbols={symbols_str}"
             
-            # Use specific headers for Yahoo API to bypass 401
-            api_headers = {
+            # Fetch default browser headers from manager
+            api_headers = self._fetcher.header_manager.get_headers()
+            
+            # Add/Override specific Yahoo API requirements
+            api_headers.update({
                 "Accept": "application/json",
                 "Origin": "https://finance.yahoo.com",
                 "Referer": "https://finance.yahoo.com/"
-            }
+            })
             
-            response = await self._fetcher.fetch_json(url, timeout=5.0, headers=api_headers)
+            response = await self._fetcher.fetch_json(url, timeout=7.0, headers=api_headers)
             
             if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
                 results = response["quoteResponse"]["result"]
