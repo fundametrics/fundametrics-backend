@@ -22,7 +22,7 @@ from scraper.core.fetcher import Fetcher
 from scraper.core.mongo_repository import MongoRepository
 from scraper.core.market_facts_engine import MarketFactsEngine
 from scraper.core.rate_limiters import yahoo_limiter
-fetcher = Fetcher(rate_limiter=yahoo_limiter, max_retries=5)
+fetcher = Fetcher(rate_limiter=yahoo_limiter, max_retries=1)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)
@@ -873,38 +873,41 @@ async def get_indices_overview():
             return INDEX_PRICES_CACHE
 
     async with _indices_lock:
-        # Double-check cache inside lock to prevent redundant fetches
+        # Double-check cache inside lock
         if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
             if (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
                 return INDEX_PRICES_CACHE
 
-        names = []
-        symbols = []
-        for name, sym in YAHOO_INDEX_MAP.items():
-            names.append(name)
-            symbols.append(sym)
+        names = list(YAHOO_INDEX_MAP.keys())
+        symbols = list(YAHOO_INDEX_MAP.values())
         
-        # Optimized: ONE batch request instead of multi-gather (avoids 429s)
-        results = await market_engine.fetch_batch_prices(symbols)
+        # Always update timestamp BEFORE fetching to lock out other requests 
+        # for at least the timeout duration
+        INDEX_PRICES_TS = datetime.now()
         
-        response = []
-        for name, data in zip(names, results):
-            if data and data.get("price"):
-                response.append({
-                    "id": name,
-                    "label": name,
-                    "price": data.get("price"),
-                    "change": data.get("change"),
-                    "changePercent": data.get("change_percent"),
-                    "symbol": data.get("symbol")
-                })
-        
-        # Update cache if we got some results
-        if response:
-            INDEX_PRICES_CACHE = response
-            INDEX_PRICES_TS = datetime.now()
-        
-    return response if response else (INDEX_PRICES_CACHE or [])
+        try:
+            # Short timeout, no retries to keep UI responsive
+            results = await market_engine.fetch_batch_prices(symbols)
+            
+            response = []
+            for name, data in zip(names, results):
+                if data and data.get("price"):
+                    response.append({
+                        "id": name,
+                        "label": name,
+                        "price": data.get("price"),
+                        "change": data.get("change"),
+                        "changePercent": data.get("change_percent"),
+                        "symbol": data.get("symbol")
+                    })
+            
+            if response:
+                INDEX_PRICES_CACHE = response
+            return response
+            
+        except Exception as e:
+            logging.error(f"Failed to fetch indices: {e}")
+            return INDEX_PRICES_CACHE or []
 
 
 # In-memory cache for index constituents (Phase 26 optimization)
@@ -912,9 +915,13 @@ async def get_indices_overview():
 INDEX_CACHE = {}
 CACHE_TTL = 600 # 10 minutes
 
+_constituents_lock = asyncio.Lock()
+
 @router.get("/indices/{index_name}/constituents")
 async def get_index_constituents_mongo(index_name: str):
     """Get constituent symbols and basic metadata for an index from MongoDB with caching."""
+    index_name = index_name.upper()
+    
     # Check cache
     now = datetime.now()
     if index_name in INDEX_CACHE:
@@ -922,45 +929,54 @@ async def get_index_constituents_mongo(index_name: str):
         if (now - ts).total_seconds() < CACHE_TTL:
             return cached_data
 
-    symbols = get_constituents(index_name)
-    if not symbols:
-        raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
-    
-    results = await mongo_repo.get_companies_detail(symbols)
-    
-    # Enrich with live prices for the first 12 symbols (top leaders)
-    top_symbols = symbols[:12]
-    # Suffix for Yahoo
-    yahoo_symbols = [f"{s}.NS" if not s.endswith(".NS") else s for s in top_symbols]
-    
-    # Optimized: Batch fetch prices in ONE request
-    live_prices = await market_engine.fetch_batch_prices(yahoo_symbols)
-    
-    price_map = {}
-    for sym, p_data in zip(top_symbols, live_prices):
-        if p_data and p_data.get("price"):
-            price_map[sym] = p_data.get("price")
+    async with _constituents_lock:
+        # Double-check inside lock
+        if index_name in INDEX_CACHE:
+            ts, cached_data = INDEX_CACHE[index_name]
+            if (now - ts).total_seconds() < CACHE_TTL:
+                return cached_data
 
-    symbol_map = {c["symbol"]: c for c in results}
-    ordered_results = []
-    for s in symbols:
-        if s in symbol_map:
-            c_data = symbol_map[s]
-            # Inject live price if available
-            if s in price_map:
-                c_data["currentPrice"] = price_map[s]
-            ordered_results.append(c_data)
+        # Mark as fetched to avoid immediate retries on failure
+        INDEX_CACHE[index_name] = (datetime.now(), INDEX_CACHE.get(index_name, [None, None])[1])
+
+        symbols = get_constituents(index_name)
+        if not symbols:
+            raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
         
-    response_data = {
-        "index": index_name.upper(),
-        "count": len(ordered_results),
-        "constituents": ordered_results
-    }
-    
-    # Update cache
-    INDEX_CACHE[index_name] = (now, response_data)
-    
-    return response_data
+        results = await mongo_repo.get_companies_detail(symbols)
+        
+        # Enrich with live prices for the first 12 symbols (top leaders)
+        top_symbols = symbols[:12]
+        yahoo_symbols = [f"{s}.NS" if not s.endswith(".NS") else s for s in top_symbols]
+        
+        price_map = {}
+        try:
+            # Batch fetch prices - fail fast
+            live_prices = await market_engine.fetch_batch_prices(yahoo_symbols)
+            for sym, p_data in zip(top_symbols, live_prices):
+                if p_data and p_data.get("price"):
+                    price_map[sym] = p_data.get("price")
+        except Exception as e:
+            logging.error(f"Failed to fetch constituent prices for {index_name}: {e}")
+
+        symbol_map = {c["symbol"]: c for c in results}
+        ordered_results = []
+        for s in symbols:
+            if s in symbol_map:
+                c_data = symbol_map[s]
+                if s in price_map:
+                    c_data["currentPrice"] = price_map[s]
+                ordered_results.append(c_data)
+            
+        response_data = {
+            "index": index_name,
+            "count": len(ordered_results),
+            "constituents": ordered_results
+        }
+        
+        # Update cache with full data
+        INDEX_CACHE[index_name] = (datetime.now(), response_data)
+        return response_data
 
 
 @router.get("/coverage")
