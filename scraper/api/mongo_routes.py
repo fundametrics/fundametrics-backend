@@ -22,7 +22,7 @@ from scraper.core.fetcher import Fetcher
 from scraper.core.mongo_repository import MongoRepository
 from scraper.core.market_facts_engine import MarketFactsEngine
 from scraper.core.rate_limiters import yahoo_limiter
-fetcher = Fetcher(rate_limiter=yahoo_limiter)
+fetcher = Fetcher(rate_limiter=yahoo_limiter, max_retries=5)
 market_engine = MarketFactsEngine(fetcher=fetcher)
 
 limiter = Limiter(key_func=get_remote_address)

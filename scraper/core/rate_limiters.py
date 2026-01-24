@@ -10,15 +10,14 @@ rate limits collectively.
 from scraper.utils.rate_limiter import AdaptiveRateLimiter
 
 # Shared limiter for Yahoo Finance
-# Used for: Index prices, Stock prices, Market facts
-# Configured for efficiency and fast recovery
+# Configured for stability on Render/VPS IPs
 yahoo_limiter = AdaptiveRateLimiter(
-    requests_per_minute=60,
-    base_delay=1.0,
-    jitter_range=0.3, # Less jitter for predictability
+    requests_per_minute=20, # Lowered from 60
+    base_delay=3.0,        # Increased from 1.0
+    jitter_range=1.0, 
     backoff_factor=2.0,
-    recovery_factor=1.2,
-    max_delay=15.0 # Never wait more than 15s for the user
+    recovery_factor=1.1,
+    max_delay=15.0 
 )
 
 # Shared limiter for Screener.in
