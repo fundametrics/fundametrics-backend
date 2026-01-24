@@ -1,3 +1,7 @@
+import asyncio
+import httpx
+from datetime import datetime
+from typing import Optional, Dict
 from scraper.utils.logger import get_logger
 log = get_logger(__name__)
 
