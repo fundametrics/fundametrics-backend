@@ -63,9 +63,9 @@ def increment_daily_counter():
     daily_counter["count"] += 1
 
 
-# In-memory cache for registry endpoint (5 minutes TTL, max 50 entries)
+# In-memory cache for registry endpoint (60s TTL, max 50 entries)
 registry_cache = {}
-REGISTRY_CACHE_TTL = 300  # 5 minutes
+REGISTRY_CACHE_TTL = 60  # Reduced to 1 minute for better consistency
 REGISTRY_CACHE_MAX_SIZE = 50  # Prevent memory leaks
 
 
@@ -73,14 +73,15 @@ def clear_registry_cache():
     """Clear the registry cache to reflect status changes immediately"""
     global registry_cache
     registry_cache = {}
-    logger.info("Registry cache cleared")
+    logger.info("Registry cache cleared globally (local process)")
 
 
 @router.get("/companies/registry")
 async def list_company_registry(
     skip: int = 0, 
     limit: int = 50,
-    status: Optional[str] = Query(None, description="Filter: 'pending' to show only non-ingested companies")
+    status: Optional[str] = Query(None, description="Filter: 'pending' to show only non-ingested companies"),
+    refresh: Optional[bool] = Query(None, description="Bypass cache for real-time updates")
 ):
     """
     List companies from registry with availability status.
@@ -91,7 +92,10 @@ async def list_company_registry(
         cache_key = f"{skip}:{limit}:{status}"
         now = datetime.utcnow().timestamp()
         
-        if cache_key in registry_cache:
+        # Admin can bypass cache
+        if refresh:
+            clear_registry_cache()
+        elif cache_key in registry_cache:
             cached_data, cached_time = registry_cache[cache_key]
             if now - cached_time < REGISTRY_CACHE_TTL:
                 return cached_data
