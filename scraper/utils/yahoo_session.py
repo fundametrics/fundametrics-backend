@@ -1,11 +1,5 @@
-import httpx
-import logging
-import re
-import asyncio
-from typing import Optional, Dict
-from datetime import datetime
-
-log = logging.getLogger(__name__)
+from scraper.utils.logger import get_logger
+log = get_logger(__name__)
 
 class YahooSession:
     """
@@ -16,7 +10,7 @@ class YahooSession:
     _lock = asyncio.Lock()
     
     def __init__(self):
-        self.cookie: Optional[str] = None
+        self.cookies: Optional[Dict] = None
         self.crumb: Optional[str] = None
         self.last_update: Optional[datetime] = None
         self.headers = {
@@ -45,17 +39,19 @@ class YahooSession:
             async with httpx.AsyncClient(headers=self.headers, timeout=10.0, follow_redirects=True) as client:
                 # 1. Get initial cookie from the landing page
                 response = await client.get("https://fc.yahoo.com/")
-                self.cookie = str(response.cookies)
+                self.cookies = dict(response.cookies)
                 
                 # 2. Get the crumb
-                crumb_response = await client.get("https://query2.finance.yahoo.com/v1/test/getcrumb")
+                crumb_response = await client.get(
+                    "https://query2.finance.yahoo.com/v1/test/getcrumb",
+                    cookies=self.cookies
+                )
                 if crumb_response.status_code == 200:
                     self.crumb = crumb_response.text
                     self.last_update = datetime.now()
                     log.success("Yahoo session refreshed successfully. Crumb obtained.")
                 else:
                     log.warning(f"Failed to get Yahoo crumb: {crumb_response.status_code}")
-                    # Fallback to older behavior if crumb fails
                     self.crumb = None 
                     
         except Exception as e:
@@ -68,3 +64,6 @@ class YahooSession:
         if self.crumb:
             params["crumb"] = self.crumb
         return params
+
+    def get_cookies(self) -> Optional[Dict]:
+        return self.cookies

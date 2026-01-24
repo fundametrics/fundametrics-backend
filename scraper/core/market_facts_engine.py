@@ -226,14 +226,16 @@ class MarketFactsEngine:
                     "Referer": "https://finance.yahoo.com/"
                 })
                 
-                # Usecrumb if available
+                # Use crumb and cookies if available
                 params = session.get_api_params()
+                cookies = session.get_cookies()
                 
                 response = await self._fetcher.fetch_json(
                     url, 
                     timeout=10.0, 
                     headers=api_headers,
-                    params=params
+                    params=params,
+                    cookies=cookies
                 )
                 
                 if response and "quoteResponse" in response and "result" in response["quoteResponse"]:

@@ -900,9 +900,14 @@ async def get_indices_overview():
                         "symbol": data.get("symbol")
                     })
             
+            # If we got fresh data, update the global cache
             if response:
                 INDEX_PRICES_CACHE = response
-            return response
+                return response
+            
+            # If fresh fetch returned empty (possible 429 inside results), 
+            # fall back to returning the last known good cache
+            return INDEX_PRICES_CACHE or []
             
         except Exception as e:
             logging.error(f"Indices circuit-breaker active. Fetch failed: {e}")
