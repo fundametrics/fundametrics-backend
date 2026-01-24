@@ -108,11 +108,11 @@ async def list_company_registry(
             analyzed_symbols = [doc["symbol"] async for doc in analyzed_cursor]
             query = {"symbol": {"$nin": analyzed_symbols}}
             
-        # Get registry companies
+        # Get registry companies - Sort by last_failure ascending (nulls first), then symbol
         registry_cursor = registry_col.find(
             query,
-            {"_id": 0, "symbol": 1, "name": 1, "sector": 1}
-        ).skip(skip).limit(limit)
+            {"_id": 0, "symbol": 1, "name": 1, "sector": 1, "last_failure": 1}
+        ).sort([("last_failure", 1), ("symbol", 1)]).skip(skip).limit(limit)
         
         registry_companies = await registry_cursor.to_list(length=limit)
         symbols = [c["symbol"] for c in registry_companies]
@@ -132,6 +132,8 @@ async def list_company_registry(
                 item_status = "available"
             elif symbol in ingestion_locks:
                 item_status = "generating"
+            elif company.get("last_failure"):
+                item_status = "failed"
             else:
                 item_status = "not_available"
             
@@ -140,6 +142,7 @@ async def list_company_registry(
                 "name": company["name"],
                 "sector": detail.get("sector") if detail else company.get("sector", "General"),
                 "status": item_status,
+                "lastFailure": company.get("last_failure"),
                 "marketCap": detail.get("marketCap") if detail else None,
                 "pe": detail.get("pe") if detail else None,
                 "roe": detail.get("roe") if detail else None,
@@ -222,7 +225,7 @@ async def run_data_generation_task(symbol: str):
     try:
         # Run ingestion (data generation) with global lock to prevent VPS overload
         async with global_ingestion_lock:
-            logger.info(f"🚀 Starting global-locked data generation for {symbol}")
+            logger.info(f"STARTING global-locked data generation for {symbol}")
             result = await ingest_symbol(symbol)
         
         # Update registry and Save data
@@ -247,10 +250,23 @@ async def run_data_generation_task(symbol: str):
             }}
         )
         
-        logger.info(f"✓ Data generation complete for {symbol}")
+        logger.info(f"SUCCESS: Data generation complete for {symbol}")
         
     except Exception as e:
-        logger.error(f"✗ Data generation failed for {symbol}: {str(e)}")
+        logger.error(f"FAILURE: Data generation failed for {symbol}: {str(e)}")
+        # Record failure in registry
+        try:
+            db = get_db()
+            registry_col = db["companies_registry"]
+            await registry_col.update_one(
+                {"symbol": symbol},
+                {"$set": {
+                    "last_failure": datetime.utcnow().isoformat(),
+                    "is_analyzed": False
+                }}
+            )
+        except:
+            pass
     
     finally:
         # Release lock
