@@ -966,8 +966,16 @@ async def get_index_constituents_mongo(
         
         price_map = {}
         try:
-            # Batch fetch prices - fail fast
-            live_prices = await market_engine.fetch_batch_prices(yahoo_symbols)
+            # High-Performance Race: Max 4 seconds for live data
+            try:
+                live_prices = await asyncio.wait_for(
+                    market_engine.fetch_batch_prices(yahoo_symbols),
+                    timeout=4.0
+                )
+            except asyncio.TimeoutError:
+                logging.warning(f"Yahoo price fetch timed out for {index_name}, using DB data.")
+                live_prices = [{} for _ in yahoo_symbols]
+
             for sym, p_data in zip(top_symbols, live_prices):
                 if p_data and p_data.get("price"):
                     price_map[sym] = p_data.get("price")
