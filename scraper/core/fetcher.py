@@ -27,7 +27,9 @@ log = get_logger(__name__)
 # Custom Exceptions
 class FetcherException(Exception):
     """Base exception for fetcher errors"""
-    pass
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 class RateLimitException(FetcherException):
     """Raised when server returns 429 Too Many Requests"""
@@ -126,12 +128,12 @@ class Fetcher:
                     log.warning(f"Rate limited (429) for {url}")
                     if hasattr(self.rate_limiter, 'on_rate_limit_error'):
                         self.rate_limiter.on_rate_limit_error()
-                    raise RateLimitException(f"Server returned 429")
+                    raise RateLimitException(f"Server returned 429", status_code=429)
                 
                 if response.status_code == 401:
                     log.warning(f"Auth error (401) for {url}")
                     # Don't trigger rate limit backoff for auth errors
-                    raise RateLimitException(f"Server returned 401")
+                    raise RateLimitException(f"Server returned 401", status_code=401)
                 
                 if response.status_code == 200:
                     if hasattr(self.rate_limiter, 'on_success'):
@@ -139,7 +141,7 @@ class Fetcher:
                     return response
                 
                 if response.status_code == 403:
-                    raise BlockedException(f"403 Forbidden for {url}")
+                    raise BlockedException(f"403 Forbidden for {url}", status_code=403)
                 
                 response.raise_for_status()
                 return response
@@ -173,8 +175,9 @@ class Fetcher:
             response = await self._do_fetch(url, method, **kwargs)
             return response.text
         except (RateLimitException, httpx.RequestError) as e:
+            sc = getattr(e, 'status_code', None)
             log.critical(f"Failed to fetch {url} after retries: {e}")
-            raise PersistentError(f"Persistent failure for {url}") from e
+            raise PersistentError(f"Persistent failure for {url}", status_code=sc) from e
         except BlockedException as e:
             raise e
         except Exception as e:
@@ -197,8 +200,9 @@ class Fetcher:
             response = await self._do_fetch(url, method, **kwargs)
             return response.json()
         except (RateLimitException, httpx.RequestError) as e:
+            sc = getattr(e, 'status_code', None)
             log.critical(f"Failed to fetch {url} after retries: {e}")
-            raise PersistentError(f"Persistent failure for {url}") from e
+            raise PersistentError(f"Persistent failure for {url}", status_code=sc) from e
         except Exception as e:
             log.exception(f"Unexpected error fetching {url}: {e}")
             return {} # Return empty dict on JSON decode error or other unexpected errors

@@ -269,11 +269,15 @@ class MarketFactsEngine:
                                 parsed_results.append({})
                         return parsed_results
                 except Exception as e:
-                    if "401" in str(e):
+                    sc = getattr(e, 'status_code', None)
+                    if sc == 401 or "401" in str(e):
                         await session.clear_crumb()
-                    if "429" in str(e):
-                        await session.trigger_quarantine(minutes=10)
-                        return [{} for _ in symbols] # Stop immediate retries
+                    
+                    if sc == 429 or "429" in str(e):
+                        # Trigger quarantine immediately on FIRST hint of 429
+                        await session.trigger_quarantine(minutes=15)
+                        return [{} for _ in symbols]
+                    
                     continue
                 
         return [{} for _ in symbols]
