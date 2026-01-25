@@ -11,7 +11,12 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/131.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 ]
 
 class YahooSession:
@@ -26,6 +31,7 @@ class YahooSession:
         self.cookies: Optional[Dict] = None
         self.crumb: Optional[str] = None
         self.last_update: Optional[datetime] = None
+        self.quarantine_until: Optional[datetime] = None
         self.ua = random.choice(USER_AGENTS)
         
         self.base_headers = {
@@ -43,8 +49,26 @@ class YahooSession:
             cls._instance = YahooSession()
         return cls._instance
 
+    def is_in_quarantine(self) -> bool:
+        """Check if we are currently backing off due to 429"""
+        if not self.quarantine_until:
+            return False
+        if datetime.now() > self.quarantine_until:
+            self.quarantine_until = None # Reset
+            return False
+        return True
+
+    async def trigger_quarantine(self, minutes: int = 10):
+        """Invoke lockout period when rate limited"""
+        async with self._lock:
+            self.quarantine_until = datetime.now() + timedelta(minutes=minutes)
+            log.warning(f"⚠️ Yahoo Finance quarantined until {self.quarantine_until.strftime('%H:%M:%S')}")
+
     async def refresh_if_needed(self):
         """Refresh session info if older than 1 hour or missing"""
+        if self.is_in_quarantine():
+            return
+
         async with self._lock:
             now = datetime.now()
             # If crumb is missing but cookies exist, we might be okay. 

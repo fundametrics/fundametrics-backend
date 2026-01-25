@@ -208,24 +208,19 @@ class MarketFactsEngine:
             
         from scraper.utils.yahoo_session import YahooSession
         session = await YahooSession.get_instance()
+        
+        if session.is_in_quarantine():
+            return [{} for _ in symbols]
+            
         await session.refresh_if_needed()
         
         # Subdomains to try in order
         subdomains = ["query2", "query1"]
-        last_err = None
         
-        # Prepare a high-speed limiter for batch fallback attempts
-        from scraper.utils.rate_limiter import RateLimiter
-        batch_limiter = RateLimiter(requests_per_minute=60, base_delay=0.1, jitter_range=0.1)
-
         for sub in subdomains:
-            # We try TWO approaches per subdomain: with session and without
-            fetch_configs = [
-                {"params": session.get_api_params(), "cookies": session.get_cookies(), "label": "session-aware"},
-                {"params": {}, "cookies": {}, "label": "clean-fetch"}
-            ]
-            
-            for config in fetch_configs:
+            # TRY ONE: Session-Aware (Most accurate)
+            # TRY TWO: Clean-Fetch (Dodge session blocks)
+            for mode in ["session", "clean"]:
                 try:
                     symbols_str = ",".join(symbols)
                     url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
@@ -239,22 +234,21 @@ class MarketFactsEngine:
                         "Sec-Fetch-Site": "same-site"
                     })
                     
-                    # Create a temporary one-off fetcher to avoid shared rate limiter delays
-                    from scraper.core.fetcher import Fetcher
-                    async with Fetcher(rate_limiter=batch_limiter, max_retries=1) as fast_fetcher:
-                        response = await fast_fetcher.fetch_json(
-                            url, 
-                            timeout=5.0, 
-                            headers=api_headers,
-                            params=config["params"],
-                            cookies=config["cookies"]
-                        )
+                    kwargs = {
+                        "timeout": 8.0,
+                        "headers": api_headers,
+                    }
+                    
+                    if mode == "session":
+                        kwargs["params"] = session.get_api_params()
+                        kwargs["cookies"] = session.get_cookies()
+                    
+                    # Use standard shared fetcher (respects global rate limits)
+                    response = await self._fetcher.fetch_json(url, **kwargs)
                     
                     if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
                         results = response["quoteResponse"]["result"]
-                        if not results and config["label"] == "session-aware":
-                            # If session view is empty/blocked but didn't error, try clean fetch
-                            continue
+                        if not results: continue
 
                         parsed_results = []
                         result_map = {r.get("symbol"): r for r in results}
@@ -275,13 +269,13 @@ class MarketFactsEngine:
                                 parsed_results.append({})
                         return parsed_results
                 except Exception as e:
-                    self._log.debug(f"Yahoo {sub} ({config['label']}) failed: {e}")
                     if "401" in str(e):
-                        # Force session refresh for NEXT call
                         await session.clear_crumb()
+                    if "429" in str(e):
+                        await session.trigger_quarantine(minutes=10)
+                        return [{} for _ in symbols] # Stop immediate retries
                     continue
                 
-        self._log.warning("All Yahoo subdomains failing for {}: {}", symbols, last_err)
         return [{} for _ in symbols]
 
     async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:

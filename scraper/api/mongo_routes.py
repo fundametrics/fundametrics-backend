@@ -926,9 +926,18 @@ async def get_indices_overview():
             return INDEX_PRICES_CACHE
 
     async with _indices_lock:
-        # Double-check inside lock
+        # Check quarantine status
+        session = await YahooSession.get_instance()
+        in_quarantine = session.is_in_quarantine()
+        
+        # Double-check cache inside lock
         if INDEX_PRICES_TS and (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
             return INDEX_PRICES_CACHE or HARD_FALLBACK
+
+        # If in quarantine, don't even try the network
+        if in_quarantine and INDEX_PRICES_CACHE:
+            logging.info("Serving stale index cache (Yahoo in Quarantine)")
+            return INDEX_PRICES_CACHE
 
         # Lock attempt time BEFORE execution
         INDEX_PRICES_TS = datetime.now()
@@ -937,12 +946,15 @@ async def get_indices_overview():
         symbols = list(YAHOO_INDEX_MAP.values())
         
         try:
-            # High-velocity circuit breaker: Max 12s for live tickers (increased for multi-stage fetch)
+            # High-velocity circuit breaker: Max 12s for live tickers
             try:
-                results = await asyncio.wait_for(
-                    market_engine.fetch_batch_prices(symbols),
-                    timeout=12.0
-                )
+                if in_quarantine:
+                     results = [{} for _ in symbols]
+                else:
+                    results = await asyncio.wait_for(
+                        market_engine.fetch_batch_prices(symbols),
+                        timeout=12.0
+                    )
             except asyncio.TimeoutError:
                 logging.warning("Yahoo timeout on index prices, using fallback.")
                 results = [{} for _ in symbols]
