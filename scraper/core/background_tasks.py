@@ -19,20 +19,20 @@ class MarketDataRefresher:
 
         cls._scheduler = AsyncIOScheduler()
         
-        # 1. Refresh global index prices every 60 seconds
+        # 1. Refresh global index prices every 15 minutes (Ghost-Mode reduced frequency)
         cls._scheduler.add_job(
             refresh_index_prices,
             'interval',
-            seconds=60,
+            minutes=15,
             id='refresh_index_prices',
             replace_existing=True
         )
 
-        # 2. Refresh core index constituents every 5 minutes
+        # 2. Refresh core index constituents every 60 minutes
         cls._scheduler.add_job(
             refresh_all_indices_constituents,
             'interval',
-            minutes=5,
+            minutes=60,
             id='refresh_constituents',
             replace_existing=True
         )

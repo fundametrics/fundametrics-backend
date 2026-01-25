@@ -200,8 +200,8 @@ class MarketFactsEngine:
 
     async def fetch_batch_prices(self, symbols: List[str]) -> List[Dict[str, Any]]:
         """
-        Fetch current prices and changes for multiple symbols in ONE request.
-        Much more efficient for index prices/headers to avoid 429 errors.
+        GHOST-MODE prioritized fetching. 
+        Uses Chart API (v8) first as it's more resilient to cloud-IP blocks.
         """
         if not symbols:
             return []
@@ -214,49 +214,62 @@ class MarketFactsEngine:
             
         await session.refresh_if_needed()
         
-        # Subdomains to try in order
+        # GHOST-MODE: Try Chart API FIRST for reliability
+        results_map = {}
+        missing_symbols = []
+        
+        # Only try if we have a small batch (less than 15) to avoid excessive sequential calls
+        if len(symbols) <= 15:
+            self._log.debug("Ghost-Mode: Attempting resilient Chart API first")
+            tasks = [self._fetch_delayed_price(s) for s in symbols]
+            chart_responses = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            for sym, chart_data in zip(symbols, chart_responses):
+                if isinstance(chart_data, dict) and chart_data.get("current_price"):
+                    results_map[sym] = {
+                        "price": chart_data["current_price"],
+                        "change": 0, "change_percent": 0,
+                        "symbol": sym, "currency": chart_data.get("currency", "INR")
+                    }
+                else:
+                    missing_symbols.append(sym)
+                    
+            if not missing_symbols:
+                return [results_map[s] for s in symbols]
+
+        # FALLBACK: Quote API for missing symbols or large batches
+        batch_symbols = missing_symbols if missing_symbols else symbols
         subdomains = ["query2", "query1"]
         
         for sub in subdomains:
-            # TRY ONE: Session-Aware (Most accurate, but easily blocked)
-            # TRY TWO: Clean-Fetch (No cookies, harder to track as a bot)
-            for mode in ["session", "clean"]:
+            # Ghost-Mode: Try Clean fetch first (less identifiable)
+            for mode in ["clean", "session"]:
                 try:
-                    symbols_str = ",".join(symbols)
+                    symbols_str = ",".join(batch_symbols)
                     url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
                     
                     api_headers = session.get_headers({
                         "Accept": "application/json, text/plain, */*",
-                        "Origin": "https://finance.yahoo.com",
-                        "Referer": "https://finance.yahoo.com/",
-                        "Sec-Fetch-Mode": "cors",
-                        "Sec-Fetch-Dest": "empty",
-                        "Sec-Fetch-Site": "same-site"
+                        "Origin": "https://finance.yahoo.com"
                     })
                     
                     kwargs = {"timeout": 8.0, "headers": api_headers}
-                    
-                    if mode == "session" and not session.is_in_quarantine():
-                        # Only try session if we have a crumb or cookies
+                    if mode == "session":
                         p = session.get_api_params()
                         c = session.get_cookies()
                         if p or c:
                             kwargs["params"] = p
                             kwargs["cookies"] = c
-                        else:
-                            continue # Skip session mode if we have no identity
+                        else: continue # Skip if no identity
                     
-                    # FETCH
                     response = await self._fetcher.fetch_json(url, **kwargs)
                     
                     if response and "quoteResponse" in response and response["quoteResponse"].get("result"):
                         results = response["quoteResponse"]["result"]
-                        parsed_results = []
-                        result_map = {r.get("symbol"): r for r in results}
-                        for sym in symbols:
-                            r = result_map.get(sym)
-                            if r:
-                                parsed_results.append({
+                        for r in results:
+                            sym = r.get("symbol")
+                            if sym:
+                                results_map[sym] = {
                                     "price": r.get("regularMarketPrice"),
                                     "change": r.get("regularMarketChange"),
                                     "change_percent": r.get("regularMarketChangePercent"),
@@ -265,51 +278,20 @@ class MarketFactsEngine:
                                     "shares_outstanding": r.get("sharesOutstanding"),
                                     "symbol": sym,
                                     "currency": r.get("currency", "INR")
-                                })
-                            else:
-                                parsed_results.append({})
-                        return parsed_results
+                                }
+                        
+                        # Return final merged list
+                        return [results_map.get(s, {}) for s in symbols]
                 except Exception as e:
                     sc = getattr(e, 'status_code', None)
-                    if sc == 401:
-                        await session.clear_crumb()
-                        if mode == "session": continue # Try clean mode immediately
-
                     if sc == 429 or "429" in str(e):
-                        if mode == "session":
-                            # Try clean mode before giving up on this subdomain
-                            continue
-                        
-                        # Clean mode ALSO failed with 429
-                        self._log.warning(f"Yahoo subdomain {sub} blocked (429).")
-                        if sub == subdomains[-1]:
-                            # ALL subdomains failed clean fetch - trigger full quarantine
-                            await session.trigger_quarantine(minutes=15)
-                        break # Try next subdomain
-                    
-                    # Generic error, just log and continue
+                        if sub == subdomains[-1] and mode == "session":
+                            # End of the line - full deep quarantine
+                            await session.trigger_quarantine(minutes=30)
+                        continue # Try next mode/subdomain
                     continue
 
-        # LAST RESORT: Try Chart API (v8) for each symbol individually
-        # Chart API is much harder for Yahoo to rate-limit as it's the primary UI data source
-        self._log.info("Batch Quote API failed. Attempting Chart API as last resort fallback.")
-        fallback_results = []
-        for sym in symbols:
-            try:
-                # Optimized chart endpoint for current price
-                chart_data = await self._fetch_delayed_price(sym)
-                if chart_data and chart_data.get("current_price"):
-                    fallback_results.append({
-                        "price": chart_data["current_price"],
-                        "change": 0, "change_percent": 0,
-                        "symbol": sym, "currency": chart_data.get("currency", "INR")
-                    })
-                else:
-                    fallback_results.append({})
-            except:
-                fallback_results.append({})
-                
-        return fallback_results
+        return [results_map.get(s, {}) for s in symbols]
 
     async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:
         """Fetch current price and change for an index (e.g., ^NSEI)."""

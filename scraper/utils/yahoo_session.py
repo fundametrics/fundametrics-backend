@@ -58,11 +58,11 @@ class YahooSession:
             return False
         return True
 
-    async def trigger_quarantine(self, minutes: int = 10):
-        """Invoke lockout period when rate limited"""
+    async def trigger_quarantine(self, minutes: int = 30):
+        """Invoke lockout period when rate limited. Ghost-mode deep dormancy."""
         async with self._lock:
             self.quarantine_until = datetime.now() + timedelta(minutes=minutes)
-            log.warning(f"⚠️ Yahoo Finance quarantined until {self.quarantine_until.strftime('%H:%M:%S')}")
+            log.warning(f"⚠️ YAHOO GHOST MODE: Quarantined until {self.quarantine_until.strftime('%H:%M:%S')}")
 
     async def refresh_if_needed(self):
         """Refresh session info if older than 1 hour or missing"""
@@ -121,7 +121,9 @@ class YahooSession:
         return params
 
     def get_headers(self, additional: Optional[Dict] = None) -> Dict:
+        """Ghost-Mode: Rotates User-Agent on every single call"""
         h = self.base_headers.copy()
+        h["User-Agent"] = random.choice(USER_AGENTS)
         if additional:
             h.update(additional)
         return h
