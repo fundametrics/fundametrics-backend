@@ -13,6 +13,8 @@ from scraper.utils.logger import get_logger
 class MarketFacts:
     """Immutable market facts data structure."""
     current_price: Optional[float]
+    current_change: Optional[float]
+    change_percent: Optional[float]
     price_currency: str
     price_delay_minutes: int
     fifty_two_week_high: Optional[float]
@@ -66,6 +68,8 @@ class MarketFactsEngine:
         data = batch_results[0] if batch_results else {}
         
         current_price = data.get("price")
+        current_change = data.get("change")
+        change_pct = data.get("change_percent") or data.get("changePercent")
         high_52w = data.get("fifty_two_week_high")
         low_52w = data.get("fifty_two_week_low")
         shares_outstanding = data.get("shares_outstanding")
@@ -75,6 +79,8 @@ class MarketFactsEngine:
         
         market_facts = MarketFacts(
             current_price=current_price,
+            current_change=current_change,
+            change_percent=change_pct,
             price_currency=data.get("currency", "INR"),
             price_delay_minutes=15,
             fifty_two_week_high=high_52w,
@@ -104,6 +110,8 @@ class MarketFactsEngine:
         market_block = {
             "price": {
                 "value": market_facts.current_price,
+                "change": market_facts.current_change,
+                "change_percent": market_facts.change_percent,
                 "currency": market_facts.price_currency,
                 "delay_minutes": market_facts.price_delay_minutes
             },
