@@ -957,7 +957,51 @@ async def seed_market_data():
             if doc.get("data"):
                 async with _constituents_lock:
                     INDEX_CACHE[cache_key] = (doc.get("updated_at", datetime.now()), doc["data"])
-        logging.info("⭐ Memory seeded: Index Constituents (from MongoDB)")
+        # 3. Snapshot Hydration (Phase 25 Repair)
+        # Find companies with NO snapshot data but with a result, and hydrate them 
+        # to ensure sorting and price display works.
+        async def hydrate_snapshots():
+            col = get_companies_col()
+            # Only fix the top-tier symbols first for speed
+            tier_one = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "ITC", "SBIN", "BHARTIARTL", "KOTAKBANK", "LT"]
+            cursor = col.find({
+                "$or": [
+                    {"snapshot": {"$exists": False}}, 
+                    {"snapshot.marketCap": None}
+                ],
+                "fundametrics_response": {"$exists": True}
+            }).limit(200) # Process in batches
+            
+            updates = 0
+            async for doc in cursor:
+                symbol = doc.get("symbol")
+                fr = doc.get("fundametrics_response", {})
+                m_list = fr.get("fundametrics_metrics", [])
+                
+                mcap = None
+                price = None
+                for m in m_list:
+                    if m.get("metric_name") in ["Market Cap", "Market_Cap"]: mcap = m.get("value")
+                    if m.get("metric_name") in ["Current Price", "Price"]: price = m.get("value")
+                
+                if mcap or price:
+                    await col.update_one({"_id": doc["_id"]}, {"$set": {
+                        "snapshot": {
+                            "symbol": symbol,
+                            "name": doc.get("name"),
+                            "marketCap": mcap,
+                            "currentPrice": price,
+                            "pe": doc.get("pe"), # Preserve if exists
+                            "roe": doc.get("roe"),
+                            "sector": doc.get("sector") or fr.get("company", {}).get("sector")
+                        }
+                    }})
+                    updates += 1
+            
+            if updates > 0:
+                logging.info(f"✨ Repaired {updates} company snapshots for Registry UI and Sorting.")
+
+        asyncio.create_task(hydrate_snapshots())
         
     except Exception as e:
         logging.error(f"Failed to seed market data: {e}")
@@ -1163,3 +1207,61 @@ async def get_sitemap(request: Request):
     xml.append('</urlset>')
     
     return Response(content="\n".join(xml), media_type="application/xml")
+@router.get("/stocks/{symbol}/market")
+async def get_market_facts_mongo(symbol: str):
+    """
+    Enhanced market facts with MongoDB persistence fallback (Phase 11/12).
+    Ensures 'Updating Price' doesn't persist during Yahoo lockdowns.
+    """
+    symbol = symbol.upper()
+    try:
+        # Layer 1: Attempt live fetch (Engine handles quarantine check internally)
+        market_facts = await market_engine.fetch_market_facts(symbol)
+        
+        # Layer 2: If live failed or blocked, try MongoDB Registry/Snapshot
+        if not market_facts.current_price:
+            logging.debug(f"Live fetch failed for {symbol}, attempting DB fallback...")
+            db_data = await mongo_repo.get_company(symbol)
+            if db_data:
+                # Try snapshot first
+                snap = db_data.get("snapshot", {})
+                price = snap.get("currentPrice")
+                mcap = snap.get("marketCap")
+                
+                # If snapshot is empty, try fundametrics_response blob
+                if not price:
+                    fr = db_data.get("fundametrics_response", {})
+                    m_list = fr.get("fundametrics_metrics", [])
+                    for m in m_list:
+                        if m.get("metric_name") == "Current Price":
+                            price = m.get("value")
+                            break
+                
+                if price:
+                    from scraper.core.market_facts_engine import MarketFacts
+                    market_facts = MarketFacts(
+                        current_price=price,
+                        current_change=0.0, # Neutral fallback
+                        change_percent=0.0,
+                        price_currency=snap.get("currency", "INR"),
+                        price_delay_minutes=0, # Historical/Cached
+                        fifty_two_week_high=snap.get("fiftyTwoWeekHigh"),
+                        fifty_two_week_low=snap.get("fiftyTwoWeekLow"),
+                        market_cap=mcap,
+                        shares_outstanding=snap.get("sharesOutstanding")
+                    )
+
+        market_block = market_engine.build_market_block(market_facts)
+        
+        return {
+            "symbol": symbol,
+            "market": market_block,
+            "api_contract": {
+                "data_type": "facts_plus_fallback",
+                "source": "live" if market_facts.current_price and not market_facts.price_delay_minutes == 0 else "db_cache",
+                "last_updated": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    except Exception as e:
+        logging.error(f"Failed to fetch market facts for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch market data")

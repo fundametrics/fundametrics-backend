@@ -149,14 +149,18 @@ class MongoRepository:
             name = doc.get("name") or fr_comp.get("name") or doc.get("symbol") or "Unknown"
             if name == "Unknown": name = doc.get("symbol")
             if doc.get("symbol") == "ZOMATO": name = "Eternal Ltd"
+            
+            # Robust extraction: Try metrics, then direct fields
+            mcap = m_map.get("Market Cap") or m_map.get("Market_Cap") or doc.get("market_cap")
+            price = m_map.get("Current Price") or m_map.get("Price") or doc.get("price") or doc.get("current_price")
 
             results.append({
                 "symbol": doc.get("symbol"),
                 "name": name,
                 "sector": doc.get("sector") or fr_comp.get("sector") or "General",
                 "industry": doc.get("industry") or fr_comp.get("industry") or "General",
-                "marketCap": m_map.get("Market Cap") or m_map.get("Market_Cap"),
-                "currentPrice": m_map.get("Current Price") or m_map.get("Price"),
+                "marketCap": mcap,
+                "currentPrice": price,
                 "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
                 "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
                 "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),
