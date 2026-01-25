@@ -174,6 +174,43 @@ class MarketFactsEngine:
                 
         return {}
 
+    async def _scrape_index_html(self, index_symbol: str) -> Dict[str, Any]:
+        """
+        Phase 12: Human-Mimetic fallback. Scrapes public HTML if API is blocked.
+        Harder to block as it doesn't require crumbs.
+        """
+        try:
+            import urllib.parse
+            import re
+            from bs4 import BeautifulSoup
+            
+            quoted = urllib.parse.quote(index_symbol)
+            url = f"https://finance.yahoo.com/quote/{quoted}"
+            
+            # Use 'clean' mode (no identity) for HTML to avoid cookie profiling
+            html = await self._fetcher.fetch_html(url, timeout=10.0)
+            if not html: return {}
+            
+            # 1. Primary: JSON blob extraction (most accurate)
+            match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
+            if match:
+                price = float(match.group(1))
+                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price}")
+                return {"current_price": price, "currency": "INR"}
+                
+            # 2. Fallback: BeautifulSoup parsing
+            soup = BeautifulSoup(html, "html.parser")
+            price_tag = soup.find("fin-streamer", {"data-field": "regularMarketPrice"})
+            if price_tag and price_tag.get("value"):
+                price = float(price_tag["value"])
+                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price}")
+                return {"current_price": price, "currency": "INR"}
+                
+        except Exception as e:
+            self._log.debug(f"HTML Scrape failed for {index_symbol}: {e}")
+            
+        return {}
+
     async def _fetch_52_week_range(self, symbol: str) -> Dict[str, Any]:
         """Fetch 52-week high/low data from Yahoo Finance."""
         clean_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
@@ -246,6 +283,18 @@ class MarketFactsEngine:
                         self._log.critical("FAIL-FAST: 429 detected during Chart API loop. Locking down.")
                         await session.trigger_quarantine(minutes=30)
                         break # Stop current batch immediately
+                    
+                    # Phase 12 Fallback: If Chart fails and it's an index, try HTML Scraping
+                    if sym.startswith('^'):
+                        html_data = await self._scrape_index_html(sym)
+                        if html_data:
+                            results_map[sym] = {
+                                "price": html_data["current_price"],
+                                "change": 0, "change_percent": 0,
+                                "symbol": sym, "currency": html_data.get("currency", "INR")
+                            }
+                            continue
+                    
                     missing_symbols.append(sym)
                     
             if not missing_symbols and len(results_map) == len(symbols):
@@ -301,8 +350,10 @@ class MarketFactsEngine:
                 except Exception as e:
                     sc = getattr(e, 'status_code', None)
                     if sc == 401:
-                        await session.clear_crumb()
-                        if mode == "session": continue # Try clean mode immediately
+                        # Phase 12: 60-minute Global Ceasefire on auth failure
+                        self._log.critical("AUTH-BLOCK detected! Triggering 60-minute Global Ceasefire.")
+                        await session.trigger_quarantine(minutes=60, is_auth_failure=True)
+                        break 
 
                     if sc == 429 or "429" in str(e):
                         if sub == subdomains[-1] and mode == "session":

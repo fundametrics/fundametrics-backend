@@ -41,6 +41,10 @@ class MarketDataRefresher:
         cls._scheduler.start()
         logger.info("🚀 Background Market Refresher started.")
         
+        # Cold-Boot Isolation (Phase 12)
+        # Record start time to prevent risky refreshes in the first 5 mins
+        cls.boot_time = datetime.now()
+
         # Initial trigger (Ghost-Mode: Randomized boot delay to avoid burst detection)
         # We wait 30-300 seconds before starting first fetch after a deploy.
         async def initial_load():

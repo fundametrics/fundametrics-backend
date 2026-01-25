@@ -43,6 +43,7 @@ class YahooSession:
         self.crumb: Optional[str] = None
         self.last_update: Optional[datetime] = None
         self.quarantine_until: Optional[datetime] = None
+        self.boot_time = datetime.now()
         
         # Identity Consistency
         self.identity = random.choice(IDENTITY_POOL)
@@ -67,6 +68,10 @@ class YahooSession:
             cls._instance = YahooSession()
         return cls._instance
 
+    def is_boot_cooling(self) -> bool:
+        """Phase 12: Check if we are in the first 5 mins of boot"""
+        return (datetime.now() - self.boot_time).total_seconds() < 300
+
     def is_in_quarantine(self) -> bool:
         if not self.quarantine_until:
             return False
@@ -75,13 +80,24 @@ class YahooSession:
             return False
         return True
 
-    async def trigger_quarantine(self, minutes: int = 30):
+    async def trigger_quarantine(self, minutes: int = 30, is_auth_failure: bool = False):
+        """Invoke lockout period when rate limited. Phase 12: 60m lockdown on auth fail."""
         async with self._lock:
-            self.quarantine_until = datetime.now() + timedelta(minutes=minutes)
-            log.warning(f"⚠️ YAHOO NUCLEAR LOCKDOWN: Silent until {self.quarantine_until.strftime('%H:%M:%S')}")
+            lock_minutes = 60 if is_auth_failure else minutes
+            self.quarantine_until = datetime.now() + timedelta(minutes=lock_minutes)
+            reason = "AUTH-BLOCK" if is_auth_failure else "RATE-LIMIT"
+            log.warning(f"⚠️ YAHOO CEASEFIRE ({reason}): Silent until {self.quarantine_until.strftime('%H:%M:%S')}")
+            
+            if is_auth_failure:
+                await self.clear_crumb() # Wipe invalid identity
 
     async def refresh_if_needed(self):
         if self.is_in_quarantine(): return
+        # Phase 12: No fresh identity fetch during boot cooling (to avoid burst flags)
+        if self.is_boot_cooling() and not self.cookies:
+            log.debug("Ghost-Boot: Skipping identity refresh during cooling period.")
+            return
+
         async with self._lock:
             now = datetime.now()
             if not self.cookies or not self.last_update or (now - self.last_update).total_seconds() > 1800:
