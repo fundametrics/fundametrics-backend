@@ -2,9 +2,17 @@ import asyncio
 import httpx
 import random
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from scraper.utils.logger import get_logger
 log = get_logger(__name__)
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
+]
 
 class YahooSession:
     """
@@ -18,10 +26,7 @@ class YahooSession:
         self.cookies: Optional[Dict] = None
         self.crumb: Optional[str] = None
         self.last_update: Optional[datetime] = None
-        
-        # Lock in ONE User-Agent for the entire session lifecycle
-        # Using a verified modern Chrome string
-        self.ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        self.ua = random.choice(USER_AGENTS)
         
         self.base_headers = {
             "User-Agent": self.ua,
@@ -29,12 +34,7 @@ class YahooSession:
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "Cache-Control": "max-age=0"
+            "Upgrade-Insecure-Requests": "1"
         }
 
     @classmethod
@@ -47,19 +47,26 @@ class YahooSession:
         """Refresh session info if older than 1 hour or missing"""
         async with self._lock:
             now = datetime.now()
-            if not self.crumb or not self.last_update or (now - self.last_update).total_seconds() > 3600:
+            # If crumb is missing but cookies exist, we might be okay. 
+            # If both missing or too old, refresh.
+            if not self.cookies or not self.last_update or (now - self.last_update).total_seconds() > 3600:
                 await self._refresh_session()
 
     async def _refresh_session(self):
         """Perform the Cookie/Crumb dance with Yahoo"""
         try:
-            log.info("Refreshing Yahoo Finance session (Enhanced Fingerprint)...")
-            async with httpx.AsyncClient(headers=self.base_headers, timeout=15.0, follow_redirects=True) as client:
+            # Rotate UA on refresh to avoid persistent IP/UA blocks
+            self.ua = random.choice(USER_AGENTS)
+            self.base_headers["User-Agent"] = self.ua
+            
+            log.info("Refreshing Yahoo Finance session...")
+            async with httpx.AsyncClient(headers=self.base_headers, timeout=10.0, follow_redirects=True) as client:
                 # 1. Get initial cookie from main Yahoo page
                 response = await client.get("https://finance.yahoo.com/")
                 self.cookies = dict(response.cookies)
                 
                 # 2. Get the crumb using the SAME cookies and UA
+                # Note: We try query2 as it's the primary for crumbs
                 crumb_response = await client.get(
                     "https://query2.finance.yahoo.com/v1/test/getcrumb",
                     cookies=self.cookies
@@ -67,10 +74,11 @@ class YahooSession:
                 if crumb_response.status_code == 200:
                     self.crumb = crumb_response.text.strip()
                     self.last_update = datetime.now()
-                    log.success(f"Yahoo session active. Crumb: {self.crumb[:5]}...")
+                    log.success(f"Yahoo session active. Crumb secured.")
                 else:
-                    log.warning(f"Failed to get crumb: {crumb_response.status_code}")
-                    self.crumb = None 
+                    log.warning(f"Yahoo crumb failed ({crumb_response.status_code}). Proceeding with cookies only.")
+                    self.crumb = None
+                    self.last_update = datetime.now() # Still mark updated so we don't spam 429
                     
         except Exception as e:
             log.error(f"Yahoo session failure: {e}")
@@ -78,12 +86,13 @@ class YahooSession:
 
     def get_api_params(self, base_params: Optional[Dict] = None) -> Dict:
         params = base_params or {}
+        # Only add crumb if we actually have one. 
+        # Adding crumb=None or empty string causes 401.
         if self.crumb:
             params["crumb"] = self.crumb
         return params
 
     def get_headers(self, additional: Optional[Dict] = None) -> Dict:
-        """Returns headers with the session-serialized User-Agent"""
         h = self.base_headers.copy()
         if additional:
             h.update(additional)

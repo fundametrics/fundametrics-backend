@@ -215,58 +215,62 @@ class MarketFactsEngine:
         last_err = None
         
         for sub in subdomains:
-            try:
-                symbols_str = ",".join(symbols)
-                url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
-                
-                # Fetch specifically formatted JSON headers to match browser behaviour
-                # IMPORTANT: Use the User-Agent from the session to avoid mismatch
-                api_headers = session.get_headers({
-                    "Accept": "application/json, text/plain, */*",
-                    "Origin": "https://finance.yahoo.com",
-                    "Referer": "https://finance.yahoo.com/",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Site": "same-site"
-                })
-                
-                # Use crumb and cookies if available
-                params = session.get_api_params()
-                cookies = session.get_cookies()
-                
-                response = await self._fetcher.fetch_json(
-                    url, 
-                    timeout=10.0, 
-                    headers=api_headers,
-                    params=params,
-                    cookies=cookies
-                )
-                
-                if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
-                    results = response["quoteResponse"]["result"]
-                    parsed_results = []
+            # We try TWO approaches per subdomain: with session and without
+            fetch_configs = [
+                {"params": session.get_api_params(), "cookies": session.get_cookies(), "label": "session-aware"},
+                {"params": {}, "cookies": {}, "label": "clean-fetch"}
+            ]
+            
+            for config in fetch_configs:
+                try:
+                    symbols_str = ",".join(symbols)
+                    url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
                     
-                    result_map = {r.get("symbol"): r for r in results}
-                    for sym in symbols:
-                        r = result_map.get(sym)
-                        if r:
-                            parsed_results.append({
-                                "price": r.get("regularMarketPrice"),
-                                "change": r.get("regularMarketChange"),
-                                "change_percent": r.get("regularMarketChangePercent"),
-                                "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
-                                "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
-                                "shares_outstanding": r.get("sharesOutstanding"),
-                                "symbol": sym,
-                                "currency": r.get("currency", "INR")
-                            })
-                        else:
-                            parsed_results.append({})
-                    return parsed_results
-            except Exception as e:
-                last_err = e
-                self._log.debug(f"Yahoo subdomain {sub} failed: {e}. Trying next...")
-                continue
+                    api_headers = session.get_headers({
+                        "Accept": "application/json, text/plain, */*",
+                        "Origin": "https://finance.yahoo.com",
+                        "Referer": "https://finance.yahoo.com/",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Site": "same-site"
+                    })
+                    
+                    response = await self._fetcher.fetch_json(
+                        url, 
+                        timeout=8.0, 
+                        headers=api_headers,
+                        params=config["params"],
+                        cookies=config["cookies"]
+                    )
+                    
+                    if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
+                        results = response["quoteResponse"]["result"]
+                        if not results and config["label"] == "session-aware":
+                            # If session view is empty/blocked but didn't error, try clean fetch
+                            continue
+
+                        parsed_results = []
+                        result_map = {r.get("symbol"): r for r in results}
+                        for sym in symbols:
+                            r = result_map.get(sym)
+                            if r:
+                                parsed_results.append({
+                                    "price": r.get("regularMarketPrice"),
+                                    "change": r.get("regularMarketChange"),
+                                    "change_percent": r.get("regularMarketChangePercent"),
+                                    "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
+                                    "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
+                                    "shares_outstanding": r.get("sharesOutstanding"),
+                                    "symbol": sym,
+                                    "currency": r.get("currency", "INR")
+                                })
+                            else:
+                                parsed_results.append({})
+                        return parsed_results
+                except Exception as e:
+                    last_err = e
+                    self._log.debug(f"Yahoo {sub} ({config['label']}) failed: {e}")
+                    continue
                 
         self._log.warning("All Yahoo subdomains failing for {}: {}", symbols, last_err)
         return [{} for _ in symbols]
