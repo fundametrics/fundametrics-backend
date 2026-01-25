@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from scraper.api.mongo_routes import refresh_index_prices, refresh_all_indices_constituents
 
@@ -19,20 +20,20 @@ class MarketDataRefresher:
 
         cls._scheduler = AsyncIOScheduler()
         
-        # 1. Refresh global index prices every 15 minutes (Ghost-Mode reduced frequency)
+        # 1. Refresh global index prices every 30 minutes (Ghost-Mode reduced frequency)
         cls._scheduler.add_job(
             refresh_index_prices,
             'interval',
-            minutes=15,
+            minutes=30,
             id='refresh_index_prices',
             replace_existing=True
         )
 
-        # 2. Refresh core index constituents every 60 minutes
+        # 2. Refresh core index constituents every 4 hours
         cls._scheduler.add_job(
             refresh_all_indices_constituents,
             'interval',
-            minutes=60,
+            hours=4,
             id='refresh_constituents',
             replace_existing=True
         )
@@ -40,9 +41,19 @@ class MarketDataRefresher:
         cls._scheduler.start()
         logger.info("🚀 Background Market Refresher started.")
         
-        # Initial trigger (with slight delay to avoid boot burst)
+        # Initial trigger (Ghost-Mode: Randomized boot delay to avoid burst detection)
+        # We wait 30-300 seconds before starting first fetch after a deploy.
         async def initial_load():
-            await asyncio.sleep(5)
+            from scraper.api.mongo_routes import seed_market_data
+            
+            # 1. Seed immediately from DB (instant data for users)
+            await seed_market_data()
+            
+            # 2. Wait randomized delay before first network hit
+            boot_delay = random.randint(30, 300)
+            logger.info(f"🕐 Ghost-Boot: Delaying first network hit by {boot_delay}s...")
+            await asyncio.sleep(boot_delay)
+            
             await refresh_index_prices()
             await refresh_all_indices_constituents()
             

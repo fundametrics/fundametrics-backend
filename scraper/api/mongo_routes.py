@@ -918,6 +918,50 @@ INDEX_CACHE = {} # key: index_name_limit, value: (timestamp, data)
 _indices_lock = asyncio.Lock()
 _constituents_lock = asyncio.Lock()
 
+async def _save_market_data(key: str, data: Any):
+    """Internal helper to persist cache to MongoDB for UI Immortality"""
+    try:
+        db = get_db()
+        col = db["market_data"]
+        await col.update_one(
+            {"_id": key},
+            {"$set": {
+                "data": data,
+                "updated_at": datetime.now(timezone.utc),
+                "type": "cache_bridge"
+            }},
+            upsert=True
+        )
+    except Exception as e:
+        logging.error(f"Failed to persist market data {key}: {e}")
+
+async def seed_market_data():
+    """Seed memory caches from MongoDB on boot (Phase 11)"""
+    global INDEX_PRICES_CACHE, INDEX_PRICES_TS, INDEX_CACHE
+    try:
+        db = get_db()
+        col = db["market_data"]
+        
+        # 1. Seed Index Prices
+        doc = await col.find_one({"_id": "index_prices"})
+        if doc and doc.get("data"):
+            async with _indices_lock:
+                INDEX_PRICES_CACHE = doc["data"]
+                INDEX_PRICES_TS = doc.get("updated_at", datetime.now())
+            logging.info("⭐ Memory seeded: Index Prices (from MongoDB)")
+            
+        # 2. Seed Index Constituents
+        cursor = col.find({"type": "cache_bridge", "_id": {"$regex": "^index_cache_"}})
+        async for doc in cursor:
+            cache_key = doc["_id"].replace("index_cache_", "")
+            if doc.get("data"):
+                async with _constituents_lock:
+                    INDEX_CACHE[cache_key] = (doc.get("updated_at", datetime.now()), doc["data"])
+        logging.info("⭐ Memory seeded: Index Constituents (from MongoDB)")
+        
+    except Exception as e:
+        logging.error(f"Failed to seed market data: {e}")
+
 async def refresh_index_prices():
     """Background task to update index prices without blocking API."""
     global INDEX_PRICES_CACHE, INDEX_PRICES_TS
@@ -950,7 +994,10 @@ async def refresh_index_prices():
             async with _indices_lock:
                 INDEX_PRICES_CACHE = response
                 INDEX_PRICES_TS = datetime.now()
-            logging.info(f"✅ Index prices refreshed: {len(response)} items")
+            
+            # Phase 11: Nuclear Persistence
+            await _save_market_data("index_prices", response)
+            logging.info(f"✅ Index prices refreshed and persisted: {len(response)} items")
             
     except Exception as e:
         logging.error(f"Failed background price refresh: {e}")
@@ -1015,7 +1062,10 @@ async def refresh_index_constituents_manual(index_name: str, limit: int = 12):
         
         async with _constituents_lock:
             INDEX_CACHE[cache_key] = (datetime.now(), response_data)
-        logging.info(f"✅ Cache refreshed for index: {index_name}")
+        
+        # Phase 11: Nuclear Persistence
+        await _save_market_data(f"index_cache_{cache_key}", response_data)
+        logging.info(f"✅ Cache refreshed and persisted for index: {index_name}")
             
     except Exception as e:
         logging.error(f"Refresh failed for {index_name}: {e}")
