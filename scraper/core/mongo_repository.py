@@ -98,7 +98,7 @@ class MongoRepository:
                 "fundametrics_response.company": 1,
                 "fundametrics_response.fundametrics_metrics": 1
             }
-        ).sort(sort_spec).skip(skip).limit(limit)
+        ).sort(sort_spec).skip(skip).limit(limit).allow_disk_use(True)
         
         return await self._format_company_list(cursor)
 

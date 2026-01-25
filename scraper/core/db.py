@@ -88,11 +88,11 @@ async def init_indexes():
     await companies.create_index("industry")
     await companies.create_index("name") # Added for sorting support
     await companies.create_index([("name", TEXT)])
-    # Snapshot indices for sorting/filtering (Phase 5)
-    await companies.create_index("snapshot.marketCap")
-    await companies.create_index("snapshot.pe")
-    await companies.create_index("snapshot.roe")
     await companies.create_index("snapshot.roce")
+    
+    # Phase 25: Multi-level Index for Top 100 Priority Sorting
+    await companies.create_index([("snapshot.marketCap", DESCENDING), ("name", ASCENDING)])
+    
     logger.info("✅ Companies indexes created")
 
     # Companies Registry collection
