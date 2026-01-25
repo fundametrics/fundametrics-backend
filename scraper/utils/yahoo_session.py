@@ -98,5 +98,13 @@ class YahooSession:
             h.update(additional)
         return h
 
+    async def clear_crumb(self):
+        """Clear current crumb and cookies to force a full refresh on next try"""
+        async with self._lock:
+            self.crumb = None
+            self.cookies = None
+            self.last_update = None
+            log.info("Yahoo session cleared (Identity reset)")
+
     def get_cookies(self) -> Optional[Dict]:
         return self.cookies

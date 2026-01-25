@@ -937,11 +937,11 @@ async def get_indices_overview():
         symbols = list(YAHOO_INDEX_MAP.values())
         
         try:
-            # High-velocity circuit breaker: Max 8s for live tickers (increased for multi-stage fetch)
+            # High-velocity circuit breaker: Max 12s for live tickers (increased for multi-stage fetch)
             try:
                 results = await asyncio.wait_for(
                     market_engine.fetch_batch_prices(symbols),
-                    timeout=8.0
+                    timeout=12.0
                 )
             except asyncio.TimeoutError:
                 logging.warning("Yahoo timeout on index prices, using fallback.")
@@ -1018,11 +1018,11 @@ async def get_index_constituents_mongo(
         
         price_map = {}
         try:
-            # High-Performance Race: Max 8 seconds for live data (increased for multi-stage fetch)
+            # High-Performance Race: Max 12 seconds for live data (increased for multi-stage fetch)
             try:
                 live_prices = await asyncio.wait_for(
                     market_engine.fetch_batch_prices(yahoo_symbols),
-                    timeout=8.0
+                    timeout=12.0
                 )
             except asyncio.TimeoutError:
                 logging.warning(f"Yahoo price fetch timed out for {index_name}, using DB data.")

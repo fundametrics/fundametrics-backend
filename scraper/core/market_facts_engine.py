@@ -214,6 +214,10 @@ class MarketFactsEngine:
         subdomains = ["query2", "query1"]
         last_err = None
         
+        # Prepare a high-speed limiter for batch fallback attempts
+        from scraper.utils.rate_limiter import RateLimiter
+        batch_limiter = RateLimiter(requests_per_minute=60, base_delay=0.1, jitter_range=0.1)
+
         for sub in subdomains:
             # We try TWO approaches per subdomain: with session and without
             fetch_configs = [
@@ -235,13 +239,16 @@ class MarketFactsEngine:
                         "Sec-Fetch-Site": "same-site"
                     })
                     
-                    response = await self._fetcher.fetch_json(
-                        url, 
-                        timeout=8.0, 
-                        headers=api_headers,
-                        params=config["params"],
-                        cookies=config["cookies"]
-                    )
+                    # Create a temporary one-off fetcher to avoid shared rate limiter delays
+                    from scraper.core.fetcher import Fetcher
+                    async with Fetcher(rate_limiter=batch_limiter, max_retries=1) as fast_fetcher:
+                        response = await fast_fetcher.fetch_json(
+                            url, 
+                            timeout=5.0, 
+                            headers=api_headers,
+                            params=config["params"],
+                            cookies=config["cookies"]
+                        )
                     
                     if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
                         results = response["quoteResponse"]["result"]
@@ -268,8 +275,10 @@ class MarketFactsEngine:
                                 parsed_results.append({})
                         return parsed_results
                 except Exception as e:
-                    last_err = e
                     self._log.debug(f"Yahoo {sub} ({config['label']}) failed: {e}")
+                    if "401" in str(e):
+                        # Force session refresh for NEXT call
+                        await session.clear_crumb()
                     continue
                 
         self._log.warning("All Yahoo subdomains failing for {}: {}", symbols, last_err)

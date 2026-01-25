@@ -122,11 +122,16 @@ class Fetcher:
                 log.debug(f"Attempt {attempt}/{self.max_retries} fetching {url}")
                 response = await self.client.request(method, url, **kwargs)
                 
-                if response.status_code in (429, 401):
-                    log.warning(f"Rate limited or Auth error ({response.status_code}) for {url}")
+                if response.status_code == 429:
+                    log.warning(f"Rate limited (429) for {url}")
                     if hasattr(self.rate_limiter, 'on_rate_limit_error'):
                         self.rate_limiter.on_rate_limit_error()
-                    raise RateLimitException(f"Server returned {response.status_code}")
+                    raise RateLimitException(f"Server returned 429")
+                
+                if response.status_code == 401:
+                    log.warning(f"Auth error (401) for {url}")
+                    # Don't trigger rate limit backoff for auth errors
+                    raise RateLimitException(f"Server returned 401")
                 
                 if response.status_code == 200:
                     if hasattr(self.rate_limiter, 'on_success'):
