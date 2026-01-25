@@ -130,14 +130,16 @@ class MongoRepository:
                 continue
 
             # Fallback path: Slow extraction from Fundametrics Response
-            fr = doc.get("fundametrics_response", {})
-            ui_metrics = fr.get("fundametrics_metrics", [])
-            fr_comp = fr.get("company", {})
+            fr = doc.get("fundametrics_response") or {}
+            ui_metrics = fr.get("fundametrics_metrics") or []
+            fr_comp = fr.get("company") or {}
             
-            # Build lookup
-            m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if m.get("metric_name")}
+            # Build lookup with safety
+            m_map = {}
+            if isinstance(ui_metrics, list):
+                m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if isinstance(m, dict) and m.get("metric_name")}
             
-            name = doc.get("name") or fr_comp.get("name") or doc.get("symbol")
+            name = doc.get("name") or fr_comp.get("name") or doc.get("symbol") or "Unknown"
             if name == "Unknown": name = doc.get("symbol")
             if doc.get("symbol") == "ZOMATO": name = "Eternal Ltd"
 

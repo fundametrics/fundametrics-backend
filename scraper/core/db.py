@@ -86,6 +86,7 @@ async def init_indexes():
     await companies.create_index("symbol", unique=True)
     await companies.create_index("sector")
     await companies.create_index("industry")
+    await companies.create_index("name") # Added for sorting support
     await companies.create_index([("name", TEXT)])
     # Snapshot indices for sorting/filtering (Phase 5)
     await companies.create_index("snapshot.marketCap")

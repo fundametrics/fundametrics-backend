@@ -107,7 +107,8 @@ async def list_companies(
             
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch companies: {str(e)}")
+        logging.error(f"Error fetching companies: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch companies from database")
 
 
 @router.get("/stocks")
