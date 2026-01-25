@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 from scraper.utils.logger import get_logger
 log = get_logger(__name__)
@@ -99,10 +99,16 @@ class YahooSession:
                     self.crumb = crumb_response.text.strip()
                     self.last_update = datetime.now()
                     log.success(f"Yahoo session active. Crumb secured.")
+                elif crumb_response.status_code == 429:
+                    log.warning("Crumb endpoint rate limited. Triggering quarantine.")
+                    self.crumb = None
+                    # Mark updated but also trigger lockout
+                    self.last_update = datetime.now()
+                    await self.trigger_quarantine(minutes=15) # Longer lockout for session level block
                 else:
                     log.warning(f"Yahoo crumb failed ({crumb_response.status_code}). Proceeding with cookies only.")
                     self.crumb = None
-                    self.last_update = datetime.now() # Still mark updated so we don't spam 429
+                    self.last_update = datetime.now() # Still mark updated so we don't spam
                     
         except Exception as e:
             log.error(f"Yahoo session failure: {e}")
