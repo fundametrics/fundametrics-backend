@@ -902,160 +902,100 @@ def get_available_indices():
     return list(INDEX_CONSTITUENTS.keys())
 
 
-# Cache for index prices (Phase 26 optimization)
-INDEX_PRICES_CACHE = None
-INDEX_PRICES_TS = None
-PRICES_CACHE_TTL = 1800 # 30 minutes
+# Global Cache Initialization (Phase 9: Latency Elimination)
+_HARD_FALLBACK_PRICES = [
+    {"id": "NIFTY 50", "label": "NIFTY 50", "price": 24345.50, "change": 12.45, "changePercent": 0.05, "symbol": "^NSEI"},
+    {"id": "SENSEX", "label": "SENSEX", "price": 80123.15, "change": -45.60, "changePercent": -0.06, "symbol": "^BSESN"},
+    {"id": "BANK NIFTY", "label": "BANK NIFTY", "price": 52678.90, "change": 156.30, "changePercent": 0.30, "symbol": "^NSEBANK"},
+    {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"}
+]
+
+INDEX_PRICES_CACHE = _HARD_FALLBACK_PRICES
+INDEX_PRICES_TS = datetime.now()
+INDEX_CACHE = {} # key: index_name_limit, value: (timestamp, data)
+
 _indices_lock = asyncio.Lock()
-
-@router.get("/indices/prices")
-async def get_indices_overview():
-    """Get live prices for all core indices with caching and concurrency protection."""
-    global INDEX_PRICES_CACHE, INDEX_PRICES_TS
-    
-    now = datetime.now()
-    # Updated pre-seeded fallback data with global indices
-    HARD_FALLBACK = [
-        {"id": "NIFTY 50", "label": "NIFTY 50", "price": 24345.50, "change": 12.45, "changePercent": 0.05, "symbol": "^NSEI"},
-        {"id": "SENSEX", "label": "SENSEX", "price": 80123.15, "change": -45.60, "changePercent": -0.06, "symbol": "^BSESN"},
-        {"id": "BANK NIFTY", "label": "BANK NIFTY", "price": 52678.90, "change": 156.30, "changePercent": 0.30, "symbol": "^NSEBANK"},
-        {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"}
-    ]
-
-    if INDEX_PRICES_CACHE and INDEX_PRICES_TS:
-        if (now - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
-            return INDEX_PRICES_CACHE
-
-    async with _indices_lock:
-        # Check quarantine status
-        session = await YahooSession.get_instance()
-        in_quarantine = session.is_in_quarantine()
-        
-        # Double-check cache inside lock
-        if INDEX_PRICES_TS and (datetime.now() - INDEX_PRICES_TS).total_seconds() < PRICES_CACHE_TTL:
-            return INDEX_PRICES_CACHE or HARD_FALLBACK
-
-        # If in quarantine, don't even try the network
-        if in_quarantine and INDEX_PRICES_CACHE:
-            logging.info("Serving stale index cache (Yahoo in Quarantine)")
-            return INDEX_PRICES_CACHE
-
-        # Lock attempt time BEFORE execution
-        INDEX_PRICES_TS = datetime.now()
-        
-        names = list(YAHOO_INDEX_MAP.keys())
-        symbols = list(YAHOO_INDEX_MAP.values())
-        
-        try:
-            # High-velocity circuit breaker: Max 12s for live tickers
-            try:
-                if in_quarantine:
-                     results = [{} for _ in symbols]
-                else:
-                    results = await asyncio.wait_for(
-                        market_engine.fetch_batch_prices(symbols),
-                        timeout=12.0
-                    )
-            except asyncio.TimeoutError:
-                logging.warning("Yahoo timeout on index prices, using fallback.")
-                results = [{} for _ in symbols]
-            
-            response = []
-            for name, data in zip(names, results):
-                if data and (data.get("price") or data.get("currentPrice")):
-                    p = data.get("price") or data.get("currentPrice")
-                    response.append({
-                        "id": name, "label": name, "price": p,
-                        "change": data.get("change") or 0,
-                        "changePercent": data.get("change_percent") or data.get("changePercent") or 0,
-                        "symbol": data.get("symbol") or symbols[names.index(name)]
-                    })
-            
-            if response:
-                INDEX_PRICES_CACHE = response
-                return response
-            
-            return INDEX_PRICES_CACHE or HARD_FALLBACK
-            
-        except Exception as e:
-            logging.error(f"Indices circuit-breaker serving fallback: {e}")
-            return INDEX_PRICES_CACHE or HARD_FALLBACK
-
-
-# In-memory cache for index constituents (Phase 26 optimization)
-# key: index_name, value: (timestamp, response_dict)
-INDEX_CACHE = {}
-CACHE_TTL = 1800 # 30 minutes
-
 _constituents_lock = asyncio.Lock()
 
-@router.get("/indices/{index_name}/constituents")
-async def get_index_constituents_mongo(
-    index_name: str,
-    limit: Optional[int] = Query(None, ge=1, le=100)
-):
-    """Get constituent symbols and basic metadata for an index from MongoDB with caching."""
+async def refresh_index_prices():
+    """Background task to update index prices without blocking API."""
+    global INDEX_PRICES_CACHE, INDEX_PRICES_TS
+    
+    session = await YahooSession.get_instance()
+    if session.is_in_quarantine():
+        return # Respect lockout
+
+    names = list(YAHOO_INDEX_MAP.keys())
+    symbols = list(YAHOO_INDEX_MAP.values())
+    
+    try:
+        results = await asyncio.wait_for(
+            market_engine.fetch_batch_prices(symbols),
+            timeout=15.0
+        )
+        
+        response = []
+        for name, data in zip(names, results):
+            if data and (data.get("price") or data.get("currentPrice")):
+                p = data.get("price") or data.get("currentPrice")
+                response.append({
+                    "id": name, "label": name, "price": p,
+                    "change": data.get("change") or 0,
+                    "changePercent": data.get("change_percent") or data.get("changePercent") or 0,
+                    "symbol": data.get("symbol") or symbols[names.index(name)]
+                })
+        
+        if response:
+            async with _indices_lock:
+                INDEX_PRICES_CACHE = response
+                INDEX_PRICES_TS = datetime.now()
+            logging.info(f"✅ Index prices refreshed: {len(response)} items")
+            
+    except Exception as e:
+        logging.error(f"Failed background price refresh: {e}")
+
+async def refresh_all_indices_constituents():
+    """Update constituents for core indices in background."""
+    indices = ["NIFTY 50", "SENSEX", "BANK NIFTY"]
+    for idx in indices:
+        await refresh_index_constituents_manual(idx, limit=12)
+        await asyncio.sleep(2) # Prevent burst
+
+async def refresh_index_constituents_manual(index_name: str, limit: int = 12):
+    """Core logic to fetch constituents and update cache."""
+    global INDEX_CACHE
     index_name = index_name.upper()
     cache_key = f"{index_name}_{limit}"
     
-    # Check cache
-    now = datetime.now()
-    if cache_key in INDEX_CACHE:
-        ts, cached_data = INDEX_CACHE[cache_key]
-        if (now - ts).total_seconds() < CACHE_TTL:
-            return cached_data
-
-    async with _constituents_lock:
-        # Double-check inside lock
-        if cache_key in INDEX_CACHE:
-            ts, cached_data = INDEX_CACHE[cache_key]
-            if (now - ts).total_seconds() < CACHE_TTL:
-                return cached_data
-
-        # Mark as fetched to avoid immediate retries on failure
-        INDEX_CACHE[cache_key] = (datetime.now(), INDEX_CACHE.get(cache_key, [None, None])[1])
-
+    try:
         symbols = get_constituents(index_name)
-        if not symbols:
-            raise HTTPException(status_code=404, detail=f"Index {index_name} not found")
+        if not symbols: return
         
-        # Apply limit if provided
         request_symbols = symbols[:limit] if limit else symbols
-        
         results = await mongo_repo.get_companies_detail(request_symbols)
         
-        # Enrich top symbols with live prices (max 12 for performance)
-        enrich_limit = min(len(request_symbols), 12)
-        top_symbols = request_symbols[:enrich_limit]
+        # Enrichment
+        top_symbols = request_symbols
         yahoo_symbols = [f"{s}.NS" if not s.endswith(".NS") else s for s in top_symbols]
         
         price_map = {}
-        try:
-            # High-Performance Race: Max 12 seconds for live data (increased for multi-stage fetch)
+        # Only try network if NOT in quarantine
+        session = await YahooSession.get_instance()
+        if not session.is_in_quarantine():
             try:
                 live_prices = await asyncio.wait_for(
                     market_engine.fetch_batch_prices(yahoo_symbols),
-                    timeout=12.0
+                    timeout=15.0
                 )
-            except asyncio.TimeoutError:
-                logging.warning(f"Yahoo price fetch timed out for {index_name}, using DB data.")
-                live_prices = [{} for _ in yahoo_symbols]
+                for sym, p_data in zip(top_symbols, live_prices):
+                    if p_data and p_data.get("price"):
+                        price_map[sym] = p_data.get("price")
+            except: pass
 
-            for sym, p_data in zip(top_symbols, live_prices):
-                if p_data and p_data.get("price"):
-                    price_map[sym] = p_data.get("price")
-            
-            if not price_map:
-                # DB Fallback: prices from the results directly
-                for c in results:
-                    if c["symbol"] in top_symbols and c.get("currentPrice"):
-                        price_map[c["symbol"]] = c["currentPrice"]
-                        
-        except Exception as e:
-            logging.error(f"Failed to fetch constituent prices for {index_name}: {e}")
-            for c in results:
-                if c["symbol"] in top_symbols and c.get("currentPrice"):
-                    price_map[c["symbol"]] = c["currentPrice"]
+        # DB Fallback if network failed or quarantined
+        for c in results:
+            if c["symbol"] in top_symbols and c.get("currentPrice") and c["symbol"] not in price_map:
+                price_map[c["symbol"]] = c["currentPrice"]
 
         symbol_map = {c["symbol"]: c for c in results}
         ordered_results = []
@@ -1072,9 +1012,37 @@ async def get_index_constituents_mongo(
             "constituents": ordered_results
         }
         
-        # Update cache
-        INDEX_CACHE[cache_key] = (datetime.now(), response_data)
-        return response_data
+        async with _constituents_lock:
+            INDEX_CACHE[cache_key] = (datetime.now(), response_data)
+        logging.info(f"✅ Cache refreshed for index: {index_name}")
+            
+    except Exception as e:
+        logging.error(f"Refresh failed for {index_name}: {e}")
+
+
+@router.get("/indices/prices")
+async def get_indices_overview():
+    """ZERO-BLOCKING: Returns index prices instantly from memory-cache."""
+    return INDEX_PRICES_CACHE
+
+
+@router.get("/indices/{index_name}/constituents")
+async def get_index_constituents_mongo(
+    index_name: str,
+    limit: Optional[int] = Query(None, ge=1, le=100)
+):
+    """ZERO-BLOCKING: Returns constituents instantly from memory-cache."""
+    index_name = index_name.upper()
+    cache_key = f"{index_name}_{limit}"
+    
+    # Return from cache if exists
+    if cache_key in INDEX_CACHE:
+        return INDEX_CACHE[cache_key][1]
+    
+    # If not in cache (fresh boot), trigger a sync fetch once (blocking)
+    # This only happens once per index after restart.
+    await refresh_index_constituents_manual(index_name, limit)
+    return INDEX_CACHE.get(cache_key, [None, {"constituents": []}])[1]
 
 
 @router.get("/coverage")

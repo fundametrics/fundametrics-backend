@@ -34,12 +34,21 @@ async def startup_event():
     except Exception as e:
         print(f"Index initialization failed: {e}")
         
-    # Disabled Autopilot Scheduler to prevent background load as requested
-    # try:
-    #     from scraper.core.scheduler import start_scheduler
-    #     start_scheduler()
-    # except Exception as e:
-    #     print(f"Scheduler startup failed: {e}")
+    # Phase 9: Start Background Market Refresher (Zero-Blocking Architecture)
+    try:
+        from scraper.core.background_tasks import MarketDataRefresher
+        await MarketDataRefresher.start()
+    except Exception as e:
+        print(f"Background Refresher startup failed: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    try:
+        from scraper.core.background_tasks import MarketDataRefresher
+        await MarketDataRefresher.stop()
+    except:
+        pass
 
 
 @app.middleware("http")
