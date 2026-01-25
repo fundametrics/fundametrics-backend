@@ -168,6 +168,8 @@ class MarketFactsEngine:
                         self._log.debug("Price found for {}: {}", yahoo_symbol, price)
                         return {
                             "current_price": float(price),
+                            "change": meta.get("regularMarketChange"),
+                            "change_percent": meta.get("regularMarketChangePercent"),
                             "delay_minutes": 15,
                             "currency": meta.get("currency", "INR"),
                             "timestamp": meta.get("regularMarketTime")

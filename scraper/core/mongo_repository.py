@@ -84,6 +84,13 @@ class MongoRepository:
         
         mongo_sort_key = sort_map.get(sort_by, sort_by)
         
+        # Phase 25 Refinement: Top 100 Priority (Market Cap DESC, then alpha)
+        # If user is sorting by name/symbol (standard view), we lead with Market Cap
+        if sort_by in ["name", "symbol"] and order == 1:
+            sort_spec = [("snapshot.marketCap", -1), ("name", 1)]
+        else:
+            sort_spec = [(mongo_sort_key, order)]
+
         cursor = self._companies.find(
             query,
             {
@@ -91,7 +98,7 @@ class MongoRepository:
                 "fundametrics_response.company": 1,
                 "fundametrics_response.fundametrics_metrics": 1
             }
-        ).sort(mongo_sort_key, order).skip(skip).limit(limit)
+        ).sort(sort_spec).skip(skip).limit(limit)
         
         return await self._format_company_list(cursor)
 
