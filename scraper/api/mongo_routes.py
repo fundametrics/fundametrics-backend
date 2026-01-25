@@ -872,9 +872,7 @@ async def get_indices_overview():
         {"id": "NIFTY 50", "label": "NIFTY 50", "price": 24345.50, "change": 12.45, "changePercent": 0.05, "symbol": "^NSEI"},
         {"id": "SENSEX", "label": "SENSEX", "price": 80123.15, "change": -45.60, "changePercent": -0.06, "symbol": "^BSESN"},
         {"id": "BANK NIFTY", "label": "BANK NIFTY", "price": 52678.90, "change": 156.30, "changePercent": 0.30, "symbol": "^NSEBANK"},
-        {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"},
-        {"id": "NASDAQ", "label": "NASDAQ", "price": 18567.40, "change": 112.30, "changePercent": 0.61, "symbol": "^IXIC"},
-        {"id": "S&P 500", "label": "S&P 500", "price": 5823.15, "change": 24.50, "changePercent": 0.42, "symbol": "^GSPC"}
+        {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"}
     ]
 
     if INDEX_PRICES_CACHE and INDEX_PRICES_TS:

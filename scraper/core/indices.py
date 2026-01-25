@@ -48,14 +48,12 @@ INDEX_CONSTITUENTS: Dict[str, List[str]] = {
     ]
 }
 
-# Yahoo symbols for index tracking
+# Yahoo symbols for index tracking (INDIAN INDICES ONLY)
 YAHOO_INDEX_MAP = {
     "NIFTY 50": "^NSEI",
     "SENSEX": "^BSESN",
     "BANK NIFTY": "^NSEBANK",
-    "NIFTY IT": "^CNXIT",
-    "NASDAQ": "^IXIC",
-    "S&P 500": "^GSPC"
+    "NIFTY IT": "^CNXIT"
 }
 
 def get_constituents(index_name: str) -> List[str]:
