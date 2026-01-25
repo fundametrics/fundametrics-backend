@@ -193,11 +193,11 @@ class MongoRepository:
                 "name": name,
                 "sector": sector,
                 "industry": industry,
-                "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap"]),
-                "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price"]),
+                "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap", "MCap", "M Cap"]),
+                "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price", "LTP", "Close"]),
                 "pe": quick_get(["Pe Ratio", "P/E Ratio", "fundametrics_pe_ratio", "pe_ratio", "price_to_earnings", "Stock P/E"]),
-                "roe": quick_get(["ROE", "Return On Equity", "fundametrics_return_on_equity", "roe", "return_on_equity"]),
-                "roce": quick_get(["ROCE", "Return On Capital Employed", "fundametrics_return_on_capital_employed", "roce", "return_on_capital_employed"]),
+                "roe": quick_get(["ROE", "Return On Equity", "fundametrics_return_on_equity", "roe", "return_on_equity", "Return on Equity"]),
+                "roce": quick_get(["ROCE", "Return On Capital Employed", "fundametrics_return_on_capital_employed", "roce", "return_on_capital_employed", "Return on Capital Employed"]),
                 "debt": quick_get(["Debt To Equity", "Total Debt", "fundametrics_debt_to_equity", "debt_to_equity"])
             })
         return results

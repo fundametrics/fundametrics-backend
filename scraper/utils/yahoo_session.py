@@ -21,13 +21,20 @@ class YahooSession:
         
         # Lock in ONE User-Agent for the entire session lifecycle
         # Using a verified modern Chrome string
-        self.ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        self.ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         
         self.base_headers = {
             "User-Agent": self.ua,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
-            "Connection": "keep-alive"
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0"
         }
 
     @classmethod
@@ -46,10 +53,10 @@ class YahooSession:
     async def _refresh_session(self):
         """Perform the Cookie/Crumb dance with Yahoo"""
         try:
-            log.info("Refreshing Yahoo Finance session (Consistent Fingerprint)...")
+            log.info("Refreshing Yahoo Finance session (Enhanced Fingerprint)...")
             async with httpx.AsyncClient(headers=self.base_headers, timeout=15.0, follow_redirects=True) as client:
-                # 1. Get initial cookie
-                response = await client.get("https://fc.yahoo.com/")
+                # 1. Get initial cookie from main Yahoo page
+                response = await client.get("https://finance.yahoo.com/")
                 self.cookies = dict(response.cookies)
                 
                 # 2. Get the crumb using the SAME cookies and UA
@@ -58,7 +65,7 @@ class YahooSession:
                     cookies=self.cookies
                 )
                 if crumb_response.status_code == 200:
-                    self.crumb = crumb_response.text
+                    self.crumb = crumb_response.text.strip()
                     self.last_update = datetime.now()
                     log.success(f"Yahoo session active. Crumb: {self.crumb[:5]}...")
                 else:
