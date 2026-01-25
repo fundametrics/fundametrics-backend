@@ -134,13 +134,16 @@ class MarketFactsEngine:
 
     async def _fetch_delayed_price(self, symbol: str) -> Dict[str, Any]:
         """Fetch delayed price data from Yahoo Finance."""
+        # Fix: Normalize symbol by stripping existing suffixes first
+        base_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
+        
         # Index symbols (starting with ^) should be used as-is.
         # Stocks usually need .NS or .BO suffix.
-        suffixes = [""] if symbol.startswith("^") else [".NS", ".BO"]
+        suffixes = [""] if base_symbol.startswith("^") else [".NS", ".BO"]
         for suffix in suffixes:
             try:
                 import urllib.parse
-                yahoo_symbol = f"{symbol}{suffix}" if suffix else symbol
+                yahoo_symbol = f"{base_symbol}{suffix}" if suffix else base_symbol
                 quoted_symbol = urllib.parse.quote(yahoo_symbol)
                 # query2 is often more reliable/less throttled than query1
                 url = f"https://query2.finance.yahoo.com/v8/finance/chart/{quoted_symbol}?interval=1d"
@@ -162,7 +165,7 @@ class MarketFactsEngine:
                             "timestamp": meta.get("regularMarketTime")
                         }
             except Exception as exc:
-                self._log.warning("Yahoo fetch failed for {}{}: {}", symbol, suffix, exc)
+                self._log.warning("Yahoo fetch failed for {}{}: {}", base_symbol, suffix, exc)
                 # If we timed out or failed, don't wait too long for the next suffix
                 continue
                 
@@ -170,9 +173,10 @@ class MarketFactsEngine:
 
     async def _fetch_52_week_range(self, symbol: str) -> Dict[str, Any]:
         """Fetch 52-week high/low data from Yahoo Finance."""
-        # This data is often already in the chart result meta
+        # Fix: Normalize symbol
+        base_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
         try:
-            yahoo_symbol = f"{symbol}.NS"
+            yahoo_symbol = f"{base_symbol}.NS"
             url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
             response = await self._fetcher.fetch_json(url, timeout=3.0)
             
@@ -188,14 +192,12 @@ class MarketFactsEngine:
                         "currency": meta.get("currency", "INR")
                     }
         except Exception as exc:
-            self._log.debug("Failed to fetch 52-week range for {}: {}", symbol, exc)
+            self._log.debug("Failed to fetch 52-week range for {}: {}", base_symbol, exc)
             
         return {}
 
     async def _fetch_shares_outstanding(self, symbol: str) -> Dict[str, Any]:
         """Fetch shares outstanding data."""
-        # Yahoo Finance doesn't easily expose this in the chart API.
-        # We'll rely on our scraped data or internal computation if possible.
         return {}
 
     async def fetch_batch_prices(self, symbols: List[str]) -> List[Dict[str, Any]]:
@@ -214,13 +216,12 @@ class MarketFactsEngine:
             
         await session.refresh_if_needed()
         
-        # GHOST-MODE: Try Chart API FIRST for reliability
+        # GHOST-MODE: Try Chart API FIRST (Stealthiest)
         results_map = {}
         missing_symbols = []
         
-        # Only try if we have a small batch (less than 15) to avoid excessive sequential calls
         if len(symbols) <= 15:
-            self._log.debug("Ghost-Mode: Attempting resilient Chart API first")
+            self._log.debug("Ghost-Mode: Attempting Chart API layer")
             tasks = [self._fetch_delayed_price(s) for s in symbols]
             chart_responses = await asyncio.gather(*tasks, return_exceptions=True)
             
@@ -235,6 +236,7 @@ class MarketFactsEngine:
                     missing_symbols.append(sym)
                     
             if not missing_symbols:
+                self._log.info("✅ Success: Chart API Layer (Full Cache Update)")
                 return [results_map[s] for s in symbols]
 
         # FALLBACK: Quote API for missing symbols or large batches
@@ -260,7 +262,7 @@ class MarketFactsEngine:
                         if p or c:
                             kwargs["params"] = p
                             kwargs["cookies"] = c
-                        else: continue # Skip if no identity
+                        else: continue 
                     
                     response = await self._fetcher.fetch_json(url, **kwargs)
                     
@@ -280,15 +282,18 @@ class MarketFactsEngine:
                                     "currency": r.get("currency", "INR")
                                 }
                         
-                        # Return final merged list
+                        self._log.info(f"✅ Success: Quote API ({sub}/{mode})")
                         return [results_map.get(s, {}) for s in symbols]
                 except Exception as e:
                     sc = getattr(e, 'status_code', None)
+                    if sc == 401:
+                        await session.clear_crumb()
+                        if mode == "session": continue # Try clean mode immediately
+
                     if sc == 429 or "429" in str(e):
                         if sub == subdomains[-1] and mode == "session":
-                            # End of the line - full deep quarantine
                             await session.trigger_quarantine(minutes=30)
-                        continue # Try next mode/subdomain
+                        continue 
                     continue
 
         return [results_map.get(s, {}) for s in symbols]
