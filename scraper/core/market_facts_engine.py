@@ -135,21 +135,21 @@ class MarketFactsEngine:
     async def _fetch_delayed_price(self, symbol: str) -> Dict[str, Any]:
         """Fetch delayed price data from Yahoo Finance."""
         # Fix: Normalize symbol by stripping existing suffixes first
-        base_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
+        # Handle cases like "RELIANCE.NS" or "RELIANCE.BO"
+        clean_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
         
         # Index symbols (starting with ^) should be used as-is.
         # Stocks usually need .NS or .BO suffix.
-        suffixes = [""] if base_symbol.startswith("^") else [".NS", ".BO"]
+        suffixes = [""] if clean_symbol.startswith("^") else [".NS", ".BO"]
         for suffix in suffixes:
             try:
                 import urllib.parse
-                yahoo_symbol = f"{base_symbol}{suffix}" if suffix else base_symbol
+                yahoo_symbol = f"{clean_symbol}{suffix}" if suffix else clean_symbol
                 quoted_symbol = urllib.parse.quote(yahoo_symbol)
-                # query2 is often more reliable/less throttled than query1
                 url = f"https://query2.finance.yahoo.com/v8/finance/chart/{quoted_symbol}?interval=1d"
                 
-                # Use a specific short timeout for live market data (2.5s)
-                response = await self._fetcher.fetch_json(url, timeout=2.5)
+                # Use a specific short timeout for live market data
+                response = await self._fetcher.fetch_json(url, timeout=5.0)
                 
                 if response and "chart" in response and response["chart"]["result"]:
                     result = response["chart"]["result"][0]
@@ -165,20 +165,22 @@ class MarketFactsEngine:
                             "timestamp": meta.get("regularMarketTime")
                         }
             except Exception as exc:
-                self._log.warning("Yahoo fetch failed for {}{}: {}", base_symbol, suffix, exc)
-                # If we timed out or failed, don't wait too long for the next suffix
+                sc = getattr(exc, 'status_code', None)
+                # Fail-fast: if any individual request hits a 429, propagate it up
+                if sc == 429 or "429" in str(exc):
+                    raise exc 
+                self._log.warning("Yahoo fetch failed for {}{}: {}", clean_symbol, suffix, exc)
                 continue
                 
         return {}
 
     async def _fetch_52_week_range(self, symbol: str) -> Dict[str, Any]:
         """Fetch 52-week high/low data from Yahoo Finance."""
-        # Fix: Normalize symbol
-        base_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
+        clean_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
         try:
-            yahoo_symbol = f"{base_symbol}.NS"
+            yahoo_symbol = f"{clean_symbol}.NS"
             url = f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_symbol}?interval=1d"
-            response = await self._fetcher.fetch_json(url, timeout=3.0)
+            response = await self._fetcher.fetch_json(url, timeout=5.0)
             
             if response and "chart" in response and response["chart"]["result"]:
                 meta = response["chart"]["result"][0].get("meta", {})
@@ -191,9 +193,8 @@ class MarketFactsEngine:
                         "fifty_two_week_low": float(low),
                         "currency": meta.get("currency", "INR")
                     }
-        except Exception as exc:
-            self._log.debug("Failed to fetch 52-week range for {}: {}", base_symbol, exc)
-            
+        except Exception:
+            pass
         return {}
 
     async def _fetch_shares_outstanding(self, symbol: str) -> Dict[str, Any]:
@@ -221,22 +222,34 @@ class MarketFactsEngine:
         missing_symbols = []
         
         if len(symbols) <= 15:
-            self._log.debug("Ghost-Mode: Attempting Chart API layer")
-            tasks = [self._fetch_delayed_price(s) for s in symbols]
-            chart_responses = await asyncio.gather(*tasks, return_exceptions=True)
+            self._log.debug("Ghost-Mode: Attempting serialized Chart API layer")
             
-            for sym, chart_data in zip(symbols, chart_responses):
-                if isinstance(chart_data, dict) and chart_data.get("current_price"):
-                    results_map[sym] = {
-                        "price": chart_data["current_price"],
-                        "change": 0, "change_percent": 0,
-                        "symbol": sym, "currency": chart_data.get("currency", "INR")
-                    }
-                else:
+            # BURST PREVENTION: Fetch one-by-one with delays
+            for sym in symbols:
+                if session.is_in_quarantine(): break
+                try:
+                    chart_data = await self._fetch_delayed_price(sym)
+                    if chart_data and chart_data.get("current_price"):
+                        results_map[sym] = {
+                            "price": chart_data["current_price"],
+                            "change": 0, "change_percent": 0,
+                            "symbol": sym, "currency": chart_data.get("currency", "INR")
+                        }
+                    else:
+                        missing_symbols.append(sym)
+                    
+                    # Human-mimic delay
+                    await asyncio.sleep(1.5)
+                except Exception as e:
+                    sc = getattr(e, 'status_code', None)
+                    if sc == 429 or "429" in str(e):
+                        self._log.critical("FAIL-FAST: 429 detected during Chart API loop. Locking down.")
+                        await session.trigger_quarantine(minutes=30)
+                        break # Stop current batch immediately
                     missing_symbols.append(sym)
                     
-            if not missing_symbols:
-                self._log.info("✅ Success: Chart API Layer (Full Cache Update)")
+            if not missing_symbols and len(results_map) == len(symbols):
+                self._log.info("✅ Success: Ghost-Mode Chart Layer (Full Cache Update)")
                 return [results_map[s] for s in symbols]
 
         # FALLBACK: Quote API for missing symbols or large batches
@@ -244,7 +257,8 @@ class MarketFactsEngine:
         subdomains = ["query2", "query1"]
         
         for sub in subdomains:
-            # Ghost-Mode: Try Clean fetch first (less identifiable)
+            if session.is_in_quarantine(): break
+            # Ghost-Mode: Try Clean fetch first
             for mode in ["clean", "session"]:
                 try:
                     symbols_str = ",".join(batch_symbols)
@@ -255,7 +269,7 @@ class MarketFactsEngine:
                         "Origin": "https://finance.yahoo.com"
                     })
                     
-                    kwargs = {"timeout": 8.0, "headers": api_headers}
+                    kwargs = {"timeout": 10.0, "headers": api_headers}
                     if mode == "session":
                         p = session.get_api_params()
                         c = session.get_cookies()
