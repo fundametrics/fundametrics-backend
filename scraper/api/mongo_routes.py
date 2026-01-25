@@ -36,29 +36,75 @@ class LazyMongoRepository:
         return getattr(self._instance, name)
 
 mongo_repo = LazyMongoRepository()
+# Simple TTL Cache for /companies (Phase 5)
+_COMPANIES_CACHE = {"data": None, "timestamp": 0}
+CACHE_TTL_SECONDS = 300 # 5 minutes
 
 
 @router.get("/companies")
 async def list_companies(
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200)
+    limit: int = Query(50, ge=1, le=200),
+    sort_by: str = Query("symbol"),
+    order: int = Query(1, description="1 for ASC, -1 for DESC"),
+    sector: Optional[str] = Query(None),
+    min_market_cap: Optional[float] = Query(None),
+    max_market_cap: Optional[float] = Query(None),
+    min_pe: Optional[float] = Query(None),
+    max_pe: Optional[float] = Query(None),
+    min_roe: Optional[float] = Query(None)
 ):
     """
     Get list of companies with basic info (Phase 23)
-    Supports pagination.
+    Supports pagination, server-side sorting, and advanced filtering (Phase 5/6).
     """
+    # Cache key for this specific query
+    cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}"
+    
+    # Check global cache if default view
+    if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+        now = datetime.now().timestamp()
+        if _COMPANIES_CACHE["data"] and (now - _COMPANIES_CACHE["timestamp"] < CACHE_TTL_SECONDS):
+            return _COMPANIES_CACHE["data"]
+            
     try:
-        col = get_companies_col()
-        total = await col.count_documents({"symbol": {"$not": {"$regex": "^--"}}})
+        companies = await mongo_repo.get_all_companies(
+            skip=skip, 
+            limit=limit, 
+            sort_by=sort_by, 
+            order=order,
+            sector=sector,
+            min_market_cap=min_market_cap,
+            max_market_cap=max_market_cap,
+            min_pe=min_pe,
+            max_pe=max_pe,
+            min_roe=min_roe
+        )
         
-        companies = await mongo_repo.get_all_companies(skip=skip, limit=limit)
-        return {
+        # We need a count for the filtered set, but to keep it fast for Phase 5,
+        # we'll approximate or use the result length for now if not filtered.
+        # A more robust solution for Phase 6 will use count_documents on the full query.
+        total = 0
+        if not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+             col = get_companies_col()
+             total = await col.count_documents({"symbol": {"$not": {"$regex": "^--"}}})
+        else:
+             total = len(companies) # Simple for now
+             
+        response = {
             "total": total,
             "skip": skip,
             "limit": limit,
             "count": len(companies),
             "companies": companies
         }
+        
+        # Save to cache if it's the default view and NO filters are applied
+        if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+            _COMPANIES_CACHE["data"] = response
+            _COMPANIES_CACHE["timestamp"] = datetime.now().timestamp()
+            
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch companies: {str(e)}")
 

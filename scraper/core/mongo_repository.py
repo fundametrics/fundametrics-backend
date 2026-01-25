@@ -31,29 +31,67 @@ class MongoRepository:
     # ==================== COMPANIES ====================
     
     async def get_all_symbols(self) -> List[str]:
-        """
-        Get all company symbols from database
-        
-        Returns:
-            List of symbols (e.g., ['RELIANCE', 'TCS', 'INFY'])
-        """
-        companies = get_companies_col()
-        cursor = companies.find({"symbol": {"$not": {"$regex": "^--"}}}, {"symbol": 1})
+        """Get all symbols from database"""
+        cursor = self._companies.find({"symbol": {"$not": {"$regex": "^--"}}}, {"symbol": 1})
         symbols = [doc.get("symbol") async for doc in cursor if doc.get("symbol")]
         return sorted(symbols)
     
-    async def get_all_companies(self, skip: int = 0, limit: int = 50) -> List[Dict[str, Any]]:
+    async def get_all_companies(
+        self, 
+        skip: int = 0, 
+        limit: int = 50, 
+        sort_by: str = "symbol", 
+        order: int = 1,
+        sector: Optional[str] = None,
+        min_market_cap: Optional[float] = None,
+        max_market_cap: Optional[float] = None,
+        min_pe: Optional[float] = None,
+        max_pe: Optional[float] = None,
+        min_roe: Optional[float] = None
+    ) -> List[Dict[str, Any]]:
         """
-        Get all companies with basic details (Screener-style list)
+        Get companies with basic details. Efficient sorting, paging and filtering.
         """
-        companies = get_companies_col()
-        cursor = companies.find({"symbol": {"$not": {"$regex": "^--"}}}, {
-            "symbol": 1, "name": 1, "sector": 1, "industry": 1,
-            "fundametrics_response.company": 1,
-            "fundametrics_response.fundametrics_metrics": 1,
-            "fundametrics_response.metrics.values": 1,
-            "fundametrics_response.metrics.ratios": 1
-        }).sort("symbol", 1).skip(skip).limit(limit)
+        # Complex query builder
+        query = {"symbol": {"$not": {"$regex": "^--"}}}
+        
+        if sector and sector != "all":
+            query["sector"] = sector
+            
+        # Range filters on snapshot fields
+        if min_market_cap is not None or max_market_cap is not None:
+            query["snapshot.marketCap"] = {}
+            if min_market_cap is not None: query["snapshot.marketCap"]["$gte"] = min_market_cap
+            if max_market_cap is not None: query["snapshot.marketCap"]["$lte"] = max_market_cap
+            
+        if min_pe is not None or max_pe is not None:
+            query["snapshot.pe"] = {}
+            if min_pe is not None: query["snapshot.pe"]["$gte"] = min_pe
+            if max_pe is not None: query["snapshot.pe"]["$lte"] = max_pe
+            
+        if min_roe is not None:
+            query["snapshot.roe"] = {"$gte": min_roe}
+
+        # Mapping for short-hand sort keys used by frontend
+        sort_map = {
+            "symbol": "symbol",
+            "name": "name",
+            "marketCap": "snapshot.marketCap",
+            "pe": "snapshot.pe",
+            "roe": "snapshot.roe",
+            "roce": "snapshot.roce"
+        }
+        
+        mongo_sort_key = sort_map.get(sort_by, sort_by)
+        
+        cursor = self._companies.find(
+            query,
+            {
+                "symbol": 1, "name": 1, "sector": 1, "industry": 1, "snapshot": 1,
+                "fundametrics_response.company": 1,
+                "fundametrics_response.fundametrics_metrics": 1
+            }
+        ).sort(mongo_sort_key, order).skip(skip).limit(limit)
         
         return await self._format_company_list(cursor)
 
@@ -75,130 +113,44 @@ class MongoRepository:
     async def _format_company_list(self, cursor) -> List[Dict[str, Any]]:
         results = []
         async for doc in cursor:
+            # High-speed path: Using the new 'snapshot' block
+            if "snapshot" in doc and doc["snapshot"]:
+                snap = doc["snapshot"]
+                results.append({
+                    "symbol": snap.get("symbol") or doc.get("symbol"),
+                    "name": snap.get("name") or doc.get("name"),
+                    "sector": snap.get("sector") or doc.get("sector") or "General",
+                    "industry": snap.get("industry") or doc.get("industry") or "General",
+                    "marketCap": snap.get("marketCap"),
+                    "currentPrice": snap.get("currentPrice"),
+                    "pe": snap.get("pe"),
+                    "roe": snap.get("roe"),
+                    "roce": snap.get("roce"),
+                })
+                continue
+
+            # Fallback path: Slow extraction from Fundametrics Response
             fr = doc.get("fundametrics_response", {})
-            # UI logic list
             ui_metrics = fr.get("fundametrics_metrics", [])
-            # Builder format dicts
-            metrics_block = fr.get("metrics", {})
-            builder_values = metrics_block.get("values", {})
-            builder_ratios = metrics_block.get("ratios", {})
-            
-            if doc.get("symbol") == "RELIANCE":
-                logger.debug(f"RELIANCE debug: ui={len(ui_metrics)} values={len(builder_values)} ratios={len(builder_ratios)}")
-            
-            def get_val(name_list):
-                # 1. Check UI list format
-                for name in name_list:
-                    for m in ui_metrics:
-                        if m.get("metric_name") == name:
-                            return m.get("value")
-                
-                # 2. Check Builder dict format (prefix with fundametrics_ usually)
-                for name in name_list:
-                    # check keys directly
-                    if name in builder_values:
-                        v = builder_values[name]
-                        return v.get("value") if isinstance(v, dict) else v
-                    if name in builder_ratios:
-                        v = builder_ratios[name]
-                        return v.get("value") if isinstance(v, dict) else v
-                    
-                    # check common prefixes if not found
-                    if not name.startswith("fundametrics_"):
-                        low_name = name.lower().replace(' ', '_')
-                        prefixed = f"fundametrics_{low_name}"
-                        for p in [prefixed, low_name]:
-                            if p in builder_values:
-                                v = builder_values[p]
-                                return v.get("value") if isinstance(v, dict) else v
-                            if p in builder_ratios:
-                                v = builder_ratios[p]
-                                return v.get("value") if isinstance(v, dict) else v
-
-                # 3. Fallback: Check Raw Financials Tables (Latest Period)
-                financials = fr.get("financials", {})
-                # Search ratios_table and ratios block
-                for table_key in ["ratios_table", "ratios", "income_statement"]:
-                    table = financials.get(table_key, {})
-                    if not table: continue
-                    # Get periods sorted latest first
-                    periods = sorted(table.keys(), reverse=True)
-                    for p in periods:
-                        row = table[p]
-                        if not isinstance(row, dict): continue
-                        for name in name_list:
-                            low_name = name.lower().replace(' ', '_')
-                            for k in [name, low_name, f"fundametrics_{low_name}"]:
-                                if k in row:
-                                    v = row[k]
-                                    val = v.get("value") if isinstance(v, dict) else v
-                                    if val is not None: return val
-                return None
-
-            # Zomato Name Fix & General Fallback
-            name = doc.get("name")
-            symbol = doc.get("symbol", str(doc.get("_id")))
-            
-            if not name or name == "Unknown":
-                name = symbol
-                
-            if symbol == "ZOMATO":
-                name = "Eternal Ltd"
-            
-            # Optimization: Build simpler lookup map once
-            metric_lookup = {}
-            
-            # 1. From UI Metrics (Preferred)
-            for m in ui_metrics:
-                if m.get("metric_name"):
-                    metric_lookup[m["metric_name"]] = m.get("value")
-                    
-            # 2. From Builder Values & Ratios (Fallback & Augment)
-            if not metric_lookup:
-                # Merge values and ratios for lookup
-                combined = {**builder_values, **builder_ratios}
-                for k, v in combined.items():
-                    val = v.get("value") if isinstance(v, dict) else v
-                    metric_lookup[k] = val
-                    metric_lookup[k.lower()] = val # heuristic
-                    # also allow checking without fundametrics_ prefix
-                    if k.startswith("fundametrics_"):
-                        raw_k = k.replace("fundametrics_", "")
-                        if raw_k not in metric_lookup:
-                            metric_lookup[raw_k] = val
-                            metric_lookup[raw_k.replace("_", " ")] = val
-            
-            # Debug Zomato/Eternal
-            if doc.get("symbol") == "ZOMATO":
-                keys_found = list(metric_lookup.keys())
-                logger.debug(f"ZOMATO Metrics keys: {keys_found}")
-
-            def quick_get(keys):
-                for k in keys:
-                    if k in metric_lookup: return metric_lookup[k]
-                return None
-
-            # Sector/Industry Fallbacks (Fix for '20 Microns' consistency issue)
             fr_comp = fr.get("company", {})
-            sector = doc.get("sector")
-            if not sector or sector == "Unknown":
-                sector = fr_comp.get("sector") or "General"
-                
-            industry = doc.get("industry")
-            if not industry or industry == "Unknown":
-                industry = fr_comp.get("industry") or "General"
+            
+            # Build lookup
+            m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if m.get("metric_name")}
+            
+            name = doc.get("name") or fr_comp.get("name") or doc.get("symbol")
+            if name == "Unknown": name = doc.get("symbol")
+            if doc.get("symbol") == "ZOMATO": name = "Eternal Ltd"
 
             results.append({
-                "symbol": doc.get("symbol", str(doc.get("_id"))),
+                "symbol": doc.get("symbol"),
                 "name": name,
-                "sector": sector,
-                "industry": industry,
-                "marketCap": quick_get(["Market Cap", "fundametrics_market_cap", "market_cap", "MCap", "M Cap"]),
-                "currentPrice": quick_get(["Current Price", "fundametrics_current_price", "current_price", "Price", "LTP", "Close"]),
-                "pe": quick_get(["Pe Ratio", "P/E Ratio", "fundametrics_pe_ratio", "pe_ratio", "price_to_earnings", "Stock P/E"]),
-                "roe": quick_get(["ROE", "Return On Equity", "fundametrics_return_on_equity", "roe", "return_on_equity", "Return on Equity"]),
-                "roce": quick_get(["ROCE", "Return On Capital Employed", "fundametrics_return_on_capital_employed", "roce", "return_on_capital_employed", "Return on Capital Employed"]),
-                "debt": quick_get(["Debt To Equity", "Total Debt", "fundametrics_debt_to_equity", "debt_to_equity"])
+                "sector": doc.get("sector") or fr_comp.get("sector") or "General",
+                "industry": doc.get("industry") or fr_comp.get("industry") or "General",
+                "marketCap": m_map.get("Market Cap") or m_map.get("Market_Cap"),
+                "currentPrice": m_map.get("Current Price") or m_map.get("Price"),
+                "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
+                "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
+                "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),
             })
         return results
     

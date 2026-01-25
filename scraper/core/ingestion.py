@@ -158,6 +158,27 @@ def _build_fundametrics_response(symbol: str, payload: Dict[str, Any]) -> Tuple[
     return response, coverage_payload, coverage_warnings
 
 
+def _build_snapshot(symbol: str, response: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a lightweight snapshot of the company for fast listing & sorting."""
+    company = response.get("company", {})
+    metrics = response.get("fundametrics_metrics", [])
+    
+    # Simple lookup for metrics
+    m_map = {m.get("metric_name"): m.get("value") for m in metrics if m.get("metric_name")}
+    
+    return {
+        "symbol": symbol,
+        "name": company.get("name") or symbol,
+        "sector": company.get("sector") or "General",
+        "industry": company.get("industry") or "General",
+        "marketCap": m_map.get("Market Cap") or m_map.get("Market_Cap"),
+        "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
+        "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
+        "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),
+        "currentPrice": response.get("metadata", {}).get("constants", {}).get("share_price") or m_map.get("Current Price") or m_map.get("Price"),
+    }
+
+
 async def ingest_symbol(symbol: str, *, allowlist: Iterable[str] | None = None) -> Dict[str, Any]:
     """Orchestrate the ingestion flow for a single symbol."""
 
@@ -325,6 +346,7 @@ async def ingest_symbol(symbol: str, *, allowlist: Iterable[str] | None = None) 
         "symbol": normalised_symbol,
         "run_id": run_id,
         "run_timestamp": run_timestamp,
+        "snapshot": _build_snapshot(normalised_symbol, response),
         "validation": {"status": response_metadata.get("validation_status")},
         "warnings": metadata_warnings,
         "fundametrics_response": response,
