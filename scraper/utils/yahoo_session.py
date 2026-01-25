@@ -100,11 +100,9 @@ class YahooSession:
                     self.last_update = datetime.now()
                     log.success(f"Yahoo session active. Crumb secured.")
                 elif crumb_response.status_code == 429:
-                    log.warning("Crumb endpoint rate limited. Triggering quarantine.")
+                    log.warning("Yahoo crumb endpoint rate limited. Proceeding without crumb.")
                     self.crumb = None
-                    # Mark updated but also trigger lockout
-                    self.last_update = datetime.now()
-                    await self.trigger_quarantine(minutes=15) # Longer lockout for session level block
+                    self.last_update = datetime.now() # Still mark updated so we don't spam
                 else:
                     log.warning(f"Yahoo crumb failed ({crumb_response.status_code}). Proceeding with cookies only.")
                     self.crumb = None

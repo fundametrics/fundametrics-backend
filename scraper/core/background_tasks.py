@@ -40,9 +40,13 @@ class MarketDataRefresher:
         cls._scheduler.start()
         logger.info("🚀 Background Market Refresher started.")
         
-        # Initial trigger (in background)
-        asyncio.create_task(refresh_index_prices())
-        asyncio.create_task(refresh_all_indices_constituents())
+        # Initial trigger (with slight delay to avoid boot burst)
+        async def initial_load():
+            await asyncio.sleep(5)
+            await refresh_index_prices()
+            await refresh_all_indices_constituents()
+            
+        asyncio.create_task(initial_load())
 
     @classmethod
     async def stop(cls):

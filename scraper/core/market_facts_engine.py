@@ -218,8 +218,8 @@ class MarketFactsEngine:
         subdomains = ["query2", "query1"]
         
         for sub in subdomains:
-            # TRY ONE: Session-Aware (Most accurate)
-            # TRY TWO: Clean-Fetch (Dodge session blocks)
+            # TRY ONE: Session-Aware (Most accurate, but easily blocked)
+            # TRY TWO: Clean-Fetch (No cookies, harder to track as a bot)
             for mode in ["session", "clean"]:
                 try:
                     symbols_str = ",".join(symbols)
@@ -234,22 +234,23 @@ class MarketFactsEngine:
                         "Sec-Fetch-Site": "same-site"
                     })
                     
-                    kwargs = {
-                        "timeout": 8.0,
-                        "headers": api_headers,
-                    }
+                    kwargs = {"timeout": 8.0, "headers": api_headers}
                     
-                    if mode == "session":
-                        kwargs["params"] = session.get_api_params()
-                        kwargs["cookies"] = session.get_cookies()
+                    if mode == "session" and not session.is_in_quarantine():
+                        # Only try session if we have a crumb or cookies
+                        p = session.get_api_params()
+                        c = session.get_cookies()
+                        if p or c:
+                            kwargs["params"] = p
+                            kwargs["cookies"] = c
+                        else:
+                            continue # Skip session mode if we have no identity
                     
-                    # Use standard shared fetcher (respects global rate limits)
+                    # FETCH
                     response = await self._fetcher.fetch_json(url, **kwargs)
                     
-                    if response and "quoteResponse" in response and "result" in response["quoteResponse"]:
+                    if response and "quoteResponse" in response and response["quoteResponse"].get("result"):
                         results = response["quoteResponse"]["result"]
-                        if not results: continue
-
                         parsed_results = []
                         result_map = {r.get("symbol"): r for r in results}
                         for sym in symbols:
@@ -270,17 +271,45 @@ class MarketFactsEngine:
                         return parsed_results
                 except Exception as e:
                     sc = getattr(e, 'status_code', None)
-                    if sc == 401 or "401" in str(e):
+                    if sc == 401:
                         await session.clear_crumb()
-                    
+                        if mode == "session": continue # Try clean mode immediately
+
                     if sc == 429 or "429" in str(e):
-                        # Trigger quarantine immediately on FIRST hint of 429
-                        await session.trigger_quarantine(minutes=15)
-                        return [{} for _ in symbols]
+                        if mode == "session":
+                            # Try clean mode before giving up on this subdomain
+                            continue
+                        
+                        # Clean mode ALSO failed with 429
+                        self._log.warning(f"Yahoo subdomain {sub} blocked (429).")
+                        if sub == subdomains[-1]:
+                            # ALL subdomains failed clean fetch - trigger full quarantine
+                            await session.trigger_quarantine(minutes=15)
+                        break # Try next subdomain
                     
+                    # Generic error, just log and continue
                     continue
+
+        # LAST RESORT: Try Chart API (v8) for each symbol individually
+        # Chart API is much harder for Yahoo to rate-limit as it's the primary UI data source
+        self._log.info("Batch Quote API failed. Attempting Chart API as last resort fallback.")
+        fallback_results = []
+        for sym in symbols:
+            try:
+                # Optimized chart endpoint for current price
+                chart_data = await self._fetch_delayed_price(sym)
+                if chart_data and chart_data.get("current_price"):
+                    fallback_results.append({
+                        "price": chart_data["current_price"],
+                        "change": 0, "change_percent": 0,
+                        "symbol": sym, "currency": chart_data.get("currency", "INR")
+                    })
+                else:
+                    fallback_results.append({})
+            except:
+                fallback_results.append({})
                 
-        return [{} for _ in symbols]
+        return fallback_results
 
     async def fetch_index_price(self, index_symbol: str) -> Dict[str, Any]:
         """Fetch current price and change for an index (e.g., ^NSEI)."""
