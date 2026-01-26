@@ -942,13 +942,18 @@ async def seed_market_data():
         db = get_db()
         col = db["market_data"]
         
-        # 1. Seed Index Prices
+        # 1. Seed Index Prices (with Sanity Check)
         doc = await col.find_one({"_id": "index_prices"})
-        if doc and doc.get("data"):
-            async with _indices_lock:
-                INDEX_PRICES_CACHE = doc["data"]
-                INDEX_PRICES_TS = doc.get("updated_at", datetime.now())
-            logging.info("⭐ Memory seeded: Index Prices (from MongoDB)")
+        if doc and doc.get("data") and len(doc["data"]) > 0:
+            # Audit data: ensure at least one price is real
+            has_real_prices = any(item.get("price") for item in doc["data"])
+            if has_real_prices:
+                async with _indices_lock:
+                    INDEX_PRICES_CACHE = doc["data"]
+                    INDEX_PRICES_TS = doc.get("updated_at", datetime.now())
+                logging.info(f"⭐ Memory seeded: {len(doc['data'])} Index Prices (from MongoDB)")
+            else:
+                logging.warning("⚠️ Seed Warning: MongoDB record for 'index_prices' exists but contains no numeric prices. Staying on Hard Fallback.")
             
         # 2. Seed Index Constituents
         cursor = col.find({"type": "cache_bridge", "_id": {"$regex": "^index_cache_"}})
@@ -973,36 +978,45 @@ async def seed_market_data():
             }).limit(200) # Process in batches
             
             updates = 0
-            async for doc in cursor:
-                symbol = doc.get("symbol")
-                fr = doc.get("fundametrics_response", {})
-                m_list = fr.get("fundametrics_metrics", [])
+            try:
+                async for doc in cursor:
+                    symbol = doc.get("symbol")
+                    fr = doc.get("fundametrics_response", {})
+                    m_list = fr.get("fundametrics_metrics", [])
+                    
+                    mcap = None
+                    price = None
+                    for m in m_list:
+                        if m.get("metric_name") in ["Market Cap", "Market_Cap"]: mcap = m.get("value")
+                        if m.get("metric_name") in ["Current Price", "Price"]: price = m.get("value")
+                    
+                    if mcap or price:
+                        await col.update_one({"_id": doc["_id"]}, {"$set": {
+                            "snapshot": {
+                                "symbol": symbol,
+                                "name": doc.get("name"),
+                                "marketCap": mcap,
+                                "currentPrice": price,
+                                "pe": doc.get("pe"), # Preserve if exists
+                                "roe": doc.get("roe"),
+                                "sector": doc.get("sector") or fr.get("company", {}).get("sector")
+                            }
+                        }})
+                        updates += 1
                 
-                mcap = None
-                price = None
-                for m in m_list:
-                    if m.get("metric_name") in ["Market Cap", "Market_Cap"]: mcap = m.get("value")
-                    if m.get("metric_name") in ["Current Price", "Price"]: price = m.get("value")
-                
-                if mcap or price:
-                    await col.update_one({"_id": doc["_id"]}, {"$set": {
-                        "snapshot": {
-                            "symbol": symbol,
-                            "name": doc.get("name"),
-                            "marketCap": mcap,
-                            "currentPrice": price,
-                            "pe": doc.get("pe"), # Preserve if exists
-                            "roe": doc.get("roe"),
-                            "sector": doc.get("sector") or fr.get("company", {}).get("sector")
-                        }
-                    }})
-                    updates += 1
-            
-            if updates > 0:
-                logging.info(f"✨ Repaired {updates} company snapshots for Registry UI and Sorting.")
+                if updates > 0:
+                    logging.info(f"✨ Repaired {updates} company snapshots for Registry UI and Sorting.")
+            except Exception as e:
+                logging.error(f"Snapshot hydration failed: {e}")
 
+        # Tiered Seeding (Phase 13): Prioritize critical caches
+        # We process hydration as a background task to keep boot time fast
         asyncio.create_task(hydrate_snapshots())
         
+        # 4. Final Sanity Audit
+        if not INDEX_PRICES_CACHE or len(INDEX_PRICES_CACHE) < 2:
+            logging.warning("⚠️ CRITICAL: INDEX_PRICES_CACHE failed to seed from MongoDB. Dashboard will show Fallbacks.")
+            
     except Exception as e:
         logging.error(f"Failed to seed market data: {e}")
 
@@ -1134,10 +1148,14 @@ async def get_index_constituents_mongo(
     if cache_key in INDEX_CACHE:
         return INDEX_CACHE[cache_key][1]
     
-    # If not in cache (fresh boot), trigger a sync fetch once (blocking)
-    # This only happens once per index after restart.
-    await refresh_index_constituents_manual(index_name, limit)
-    return INDEX_CACHE.get(cache_key, [None, {"constituents": []}])[1]
+    # If not in cache (fresh boot), return empty but trigger refresh ASYNC
+    # This prevents the 10-15s hang reported by the user.
+    asyncio.create_task(refresh_index_constituents_manual(index_name, limit))
+    
+    # Check if we have anything at all for this index (even if different limit)
+    # This is a UX win: show SOMETHING rather than NOTHING.
+    partial_match = next((v[1] for k, v in INDEX_CACHE.items() if k.startswith(index_name)), {"constituents": []})
+    return partial_match
 
 
 @router.get("/coverage")
