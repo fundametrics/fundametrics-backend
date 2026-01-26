@@ -63,6 +63,20 @@ class MarketFactsEngine:
         
         self._log.info("Fetching market facts for {}", symbol)
         
+        # Phase 14: Early-Exit Ceasefire
+        # Check lockdown status at the VERY START to avoid network slowness
+        from scraper.utils.yahoo_session import YahooSession
+        session = await YahooSession.get_instance()
+        if session.is_in_quarantine():
+            self._log.debug("Ceasefire active. Skipping fetch for {}", symbol)
+            return MarketFacts(
+                current_price=None, current_change=None, change_percent=None,
+                price_currency="INR", price_delay_minutes=0,
+                fifty_two_week_high=None, fifty_two_week_low=None,
+                shares_outstanding=None, market_cap=None,
+                market_cap_currency="INR", last_updated=datetime.now(timezone.utc)
+            )
+        
         # Optimized: Fetch ALL data in ONE request using fetch_batch_prices
         batch_results = await self.fetch_batch_prices([yahoo_symbol])
         data = batch_results[0] if batch_results else {}

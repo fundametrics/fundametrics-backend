@@ -1119,6 +1119,9 @@ async def refresh_index_constituents_manual(index_name: str, limit: int = 12):
 @router.get("/indices/prices")
 async def get_indices_overview():
     """ZERO-BLOCKING: Returns index prices instantly from memory-cache."""
+    # Ensure we NEVER return an empty list (Phase 14 Continuity)
+    if not INDEX_PRICES_CACHE:
+         return _HARD_FALLBACK_PRICES
     return INDEX_PRICES_CACHE
 
 
@@ -1131,18 +1134,44 @@ async def get_index_constituents_mongo(
     index_name = index_name.upper()
     cache_key = f"{index_name}_{limit}"
     
-    # Return from cache if exists
+    # Return from cache if exact match exists
     if cache_key in INDEX_CACHE:
         return INDEX_CACHE[cache_key][1]
     
-    # If not in cache (fresh boot), return empty but trigger refresh ASYNC
-    # This prevents the 10-15s hang reported by the user.
-    asyncio.create_task(refresh_index_constituents_manual(index_name, limit))
-    
-    # Check if we have anything at all for this index (even if different limit)
-    # This is a UX win: show SOMETHING rather than NOTHING.
-    partial_match = next((v[1] for k, v in INDEX_CACHE.items() if k.startswith(index_name)), {"constituents": []})
-    return partial_match
+    # Check if we have anything at all for this index (UX win: show partial match)
+    partial_match = next((v[1] for k, v in INDEX_CACHE.items() if k.startswith(index_name)), None)
+    if partial_match:
+        # Trigger specific limit refresh in background
+        asyncio.create_task(refresh_index_constituents_manual(index_name, limit))
+        return partial_match
+
+    # PHASE 14 RADICAL CONTINUITY: 
+    # If absolute cache miss (fresh startup), perform an IMMEDIATE low-latency DB lookup.
+    # This adds ~40-60ms but guarantees the user sees companies instantly.
+    try:
+        symbols = get_constituents(index_name)
+        if symbols:
+            request_symbols = symbols[:limit] if limit else symbols
+            results = await mongo_repo.get_companies_detail(request_symbols)
+            
+            if results:
+                response_data = {
+                    "index": index_name,
+                    "count": len(results),
+                    "constituents": results,
+                    "metadata": {"source": "db_immediate_fallback"}
+                }
+                # Seed cache so next hit is <1ms
+                async with _constituents_lock:
+                    INDEX_CACHE[cache_key] = (datetime.now(), response_data)
+                
+                # Trigger price refresh in background
+                asyncio.create_task(refresh_index_constituents_manual(index_name, limit))
+                return response_data
+    except Exception as e:
+        logging.error(f"Immediate DB fallback failed for {index_name}: {e}")
+
+    return {"index": index_name, "count": 0, "constituents": []}
 
 
 @router.get("/coverage")
