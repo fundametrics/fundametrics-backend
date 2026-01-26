@@ -963,17 +963,22 @@ async def seed_market_data():
             if doc.get("data"):
                 async with _constituents_lock:
                     INDEX_CACHE[cache_key] = (doc.get("updated_at", datetime.now()), doc["data"])
-        # 3. Nuclear Hydration (Phase 15: Full-DB Stabilization)
-        # Recursively repairs AND populates snapshots for EVERY record in the DB.
+        # 3. Nuclear Hydration (Phase 16: Top 100 Dominance)
+        # Recursively repairs snapshots AND tags Market Leaders for priority sorting.
         async def nuclear_hydration():
             from pymongo import UpdateOne
+            from scraper.core.indices import INDEX_CONSTITUENTS
             col = get_companies_col()
-            # Find everything that needs a display repair
+            
+            # Identify Top 100 (Nifty 50 + Sensex) for priority tagging
+            famous_symbols = set(INDEX_CONSTITUENTS.get("NIFTY 50", []) + INDEX_CONSTITUENTS.get("SENSEX", []))
+            
+            # Find everything that needs a display repair OR priority tagging
             cursor = col.find({
                 "$or": [
                     {"snapshot": {"$exists": False}}, 
                     {"snapshot.marketCap": {"$in": [None, 0]}},
-                    {"snapshot.currentPrice": {"$in": [None, 0]}}
+                    {"snapshot.priority": {"$exists": False}, "symbol": {"$in": list(famous_symbols)}}
                 ],
                 "fundametrics_response": {"$exists": True}
             })
@@ -984,23 +989,29 @@ async def seed_market_data():
                 fr = doc.get("fundametrics_response", {})
                 m_list = fr.get("fundametrics_metrics", [])
                 deep_metrics = fr.get("metrics", {}).get("values", [])
+                symbol = doc.get("symbol")
                 
                 m_map = {m.get("metric_name"): m.get("value") for m in m_list if isinstance(m, dict) and m.get("metric_name")}
                 mcap = m_map.get("Market Cap") or m_map.get("Market_Cap") or doc.get("market_cap")
                 price = m_map.get("Current Price") or m_map.get("Price") or doc.get("price")
                 
-                # Deeper lookup for Phase 15 (Old Blobs)
+                # Deeper lookup for Phase 15/16 (Old Blobs + Activity support)
+                change_pct = 0.0
                 if (not mcap or not price) and isinstance(deep_metrics, list):
                     for m in deep_metrics:
                         if not mcap and m.get("metric") in ["Market Cap", "Market_Cap", "MCAP"]: mcap = m.get("value")
                         if not price and m.get("metric") in ["Price", "Current Price"]: price = m.get("value")
+                        if m.get("metric") in ["Change Percent", "Change_Percent"]: change_pct = m.get("value") or 0.0
 
-                if mcap or price:
+                if mcap or price or symbol in famous_symbols:
+                    priority = 10 if symbol in famous_symbols else 0
                     batch.append(UpdateOne({"_id": doc["_id"]}, {"$set": {
                         "snapshot": {
-                            "symbol": doc.get("symbol"), "name": doc.get("name"),
-                            "marketCap": mcap, "currentPrice": price, "pe": doc.get("pe"),
-                            "roe": doc.get("roe"), "sector": doc.get("sector") or fr.get("company", {}).get("sector")
+                            "symbol": symbol, "name": doc.get("name"),
+                            "marketCap": mcap, "currentPrice": price, 
+                            "changePercent": change_pct, "priority": priority,
+                            "pe": doc.get("pe"), "roe": doc.get("roe"),
+                            "sector": doc.get("sector") or fr.get("company", {}).get("sector")
                         }
                     }}))
                     
@@ -1018,7 +1029,7 @@ async def seed_market_data():
                 except: pass
                 
             if total_repaired > 0:
-                logging.info(f"⚡ NUCLEAR HYDRATION: Repaired {total_repaired} records across entire DB.")
+                logging.info(f"⚡ NUCLEAR HYDRATION: Repaired {total_repaired} records with Top-100 Priority.")
 
         asyncio.create_task(nuclear_hydration())
         

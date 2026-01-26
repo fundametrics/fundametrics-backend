@@ -131,6 +131,8 @@ class MongoRepository:
                     "industry": snap.get("industry") or doc.get("industry") or "General",
                     "marketCap": snap.get("marketCap"),
                     "currentPrice": snap.get("currentPrice"),
+                    "changePercent": snap.get("changePercent") or 0.0,
+                    "priority": snap.get("priority") or 0,
                     "pe": snap.get("pe"),
                     "roe": snap.get("roe"),
                     "roce": snap.get("roce"),
@@ -172,6 +174,8 @@ class MongoRepository:
                 "industry": doc.get("industry") or fr_comp.get("industry") or "General",
                 "marketCap": mcap,
                 "currentPrice": price,
+                "changePercent": m_map.get("Change Percent") or m_map.get("Change_Percent") or 0.0,
+                "priority": 0, # Fallback path is always non-priority
                 "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
                 "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
                 "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),

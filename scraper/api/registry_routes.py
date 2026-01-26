@@ -112,11 +112,15 @@ async def list_company_registry(
             analyzed_symbols = [doc["symbol"] async for doc in analyzed_cursor]
             query = {"symbol": {"$nin": analyzed_symbols}}
             
-        # Get registry companies - Sort by last_failure ascending (nulls first), then symbol
+        # Get registry companies - Sort by Priority (Phase 16), then Market Cap, then symbol
         registry_cursor = registry_col.find(
             query,
             {"_id": 0, "symbol": 1, "name": 1, "sector": 1, "last_failure": 1}
-        ).sort([("last_failure", 1), ("symbol", 1)]).skip(skip).limit(limit)
+        ).sort([
+            ("snapshot.priority", -1), 
+            ("snapshot.marketCap", -1), 
+            ("symbol", 1)
+        ]).skip(skip).limit(limit)
         
         registry_companies = await registry_cursor.to_list(length=limit)
         symbols = [c["symbol"] for c in registry_companies]
