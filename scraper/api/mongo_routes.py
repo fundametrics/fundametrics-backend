@@ -903,7 +903,7 @@ def get_available_indices():
     return list(INDEX_CONSTITUENTS.keys())
 
 
-# Global Cache Initialization (Phase 9: Latency Elimination)
+# Global Cache Initialization (Phase 13: High-Performance Architecture)
 _HARD_FALLBACK_PRICES = [
     {"id": "NIFTY 50", "label": "NIFTY 50", "price": 24345.50, "change": 12.45, "changePercent": 0.05, "symbol": "^NSEI"},
     {"id": "SENSEX", "label": "SENSEX", "price": 80123.15, "change": -45.60, "changePercent": -0.06, "symbol": "^BSESN"},
@@ -911,7 +911,8 @@ _HARD_FALLBACK_PRICES = [
     {"id": "NIFTY IT", "label": "NIFTY IT", "price": 38456.25, "change": -210.15, "changePercent": -0.54, "symbol": "^CNXIT"}
 ]
 
-INDEX_PRICES_CACHE = _HARD_FALLBACK_PRICES
+# Use a specific list constructor to prevent mutation issues
+INDEX_PRICES_CACHE = list(_HARD_FALLBACK_PRICES)
 INDEX_PRICES_TS = datetime.now()
 INDEX_CACHE = {} # key: index_name_limit, value: (timestamp, data)
 
@@ -962,60 +963,46 @@ async def seed_market_data():
             if doc.get("data"):
                 async with _constituents_lock:
                     INDEX_CACHE[cache_key] = (doc.get("updated_at", datetime.now()), doc["data"])
-        # 3. Snapshot Hydration (Phase 25 Repair)
-        # Find companies with NO snapshot data but with a result, and hydrate them 
-        # to ensure sorting and price display works.
+        # 3. Snapshot Hydration (Phase 13: Bulk Performance)
+        # Optimized to use bulk operations to prevent startup slowness
         async def hydrate_snapshots():
+            from pymongo import UpdateOne
             col = get_companies_col()
-            # Only fix the top-tier symbols first for speed
-            tier_one = ["RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "ITC", "SBIN", "BHARTIARTL", "KOTAKBANK", "LT"]
             cursor = col.find({
-                "$or": [
-                    {"snapshot": {"$exists": False}}, 
-                    {"snapshot.marketCap": None}
-                ],
+                "$or": [{"snapshot": {"$exists": False}}, {"snapshot.marketCap": None}],
                 "fundametrics_response": {"$exists": True}
-            }).limit(200) # Process in batches
+            }).limit(200)
             
-            updates = 0
+            ops = []
             try:
                 async for doc in cursor:
-                    symbol = doc.get("symbol")
                     fr = doc.get("fundametrics_response", {})
                     m_list = fr.get("fundametrics_metrics", [])
-                    
-                    mcap = None
-                    price = None
-                    for m in m_list:
-                        if m.get("metric_name") in ["Market Cap", "Market_Cap"]: mcap = m.get("value")
-                        if m.get("metric_name") in ["Current Price", "Price"]: price = m.get("value")
+                    mcap = next((m.get("value") for m in m_list if m.get("metric_name") in ["Market Cap", "Market_Cap"]), None)
+                    price = next((m.get("value") for m in m_list if m.get("metric_name") in ["Current Price", "Price"]), None)
                     
                     if mcap or price:
-                        await col.update_one({"_id": doc["_id"]}, {"$set": {
+                        ops.append(UpdateOne({"_id": doc["_id"]}, {"$set": {
                             "snapshot": {
-                                "symbol": symbol,
-                                "name": doc.get("name"),
-                                "marketCap": mcap,
-                                "currentPrice": price,
-                                "pe": doc.get("pe"), # Preserve if exists
-                                "roe": doc.get("roe"),
-                                "sector": doc.get("sector") or fr.get("company", {}).get("sector")
+                                "symbol": doc.get("symbol"), "name": doc.get("name"),
+                                "marketCap": mcap, "currentPrice": price, "pe": doc.get("pe"),
+                                "roe": doc.get("roe"), "sector": doc.get("sector") or fr.get("company", {}).get("sector")
                             }
-                        }})
-                        updates += 1
+                        }}))
                 
-                if updates > 0:
-                    logging.info(f"✨ Repaired {updates} company snapshots for Registry UI and Sorting.")
+                if ops:
+                    await col.bulk_write(ops, ordered=False)
+                    logging.info(f"✨ Bulk repaired {len(ops)} company snapshots for Registry UI and Sorting.")
             except Exception as e:
-                logging.error(f"Snapshot hydration failed: {e}")
+                logging.error(f"Bulk Snapshot hydration failed: {e}")
 
-        # Tiered Seeding (Phase 13): Prioritize critical caches
-        # We process hydration as a background task to keep boot time fast
         asyncio.create_task(hydrate_snapshots())
         
-        # 4. Final Sanity Audit
-        if not INDEX_PRICES_CACHE or len(INDEX_PRICES_CACHE) < 2:
-            logging.warning("⚠️ CRITICAL: INDEX_PRICES_CACHE failed to seed from MongoDB. Dashboard will show Fallbacks.")
+        # 4. Final Sanity Audit (Ensure dashboard is NEVER empty)
+        if not INDEX_PRICES_CACHE:
+            async with _indices_lock:
+                INDEX_PRICES_CACHE = list(_HARD_FALLBACK_PRICES)
+            logging.error("⚠️ CRITICAL RECOVERY: INDEX_PRICES_CACHE was empty on boot. Applied Hard Fallback.")
             
     except Exception as e:
         logging.error(f"Failed to seed market data: {e}")
