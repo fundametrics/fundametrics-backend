@@ -963,40 +963,64 @@ async def seed_market_data():
             if doc.get("data"):
                 async with _constituents_lock:
                     INDEX_CACHE[cache_key] = (doc.get("updated_at", datetime.now()), doc["data"])
-        # 3. Snapshot Hydration (Phase 13: Bulk Performance)
-        # Optimized to use bulk operations to prevent startup slowness
-        async def hydrate_snapshots():
+        # 3. Nuclear Hydration (Phase 15: Full-DB Stabilization)
+        # Recursively repairs AND populates snapshots for EVERY record in the DB.
+        async def nuclear_hydration():
             from pymongo import UpdateOne
             col = get_companies_col()
+            # Find everything that needs a display repair
             cursor = col.find({
-                "$or": [{"snapshot": {"$exists": False}}, {"snapshot.marketCap": None}],
+                "$or": [
+                    {"snapshot": {"$exists": False}}, 
+                    {"snapshot.marketCap": {"$in": [None, 0]}},
+                    {"snapshot.currentPrice": {"$in": [None, 0]}}
+                ],
                 "fundametrics_response": {"$exists": True}
-            }).limit(200)
+            })
             
-            ops = []
-            try:
-                async for doc in cursor:
-                    fr = doc.get("fundametrics_response", {})
-                    m_list = fr.get("fundametrics_metrics", [])
-                    mcap = next((m.get("value") for m in m_list if m.get("metric_name") in ["Market Cap", "Market_Cap"]), None)
-                    price = next((m.get("value") for m in m_list if m.get("metric_name") in ["Current Price", "Price"]), None)
-                    
-                    if mcap or price:
-                        ops.append(UpdateOne({"_id": doc["_id"]}, {"$set": {
-                            "snapshot": {
-                                "symbol": doc.get("symbol"), "name": doc.get("name"),
-                                "marketCap": mcap, "currentPrice": price, "pe": doc.get("pe"),
-                                "roe": doc.get("roe"), "sector": doc.get("sector") or fr.get("company", {}).get("sector")
-                            }
-                        }}))
+            total_repaired = 0
+            batch = []
+            async for doc in cursor:
+                fr = doc.get("fundametrics_response", {})
+                m_list = fr.get("fundametrics_metrics", [])
+                deep_metrics = fr.get("metrics", {}).get("values", [])
                 
-                if ops:
-                    await col.bulk_write(ops, ordered=False)
-                    logging.info(f"✨ Bulk repaired {len(ops)} company snapshots for Registry UI and Sorting.")
-            except Exception as e:
-                logging.error(f"Bulk Snapshot hydration failed: {e}")
+                m_map = {m.get("metric_name"): m.get("value") for m in m_list if isinstance(m, dict) and m.get("metric_name")}
+                mcap = m_map.get("Market Cap") or m_map.get("Market_Cap") or doc.get("market_cap")
+                price = m_map.get("Current Price") or m_map.get("Price") or doc.get("price")
+                
+                # Deeper lookup for Phase 15 (Old Blobs)
+                if (not mcap or not price) and isinstance(deep_metrics, list):
+                    for m in deep_metrics:
+                        if not mcap and m.get("metric") in ["Market Cap", "Market_Cap", "MCAP"]: mcap = m.get("value")
+                        if not price and m.get("metric") in ["Price", "Current Price"]: price = m.get("value")
 
-        asyncio.create_task(hydrate_snapshots())
+                if mcap or price:
+                    batch.append(UpdateOne({"_id": doc["_id"]}, {"$set": {
+                        "snapshot": {
+                            "symbol": doc.get("symbol"), "name": doc.get("name"),
+                            "marketCap": mcap, "currentPrice": price, "pe": doc.get("pe"),
+                            "roe": doc.get("roe"), "sector": doc.get("sector") or fr.get("company", {}).get("sector")
+                        }
+                    }}))
+                    
+                    if len(batch) >= 100:
+                        try:
+                            await col.bulk_write(batch, ordered=False)
+                            total_repaired += len(batch)
+                            batch = []
+                        except: batch = []
+            
+            if batch:
+                try:
+                    await col.bulk_write(batch, ordered=False)
+                    total_repaired += len(batch)
+                except: pass
+                
+            if total_repaired > 0:
+                logging.info(f"⚡ NUCLEAR HYDRATION: Repaired {total_repaired} records across entire DB.")
+
+        asyncio.create_task(nuclear_hydration())
         
         # 4. Final Sanity Audit (Ensure dashboard is NEVER empty)
         if not INDEX_PRICES_CACHE:
@@ -1037,12 +1061,23 @@ async def refresh_index_prices():
         
         if response:
             async with _indices_lock:
-                INDEX_PRICES_CACHE = response
+                # PHASE 15 BUG FIX: Preserve non-zero gains during market-off hours
+                # If new data has 0.0% gain but old data had something else, keep the old gain.
+                old_map = {item["id"]: item for item in INDEX_PRICES_CACHE}
+                final_response = []
+                for new_item in response:
+                    old_item = old_map.get(new_item["id"])
+                    if old_item and new_item["changePercent"] == 0.0 and old_item["changePercent"] != 0.0:
+                        new_item["change"] = old_item["change"]
+                        new_item["changePercent"] = old_item["changePercent"]
+                    final_response.append(new_item)
+
+                INDEX_PRICES_CACHE = final_response
                 INDEX_PRICES_TS = datetime.now()
             
             # Phase 11: Nuclear Persistence
-            await _save_market_data("index_prices", response)
-            logging.info(f"✅ Index prices refreshed and persisted: {len(response)} items")
+            await _save_market_data("index_prices", final_response)
+            logging.info(f"✅ Index prices refreshed (Gain Preserved): {len(final_response)} items")
             
     except Exception as e:
         logging.error(f"Failed background price refresh: {e}")

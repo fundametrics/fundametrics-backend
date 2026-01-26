@@ -96,7 +96,8 @@ class MongoRepository:
             {
                 "symbol": 1, "name": 1, "sector": 1, "industry": 1, "snapshot": 1,
                 "fundametrics_response.company": 1,
-                "fundametrics_response.fundametrics_metrics": 1
+                "fundametrics_response.fundametrics_metrics": 1,
+                "fundametrics_response.metrics.values": 1
             }
         ).sort(sort_spec).skip(skip).limit(limit).allow_disk_use(True)
         
@@ -150,9 +151,19 @@ class MongoRepository:
             if name == "Unknown": name = doc.get("symbol")
             if doc.get("symbol") == "ZOMATO": name = "Eternal Ltd"
             
-            # Robust extraction: Try metrics, then direct fields
+            # Robust extraction: Try list metrics, then direct fields
             mcap = m_map.get("Market Cap") or m_map.get("Market_Cap") or doc.get("market_cap")
             price = m_map.get("Current Price") or m_map.get("Price") or doc.get("price") or doc.get("current_price")
+
+            # Emergency Fallback (Phase 15): Try deep metrics blob if still missing
+            if not mcap or not price:
+                deep_metrics = fr.get("metrics", {}).get("values", [])
+                if isinstance(deep_metrics, list):
+                    for m in deep_metrics:
+                        if not mcap and m.get("metric") in ["Market Cap", "Market_Cap", "MCAP"]:
+                            mcap = m.get("value")
+                        if not price and m.get("metric") in ["Price", "Current Price"]:
+                            price = m.get("value")
 
             results.append({
                 "symbol": doc.get("symbol"),
