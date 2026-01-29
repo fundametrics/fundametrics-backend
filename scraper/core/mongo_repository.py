@@ -84,10 +84,9 @@ class MongoRepository:
         
         mongo_sort_key = sort_map.get(sort_by, sort_by)
         
-        # Phase 25 Refinement: Top 100 Priority (Market Cap DESC, then alpha)
-        # If user is sorting by name/symbol (standard view), we lead with Market Cap
+        # Phase 25 Refinement: Priority sorting (e.g. NIFTY 50 first)
         if sort_by in ["name", "symbol"] and order == 1:
-            sort_spec = [("snapshot.marketCap", -1), ("name", 1)]
+            sort_spec = [("snapshot.priority", -1), ("snapshot.marketCap", -1), ("name", 1)]
         else:
             sort_spec = [(mongo_sort_key, order)]
 
@@ -176,9 +175,9 @@ class MongoRepository:
                 "currentPrice": price,
                 "changePercent": m_map.get("Change Percent") or m_map.get("Change_Percent") or 0.0,
                 "priority": 0, # Fallback path is always non-priority
-                "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
-                "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
-                "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),
+                "pe": m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe"),
+                "roe": m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe"),
+                "roce": m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce"),
             })
         return results
     

@@ -163,19 +163,37 @@ def _build_snapshot(symbol: str, response: Dict[str, Any]) -> Dict[str, Any]:
     company = response.get("company", {})
     metrics = response.get("fundametrics_metrics", [])
     
-    # Simple lookup for metrics
-    m_map = {m.get("metric_name"): m.get("value") for m in metrics if m.get("metric_name")}
+    # Robust lookup for metrics (lower-case, underscore/space indifferent)
+    def normalize_key(k: str) -> str:
+        return k.lower().replace(" ", "_").strip()
+
+    m_map = {}
+    if isinstance(metrics, list):
+        for m in metrics:
+            name = m.get("metric_name")
+            if name:
+                m_map[normalize_key(name)] = m.get("value")
     
+    # Priority logic for sorting
+    from scraper.core.indices import INDEX_CONSTITUENTS
+    is_nifty_50 = symbol.upper() in INDEX_CONSTITUENTS.get("NIFTY 50", [])
+    priority = 100 if is_nifty_50 else 0
+
     return {
         "symbol": symbol,
         "name": company.get("name") or symbol,
         "sector": company.get("sector") or "General",
         "industry": company.get("industry") or "General",
-        "marketCap": m_map.get("Market Cap") or m_map.get("Market_Cap"),
-        "pe": m_map.get("PE Ratio") or m_map.get("Pe_Ratio") or m_map.get("P/E Ratio"),
-        "roe": m_map.get("ROE") or m_map.get("Return On Equity"),
-        "roce": m_map.get("ROCE") or m_map.get("Return On Capital Employed"),
-        "currentPrice": response.get("metadata", {}).get("constants", {}).get("share_price") or m_map.get("Current Price") or m_map.get("Price"),
+        "marketCap": m_map.get("market_cap") or m_map.get("marketcap") or m_map.get("market_capitalization"),
+        "pe": m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("pe"),
+        "roe": m_map.get("roe") or m_map.get("return_on_equity"),
+        "roce": m_map.get("roce") or m_map.get("return_on_capital_employed"),
+        "currentPrice": (
+            response.get("metadata", {}).get("constants", {}).get("share_price") or 
+            m_map.get("current_price") or 
+            m_map.get("price")
+        ),
+        "priority": priority
     }
 
 
