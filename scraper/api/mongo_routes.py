@@ -82,15 +82,19 @@ async def list_companies(
             min_roe=min_roe
         )
         
-        # We need a count for the filtered set, but to keep it fast for Phase 5,
-        # we'll approximate or use the result length for now if not filtered.
-        # A more robust solution for Phase 6 will use count_documents on the full query.
-        total = 0
-        if not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
-             col = get_companies_col()
-             total = await col.count_documents({"symbol": {"$not": {"$regex": "^--"}}})
+        # Get accurate total count for filtered results
+        if any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+            total = await mongo_repo.count_companies(
+                sector=sector,
+                min_market_cap=min_market_cap,
+                max_market_cap=max_market_cap,
+                min_pe=min_pe,
+                max_pe=max_pe,
+                min_roe=min_roe
+            )
         else:
-             total = len(companies) # Simple for now
+            col = get_companies_col()
+            total = await col.count_documents({"symbol": {"$not": {"$regex": "^--"}}})
              
         response = {
             "total": total,

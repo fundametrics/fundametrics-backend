@@ -101,6 +101,38 @@ class MongoRepository:
         ).sort(sort_spec).skip(skip).limit(limit).allow_disk_use(True)
         
         return await self._format_company_list(cursor)
+    
+    async def count_companies(
+        self,
+        sector: Optional[str] = None,
+        min_market_cap: Optional[float] = None,
+        max_market_cap: Optional[float] = None,
+        min_pe: Optional[float] = None,
+        max_pe: Optional[float] = None,
+        min_roe: Optional[float] = None
+    ) -> int:
+        """
+        Count total companies matching the given filters.
+        """
+        query = {"symbol": {"$not": {"$regex": "^--"}}}
+        
+        if sector and sector != "all":
+            query["sector"] = sector
+            
+        if min_market_cap is not None or max_market_cap is not None:
+            query["snapshot.marketCap"] = {}
+            if min_market_cap is not None: query["snapshot.marketCap"]["$gte"] = min_market_cap
+            if max_market_cap is not None: query["snapshot.marketCap"]["$lte"] = max_market_cap
+            
+        if min_pe is not None or max_pe is not None:
+            query["snapshot.pe"] = {}
+            if min_pe is not None: query["snapshot.pe"]["$gte"] = min_pe
+            if max_pe is not None: query["snapshot.pe"]["$lte"] = max_pe
+            
+        if min_roe is not None:
+            query["snapshot.roe"] = {"$gte": min_roe}
+        
+        return await self._companies.count_documents(query)
 
     async def get_companies_detail(self, symbols: List[str]) -> List[Dict[str, Any]]:
         """
