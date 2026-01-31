@@ -19,20 +19,130 @@ async def list_stocks(
     skip: int = 0, 
     limit: int = 100, 
     search: Optional[str] = None,
+    sector: Optional[str] = None,
+    min_market_cap: Optional[float] = None,
+    max_market_cap: Optional[float] = None,
+    min_roe: Optional[float] = None,
+    max_pe: Optional[float] = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
-    List all companies. Supports search by name or symbol.
+    List all companies with filters.
     """
+    from sqlalchemy.orm import aliased
+    from sqlalchemy import and_, or_
+
     stmt = select(Company)
+
+    # 1. Basic Search
     if search:
         stmt = stmt.where(
             (Company.name.ilike(f"%{search}%")) | (Company.symbol.ilike(f"%{search}%"))
         )
     
+    # 2. Section Filter
+    if sector and sector != 'all':
+        stmt = stmt.where(Company.sector == sector)
+
+    # 3. Numeric Filters (Using EXISTs/JOINs for filtering)
+    # We join with specific metric rows if filtering is requested
+    
+    if min_market_cap is not None:
+        mc_alias = aliased(ComputedMetric)
+        stmt = stmt.join(mc_alias, and_(
+            Company.id == mc_alias.company_id,
+            mc_alias.metric_name.in_(['Market Cap', 'Market Capitalization']),
+            mc_alias.value >= min_market_cap
+        ))
+
+    if max_market_cap is not None:
+        mc_alias_max = aliased(ComputedMetric)
+        stmt = stmt.join(mc_alias_max, and_(
+            Company.id == mc_alias_max.company_id,
+            mc_alias_max.metric_name.in_(['Market Cap', 'Market Capitalization']),
+            mc_alias_max.value <= max_market_cap
+        ))
+
+    if min_roe is not None:
+        roe_alias = aliased(ComputedMetric)
+        stmt = stmt.join(roe_alias, and_(
+            Company.id == roe_alias.company_id,
+            roe_alias.metric_name.in_(['ROE', 'Return on Equity']),
+            roe_alias.value >= min_roe
+        ))
+        
+    if max_pe is not None:
+        pe_alias = aliased(ComputedMetric)
+        stmt = stmt.join(pe_alias, and_(
+            Company.id == pe_alias.company_id,
+            pe_alias.metric_name.in_(['P/E Ratio', 'PE Ratio']),
+            pe_alias.value <= max_pe
+        ))
+
+    # Apply Pagination
     stmt = stmt.offset(skip).limit(limit)
+    
+    # Execute Base Query
     result = await db.execute(stmt)
-    return result.scalars().all()
+    companies = result.scalars().all()
+
+    # 4. Hydrate Metrics (Efficient ID-based fetch)
+    # Since we need to return values (even if not filtering by them), we fetch them for the result set
+    if companies:
+        company_ids = [c.id for c in companies]
+        
+        # Fetch relevant metrics for these companies
+        metrics_stmt = select(ComputedMetric).where(
+            ComputedMetric.company_id.in_(company_ids),
+            ComputedMetric.metric_name.in_([
+                'Market Cap', 'Market Capitalization', 
+                'ROE', 'Return on Equity', 
+                'P/E Ratio', 'PE Ratio',
+                'Debt to Equity', 'Debt',
+                '1Y Return'
+            ])
+        ).order_by(desc(ComputedMetric.period)) # Prefer latest
+        
+        m_result = await db.execute(metrics_stmt)
+        all_metrics = m_result.scalars().all()
+        
+        # Map metrics to companies
+        # Use a dictionary for fast lookup: {company_id: {metric_name: value}}
+        metrics_map = {}
+        for m in all_metrics:
+            if m.company_id not in metrics_map:
+                metrics_map[m.company_id] = {}
+            
+            # Since we ordered by period desc, the first time we see a metric name, it's the latest
+            name = m.metric_name
+            normalized_name = 'market_cap' if name in ['Market Cap', 'Market Capitalization'] else \
+                              'roe' if name in ['ROE', 'Return on Equity'] else \
+                              'pe' if name in ['P/E Ratio', 'PE Ratio'] else \
+                              'debt' if name in ['Debt', 'Debt to Equity'] else \
+                              'change_percent' if name == '1Y Return' else None
+            
+            if normalized_name and normalized_name not in metrics_map[m.company_id]:
+                 metrics_map[m.company_id][normalized_name] = m.value
+
+        # Construct Response Objects
+        final_results = []
+        for c in companies:
+            c_dict = c.__dict__
+            # Add metric values from map
+            c_metrics = metrics_map.get(c.id, {})
+            
+            # Create a combined object (schema validation will handle the rest if we match fields)
+            # We use dynamic object creation to match CompanyListRead
+            c.market_cap = c_metrics.get('market_cap')
+            c.roe = c_metrics.get('roe')
+            c.pe = c_metrics.get('pe')
+            c.debt = c_metrics.get('debt')
+            c.change_percent = c_metrics.get('change_percent')
+            final_results.append(c)
+            
+        return final_results
+    
+    return []
 
 @router.get("/stocks/{symbol}", response_model=StockDetailRead)
 async def get_stock_detail(symbol: str, db: AsyncSession = Depends(get_db)):

@@ -18,6 +18,13 @@ class CompanyRead(CompanyBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+class CompanyListRead(CompanyRead):
+    market_cap: Optional[Decimal] = None
+    roe: Optional[Decimal] = None
+    pe: Optional[Decimal] = None
+    debt: Optional[Decimal] = None
+    change_percent: Optional[Decimal] = None
+
 class FactRead(BaseModel):
     face_value: Optional[Decimal] = None
     book_value: Optional[Decimal] = None
