@@ -224,3 +224,60 @@ async def check_comparison_eligibility(payload: CompareRequest):
     from scraper.core.compare import can_compare
     result = can_compare(payload.metric_a, payload.metric_b)
     return result
+
+@router.get("/companies", response_model=List[CompanyRead])
+async def list_companies_alias(
+    skip: int = 0, 
+    limit: int = 100, 
+    search: Optional[str] = None,
+    sector: Optional[str] = None,
+    min_market_cap: Optional[float] = None,
+    max_market_cap: Optional[float] = None,
+    min_roe: Optional[float] = None,
+    max_pe: Optional[float] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Alias for /stocks to support frontend legacy route.
+    """
+    return await list_stocks(skip, limit, search, sector, min_market_cap, max_market_cap, min_roe, max_pe, db)
+
+@router.get("/indices/prices")
+async def get_indices_prices():
+    """
+    Mock endpoint for market indices.
+    """
+    return [
+        {
+            "id": "nifty50",
+            "label": "NIFTY 50",
+            "price": 22450.30,
+            "change": 120.55,
+            "changePercent": 0.54,
+            "symbol": "^NSEI"
+        },
+        {
+            "id": "sensex",
+            "label": "SENSEX",
+            "price": 73890.15,
+            "change": 350.20,
+            "changePercent": 0.48,
+            "symbol": "^BSESN"
+        },
+        {
+            "id": "niftybank",
+            "label": "BANK NIFTY",
+            "price": 47850.60,
+            "change": -80.40,
+            "changePercent": -0.17,
+            "symbol": "^NSEBANK"
+        },
+        {
+            "id": "niftyit",
+            "label": "NIFTY IT",
+            "price": 37200.10,
+            "change": 410.00,
+            "changePercent": 1.11,
+            "symbol": "^CNXIT"
+        }
+    ]
