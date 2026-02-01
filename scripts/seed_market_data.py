@@ -2,6 +2,7 @@
 import asyncio
 import os
 import sys
+from datetime import datetime, timezone
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,37 +28,43 @@ async def seed_market_data():
         "ASIANPAINT", "MARUTI", "SUNPHARMA", "HCLTECH", "NTPC"
     ]
     
-    print(f"🚀 Seeding market data for {len(symbols)} companies...")
+    print(f"🚀 Seeding market data for {len(symbols)} companies (BATCH MODE)...")
     
-    for symbol in symbols:
-        try:
-            print(f"Fetching {symbol}...")
-            facts = await engine.fetch_market_facts(symbol)
+    # Prepare symbols (Yahoo needs suffixes for Indian stocks)
+    yahoo_symbols = [f"{s}.NS" for s in symbols]
+    
+    # Fetch all at once using the new Quote API Batcher
+    results = await engine.fetch_batch_prices(yahoo_symbols)
+    
+    for data in results:
+        raw_sym = data.get("symbol")
+        current_price = data.get("price")
+        
+        if current_price:
+            # Clean symbol for DB lookup (RELIANCE.NS -> RELIANCE)
+            db_symbol = raw_sym.replace(".NS", "")
             
-            if facts.current_price:
-                # Update DB
-                update_data = {
-                    "snapshot.currentPrice": facts.current_price,
-                    "snapshot.change": facts.current_change,
-                    "snapshot.changePercent": facts.change_percent,
-                    "snapshot.marketCap": facts.market_cap,
-                    "snapshot.pe": None, # Keep existing or calculate if creating fresh
-                    "snapshot.roe": None
-                }
-                
-                # Only update fields that are not None
-                update_query = {k: v for k, v in update_data.items() if v is not None}
-                
-                await col.update_one(
-                    {"symbol": symbol},
-                    {"$set": update_query}
-                )
-                print(f"✅ Updated {symbol}: Price={facts.current_price}, Change={facts.change_percent}%")
-            else:
-                print(f"⚠️ No data for {symbol}")
-                
-        except Exception as e:
-            print(f"❌ Error {symbol}: {e}")
+            # Update DB
+            update_data = {
+                "snapshot.currentPrice": current_price,
+                "snapshot.change": data.get("change"),
+                "snapshot.changePercent": data.get("change_percent"),
+                "snapshot.marketCap": data.get("market_cap"),
+                "snapshot.fiftyTwoWeekHigh": data.get("fifty_two_week_high"),
+                "snapshot.fiftyTwoWeekLow": data.get("fifty_two_week_low"),
+                "snapshot.lastUpdated": datetime.now(timezone.utc)
+            }
+            
+            # Only update fields that are not None
+            update_query = {k: v for k, v in update_data.items() if v is not None}
+            
+            await col.update_one(
+                {"symbol": db_symbol},
+                {"$set": update_query}
+            )
+            print(f"✅ Updated {db_symbol}: Price={current_price}, Change={data.get('change_percent')}%")
+        else:
+            print(f"⚠️ No data returned for a symbol in batch")
             
     print("Done!")
 

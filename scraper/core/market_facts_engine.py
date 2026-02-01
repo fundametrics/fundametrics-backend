@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 from dataclasses import dataclass
 
 from scraper.core.fetcher import Fetcher
@@ -67,15 +67,10 @@ class MarketFactsEngine:
         # Check lockdown status at the VERY START to avoid network slowness
         from scraper.utils.yahoo_session import YahooSession
         session = await YahooSession.get_instance()
-        if session.is_in_quarantine():
-            self._log.debug("Ceasefire active. Skipping fetch for {}", symbol)
-            return MarketFacts(
-                current_price=None, current_change=None, change_percent=None,
-                price_currency="INR", price_delay_minutes=0,
-                fifty_two_week_high=None, fifty_two_week_low=None,
-                shares_outstanding=None, market_cap=None,
-                market_cap_currency="INR", last_updated=datetime.now(timezone.utc)
-            )
+        
+        # NOTE: Reduced global locking strictness here to allow fallback attempts
+        # only return empty if absolutely blocked (e.g. auth failure)
+        # if session.is_in_quarantine(): ...
         
         # Optimized: Fetch ALL data in ONE request using fetch_batch_prices
         batch_results = await self.fetch_batch_prices([yahoo_symbol])
@@ -190,9 +185,10 @@ class MarketFactsEngine:
                         }
             except Exception as exc:
                 sc = getattr(exc, 'status_code', None)
-                # Fail-fast: if any individual request hits a 429, propagate it up
+                # Fail-fast removed here too to allow fallback
                 if sc == 429 or "429" in str(exc):
-                    raise exc 
+                    self._log.warning(f"Chart API 429 for {yahoo_symbol} - continuing to fallback")
+                    continue
                 self._log.warning("Yahoo fetch failed for {}{}: {}", clean_symbol, suffix, exc)
                 continue
                 
@@ -264,99 +260,49 @@ class MarketFactsEngine:
 
     async def fetch_batch_prices(self, symbols: List[str]) -> List[Dict[str, Any]]:
         """
-        GHOST-MODE prioritized fetching. 
-        Uses Chart API (v8) first as it's more resilient to cloud-IP blocks.
+        Production-Grade Fetcher (Phase 15):
+        Hierarchy: Quote API (Batch) -> Chart API (Serial) -> HTML Scrape (Emergency)
+        Prevents global lockdown on 429s by switching sources smartly.
         """
-        if not symbols:
-            return []
+        if not symbols: return []
             
         from scraper.utils.yahoo_session import YahooSession
         session = await YahooSession.get_instance()
-        
-        if session.is_in_quarantine():
-            return [{} for _ in symbols]
-            
         await session.refresh_if_needed()
         
-        # GHOST-MODE: Try Chart API FIRST (Stealthiest)
         results_map = {}
-        missing_symbols = []
         
-        if len(symbols) <= 15:
-            self._log.debug("Ghost-Mode: Attempting serialized Chart API layer")
+        # Chunk symbols to avoid URL length limits (max ~50 safe)
+        chunks = [symbols[i:i + 50] for i in range(0, len(symbols), 50)]
+        
+        for chunk in chunks:
+            chunk_success = False
             
-            # BURST PREVENTION: Fetch one-by-one with delays
-            for sym in symbols:
-                if session.is_in_quarantine(): break
-                try:
-                    chart_data = await self._fetch_delayed_price(sym)
-                    if chart_data and chart_data.get("current_price"):
-                        results_map[sym] = {
-                            "price": chart_data["current_price"],
-                            "change": chart_data.get("change", 0), 
-                            "change_percent": chart_data.get("change_percent", 0),
-                            "symbol": sym, "currency": chart_data.get("currency", "INR")
-                        }
-                    else:
-                        missing_symbols.append(sym)
+            # --- STRATEGY 1: QUOTE API (BATCH - PRIMARY) ---
+            try:
+                # Try both subdomains if one fails
+                for sub in ["query2", "query1"]:
+                    if chunk_success: break
                     
-                    # Human-mimic delay
-                    await asyncio.sleep(1.5)
-                except Exception as e:
-                    sc = getattr(e, 'status_code', None)
-                    if sc == 429 or "429" in str(e):
-                        self._log.critical("FAIL-FAST: 429 detected during Chart API loop. Locking down.")
-                        await session.trigger_quarantine(minutes=30)
-                        break # Stop current batch immediately
-                    
-                    # Phase 12 Fallback: If Chart fails and it's an index, try HTML Scraping
-                    if sym.startswith('^'):
-                        html_data = await self._scrape_index_html(sym)
-                        if html_data:
-                            results_map[sym] = {
-                                "price": html_data["current_price"],
-                                "change": 0, "change_percent": 0,
-                                "symbol": sym, "currency": html_data.get("currency", "INR")
-                            }
-                            continue
-                    
-                    missing_symbols.append(sym)
-                    
-            if not missing_symbols and len(results_map) == len(symbols):
-                self._log.info("✅ Success: Ghost-Mode Chart Layer (Full Cache Update)")
-                return [results_map[s] for s in symbols]
-
-        # FALLBACK: Quote API for missing symbols or large batches
-        batch_symbols = missing_symbols if missing_symbols else symbols
-        subdomains = ["query2", "query1"]
-        
-        for sub in subdomains:
-            if session.is_in_quarantine(): break
-            # Ghost-Mode: Try Clean fetch first
-            for mode in ["clean", "session"]:
-                try:
-                    symbols_str = ",".join(batch_symbols)
+                    symbols_str = ",".join(chunk)
                     url = f"https://{sub}.finance.yahoo.com/v7/finance/quote?symbols={symbols_str}"
                     
                     api_headers = session.get_headers({
                         "Accept": "application/json, text/plain, */*",
-                        "Origin": "https://finance.yahoo.com"
+                        "Origin": "https://finance.yahoo.com",
+                        "Referer": "https://finance.yahoo.com/"
                     })
                     
-                    kwargs = {"timeout": 10.0, "headers": api_headers}
-                    if mode == "session":
-                        p = session.get_api_params()
-                        c = session.get_cookies()
-                        if p or c:
-                            kwargs["params"] = p
-                            kwargs["cookies"] = c
-                        else: continue 
+                    # Use session cookies/crumbs if available
+                    params = session.get_api_params()
+                    cookies = session.get_cookies()
                     
-                    response = await self._fetcher.fetch_json(url, **kwargs)
+                    response = await self._fetcher.fetch_json(
+                        url, timeout=10.0, headers=api_headers, params=params, cookies=cookies
+                    )
                     
                     if response and "quoteResponse" in response and response["quoteResponse"].get("result"):
-                        results = response["quoteResponse"]["result"]
-                        for r in results:
+                        for r in response["quoteResponse"]["result"]:
                             sym = r.get("symbol")
                             if sym:
                                 results_map[sym] = {
@@ -366,25 +312,47 @@ class MarketFactsEngine:
                                     "fifty_two_week_high": r.get("fiftyTwoWeekHigh"),
                                     "fifty_two_week_low": r.get("fiftyTwoWeekLow"),
                                     "shares_outstanding": r.get("sharesOutstanding"),
+                                    "market_cap": r.get("marketCap"),
                                     "symbol": sym,
                                     "currency": r.get("currency", "INR")
                                 }
+                        chunk_success = True
+                        self._log.info(f"✅ Quote API Success ({sub}): Fetched {len(chunk)} symbols")
                         
-                        self._log.info(f"✅ Success: Quote API ({sub}/{mode})")
-                        return [results_map.get(s, {}) for s in symbols]
-                except Exception as e:
-                    sc = getattr(e, 'status_code', None)
-                    if sc == 401:
-                        # Phase 12: 60-minute Global Ceasefire on auth failure
-                        self._log.critical("AUTH-BLOCK detected! Triggering 60-minute Global Ceasefire.")
-                        await session.trigger_quarantine(minutes=60, is_auth_failure=True)
-                        break 
-
-                    if sc == 429 or "429" in str(e):
-                        if sub == subdomains[-1] and mode == "session":
-                            await session.trigger_quarantine(minutes=30)
-                        continue 
-                    continue
+            except Exception as e:
+                self._log.warning(f"Quote API Batch failed: {e}")
+            
+            # --- STRATEGY 2: CHART API (SERIAL - SECONDARY) ---
+            missing = [s for s in chunk if s not in results_map]
+            
+            if missing:
+                self._log.debug(f"Falling back to Chart API for {len(missing)} symbols")
+                for sym in missing:
+                    try:
+                        # Add slight delay to prevent burst flags
+                        await asyncio.sleep(0.5)
+                        
+                        chart_data = await self._fetch_delayed_price(sym)
+                        if chart_data and chart_data.get("current_price"):
+                            results_map[sym] = {
+                                "price": chart_data["current_price"],
+                                "change": chart_data.get("change", 0), 
+                                "change_percent": chart_data.get("change_percent", 0),
+                                "symbol": sym, "currency": chart_data.get("currency", "INR")
+                            }
+                        else:
+                            # --- STRATEGY 3: HTML SCRAPE (EMERGENCY - INDICES ONLY) ---
+                            if sym.startswith('^'):
+                                html_data = await self._scrape_index_html(sym)
+                                if html_data:
+                                    results_map[sym] = {
+                                        "price": html_data["current_price"],
+                                        "change": 0, "change_percent": 0,
+                                        "symbol": sym, "currency": html_data.get("currency", "INR")
+                                    }
+                    except Exception as e:
+                        # Individual symbol failure in fallback shouldn't stop the batch
+                        self._log.warning(f"Chart API failed for {sym}: {e}")
 
         return [results_map.get(s, {}) for s in symbols]
 
