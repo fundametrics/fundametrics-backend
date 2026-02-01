@@ -1362,7 +1362,7 @@ async def get_market_facts_mongo(symbol: str):
                     fr = db_data.get("fundametrics_response", {})
                     m_list = fr.get("fundametrics_metrics", [])
                     for m in m_list:
-                        if m.get("metric_name") == "Current Price":
+                        if isinstance(m, dict) and m.get("metric_name") == "Current Price":
                             price = m.get("value")
                             break
                 
