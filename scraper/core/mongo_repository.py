@@ -623,9 +623,6 @@ class MongoRepository:
         companies = get_companies_col()
         return await companies.count_documents({"_id": symbol.upper()}, limit=1) > 0
 
-    async def count_companies(self) -> int:
-        return await get_companies_col().count_documents({})
-
     
     # ==================== TRUST & RELIABILITY (Phase 24) ====================
     
