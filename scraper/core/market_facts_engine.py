@@ -194,54 +194,64 @@ class MarketFactsEngine:
                 
         return {}
 
-    async def _scrape_index_html(self, index_symbol: str) -> Dict[str, Any]:
+    async def _scrape_index_html(self, symbol: str) -> Dict[str, Any]:
         """
         Phase 12: Human-Mimetic fallback. Scrapes public HTML if API is blocked.
-        Harder to block as it doesn't require crumbs.
         """
         try:
             import urllib.parse
             import re
             from bs4 import BeautifulSoup
             
-            quoted = urllib.parse.quote(index_symbol)
-            url = f"https://finance.yahoo.com/quote/{quoted}"
+            # Normalize: Try suffixes if missing
+            clean_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
+            suffixes = [""] if symbol.startswith("^") else [".NS", ".BO", ""]
             
-            # Use 'clean' mode (no identity) for HTML to avoid cookie profiling
-            html = await self._fetcher.fetch_html(url, timeout=10.0)
-            if not html: return {}
-            
-            # 1. Primary: JSON blob extraction (most accurate)
-            match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
-            change_match = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', html)
-            prev_close_match = re.search(r'"regularMarketPreviousClose":\s*\{"raw":\s*([\d\.]+)', html)
-            
-            if match:
-                price = float(match.group(1))
-                change_pct = float(change_match.group(1)) if change_match else 0.0
-                prev_close = float(prev_close_match.group(1)) if prev_close_match else None
-                
-                # Manual calculation if change is 0 but we have price and prev_close
-                if abs(change_pct) < 0.0001 and prev_close and abs(prev_close) > 0.001:
-                    change_pct = ((price - prev_close) / prev_close) * 100.0
-                    self._log.info(f"📊 Derived Percent: {index_symbol} = {change_pct:.2f}% (Price: {price}, Prev: {prev_close})")
+            for suffix in suffixes:
+                try:
+                    target = f"{clean_symbol}{suffix}" if suffix else clean_symbol
+                    quoted = urllib.parse.quote(target)
+                    url = f"https://finance.yahoo.com/quote/{quoted}"
+                    
+                    # Use 'clean' mode (no identity) for HTML
+                    html = await self._fetcher.fetch_html(url, timeout=10.0)
+                    if not html or "regularMarketPrice" not in html:
+                        continue
+                        
+                    # 1. Primary: JSON blob extraction (most accurate)
+                    match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
+                    change_match = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', html)
+                    prev_close_match = re.search(r'"regularMarketPreviousClose":\s*\{"raw":\s*([\d\.]+)', html)
+                    
+                    if match:
+                        price = float(match.group(1))
+                        change_pct = float(change_match.group(1)) if change_match else 0.0
+                        prev_close = float(prev_close_match.group(1)) if prev_close_match else None
+                        
+                        # Manual calculation if change is 0 but we have price and prev_close
+                        if abs(change_pct) < 0.0001 and prev_close and abs(prev_close) > 0.001:
+                            change_pct = ((price - prev_close) / prev_close) * 100.0
+                            self._log.info(f"📊 Derived Percent: {target} = {change_pct:.2f}% (Price: {price}, Prev: {prev_close})")
 
-                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price} ({change_pct:.2f}%)")
-                return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
-                
-            # 2. Fallback: BeautifulSoup parsing
-            soup = BeautifulSoup(html, "html.parser")
-            price_tag = soup.find("fin-streamer", {"data-field": "regularMarketPrice"})
-            change_tag = soup.find("fin-streamer", {"data-field": "regularMarketChangePercent"})
+                        self._log.info(f"🍀 HTML Scrape Success (Regex): {target} = {price} ({change_pct:.2f}%)")
+                        return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
+                        
+                    # 2. Fallback: BeautifulSoup parsing
+                    soup = BeautifulSoup(html, "html.parser")
+                    price_tag = soup.find("fin-streamer", {"data-field": "regularMarketPrice"})
+                    change_tag = soup.find("fin-streamer", {"data-field": "regularMarketChangePercent"})
+                    
+                    if price_tag and price_tag.get("value"):
+                        price = float(price_tag["value"])
+                        change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
+                        self._log.info(f"🍀 HTML Scrape Success (Soup): {target} = {price} ({change_pct:.2f}%)")
+                        return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
+                except Exception as e:
+                    self._log.debug(f"Attempt failed for {target}: {e}")
+                    continue
             
-            if price_tag and price_tag.get("value"):
-                price = float(price_tag["value"])
-                change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
-                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price} ({change_pct:.2f}%)")
-                return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
-                
         except Exception as e:
-            self._log.debug(f"HTML Scrape failed for {index_symbol}: {e}")
+            self._log.debug(f"HTML Scape fatal error for {symbol}: {e}")
             
         return {}
 
