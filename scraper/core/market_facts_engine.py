@@ -214,11 +214,19 @@ class MarketFactsEngine:
             # 1. Primary: JSON blob extraction (most accurate)
             match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
             change_match = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', html)
+            prev_close_match = re.search(r'"regularMarketPreviousClose":\s*\{"raw":\s*([\d\.]+)', html)
             
             if match:
                 price = float(match.group(1))
                 change_pct = float(change_match.group(1)) if change_match else 0.0
-                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price} ({change_pct}%)")
+                prev_close = float(prev_close_match.group(1)) if prev_close_match else None
+                
+                # Manual calculation if change is 0 but we have price and prev_close
+                if abs(change_pct) < 0.0001 and prev_close and abs(prev_close) > 0.001:
+                    change_pct = ((price - prev_close) / prev_close) * 100.0
+                    self._log.info(f"📊 Derived Percent: {index_symbol} = {change_pct:.2f}% (Price: {price}, Prev: {prev_close})")
+
+                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price} ({change_pct:.2f}%)")
                 return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 
             # 2. Fallback: BeautifulSoup parsing
@@ -229,7 +237,7 @@ class MarketFactsEngine:
             if price_tag and price_tag.get("value"):
                 price = float(price_tag["value"])
                 change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
-                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price} ({change_pct}%)")
+                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price} ({change_pct:.2f}%)")
                 return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 
         except Exception as e:
@@ -339,7 +347,12 @@ class MarketFactsEngine:
                         await asyncio.sleep(0.5)
                         
                         chart_data = await self._fetch_delayed_price(sym)
-                        if chart_data and chart_data.get("current_price"):
+                        # Phase 25 Refinement: Fallback to HTML even if price is found, IF change is 0.
+                        # This catches weekends where API returns 0.0 but HTML show yesterday's performance.
+                        is_valid = chart_data and chart_data.get("current_price")
+                        has_movement = chart_data and abs(chart_data.get("change_percent", 0)) > 0.0001
+                        
+                        if is_valid and has_movement:
                             results_map[sym] = {
                                 "price": chart_data["current_price"],
                                 "change": chart_data.get("change", 0), 
