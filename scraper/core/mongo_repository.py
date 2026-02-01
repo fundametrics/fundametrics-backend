@@ -59,8 +59,12 @@ class MongoRepository:
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
-            # Case-insensitive match for sector (handles URL encoding/casing diffs)
-            query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
+            # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
+            regex = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
+            query["$or"] = [
+                {"sector": regex},
+                {"fundametrics_response.company.sector": regex}
+            ]
             
         # Range filters on snapshot fields
         if min_market_cap is not None or max_market_cap is not None:
@@ -121,10 +125,17 @@ class MongoRepository:
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
-            # Case-insensitive match
-            query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
+            # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
+            regex = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
+            query["$or"] = [
+                {"sector": regex},
+                {"fundametrics_response.company.sector": regex}
+            ]
             
+        # Range filters on snapshot fields
         if min_market_cap is not None or max_market_cap is not None:
+            # Note: Numerical filters still rely on the 'snapshot' optimizations.
+            # Running the backfill script is recommended to enable these for all 2000+ companies.
             query["snapshot.marketCap"] = {}
             if min_market_cap is not None: query["snapshot.marketCap"]["$gte"] = min_market_cap
             if max_market_cap is not None: query["snapshot.marketCap"]["$lte"] = max_market_cap
