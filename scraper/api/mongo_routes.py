@@ -50,6 +50,7 @@ async def list_companies(
     order: int = Query(1, description="1 for ASC, -1 for DESC"),
     sector: Optional[str] = Query(None),
     q: Optional[str] = Query(None, description="Search query for symbol or name"),
+    backfill: Optional[bool] = Query(False),
     min_market_cap: Optional[float] = Query(None),
     max_market_cap: Optional[float] = Query(None),
     min_pe: Optional[float] = Query(None),
@@ -70,6 +71,9 @@ async def list_companies(
             return _COMPANIES_CACHE["data"]
             
     try:
+        if backfill:
+            await mongo_repo.run_backfill()
+            
         companies = await mongo_repo.get_all_companies(
             skip=skip, 
             limit=limit, 
