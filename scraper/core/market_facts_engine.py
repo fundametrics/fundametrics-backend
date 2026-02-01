@@ -74,7 +74,7 @@ class MarketFactsEngine:
         
         # Optimized: Fetch ALL data in ONE request using fetch_batch_prices
         batch_results = await self.fetch_batch_prices([yahoo_symbol])
-        data = batch_results[0] if batch_results else {}
+        data = batch_results.get(yahoo_symbol, {})
         
         current_price = data.get("price")
         current_change = data.get("change")
