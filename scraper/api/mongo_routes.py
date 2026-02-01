@@ -49,6 +49,7 @@ async def list_companies(
     sort_by: str = Query("symbol"),
     order: int = Query(1, description="1 for ASC, -1 for DESC"),
     sector: Optional[str] = Query(None),
+    q: Optional[str] = Query(None, description="Search query for symbol or name"),
     min_market_cap: Optional[float] = Query(None),
     max_market_cap: Optional[float] = Query(None),
     min_pe: Optional[float] = Query(None),
@@ -63,7 +64,7 @@ async def list_companies(
     cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}"
     
     # Check global cache if default view
-    if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+    if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
         now = datetime.now().timestamp()
         if _COMPANIES_CACHE["data"] and (now - _COMPANIES_CACHE["timestamp"] < CACHE_TTL_SECONDS):
             return _COMPANIES_CACHE["data"]
@@ -75,6 +76,7 @@ async def list_companies(
             sort_by=sort_by, 
             order=order,
             sector=sector,
+            q=q,
             min_market_cap=min_market_cap,
             max_market_cap=max_market_cap,
             min_pe=min_pe,
@@ -83,9 +85,10 @@ async def list_companies(
         )
         
         # Get accurate total count for filtered results
-        if any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+        if any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
             total = await mongo_repo.count_companies(
                 sector=sector,
+                q=q,
                 min_market_cap=min_market_cap,
                 max_market_cap=max_market_cap,
                 min_pe=min_pe,

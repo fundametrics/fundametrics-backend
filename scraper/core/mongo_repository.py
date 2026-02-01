@@ -49,6 +49,7 @@ class MongoRepository:
         sort_by = kwargs.get('sort_by', 'symbol')
         order = kwargs.get('order', 1)
         sector = kwargs.get('sector')
+        search_query = kwargs.get('q')
         min_market_cap = kwargs.get('min_market_cap')
         max_market_cap = kwargs.get('max_market_cap')
         min_pe = kwargs.get('min_pe')
@@ -58,13 +59,31 @@ class MongoRepository:
         # Complex query builder
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
+        filters = []
+        
         if sector and sector != "all":
             # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
             regex = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
-            query["$or"] = [
+            filters.append({"$or": [
                 {"sector": regex},
                 {"fundametrics_response.company.sector": regex}
-            ]
+            ]})
+
+        if search_query:
+            # Search in symbol and name (Inclusive across root and legacy paths)
+            regex = {"$regex": re.escape(search_query), "$options": "i"}
+            filters.append({"$or": [
+                {"symbol": regex},
+                {"name": regex},
+                {"snapshot.name": regex},
+                {"fundametrics_response.company.name": regex}
+            ]})
+            
+        if filters:
+            if len(filters) == 1:
+                query.update(filters[0])
+            else:
+                query["$and"] = filters
             
         # Range filters on snapshot fields
         if min_market_cap is not None or max_market_cap is not None:
@@ -116,6 +135,7 @@ class MongoRepository:
         Using **kwargs for maximum flexibility and stability.
         """
         sector = kwargs.get('sector')
+        search_query = kwargs.get('q')
         min_market_cap = kwargs.get('min_market_cap')
         max_market_cap = kwargs.get('max_market_cap')
         min_pe = kwargs.get('min_pe')
@@ -124,13 +144,31 @@ class MongoRepository:
 
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
+        filters = []
+        
         if sector and sector != "all":
             # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
             regex = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
-            query["$or"] = [
+            filters.append({"$or": [
                 {"sector": regex},
                 {"fundametrics_response.company.sector": regex}
-            ]
+            ]})
+
+        if search_query:
+            # Search in symbol and name (Inclusive across root and legacy paths)
+            regex = {"$regex": re.escape(search_query), "$options": "i"}
+            filters.append({"$or": [
+                {"symbol": regex},
+                {"name": regex},
+                {"snapshot.name": regex},
+                {"fundametrics_response.company.name": regex}
+            ]})
+            
+        if filters:
+            if len(filters) == 1:
+                query.update(filters[0])
+            else:
+                query["$and"] = filters
             
         # Range filters on snapshot fields
         if min_market_cap is not None or max_market_cap is not None:
