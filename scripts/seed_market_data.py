@@ -3,11 +3,12 @@ import asyncio
 import os
 import sys
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scraper.core.db import init_db, get_companies_col
+from scraper.core.db import get_companies_col
 from scraper.core.market_facts_engine import MarketFactsEngine
 
 async def seed_market_data():
@@ -15,7 +16,9 @@ async def seed_market_data():
     Manually fetch and update market facts for key stocks
     to populate Top Gainers/Losers immediately.
     """
-    await init_db()
+    load_dotenv()
+    
+    # We don't need init_db() as get_companies_col() initializes client lazily
     col = get_companies_col()
     
     engine = MarketFactsEngine()
