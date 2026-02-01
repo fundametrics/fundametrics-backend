@@ -293,7 +293,8 @@ class MarketFactsEngine:
                     if chart_data and chart_data.get("current_price"):
                         results_map[sym] = {
                             "price": chart_data["current_price"],
-                            "change": 0, "change_percent": 0,
+                            "change": chart_data.get("change", 0), 
+                            "change_percent": chart_data.get("change_percent", 0),
                             "symbol": sym, "currency": chart_data.get("currency", "INR")
                         }
                     else:
