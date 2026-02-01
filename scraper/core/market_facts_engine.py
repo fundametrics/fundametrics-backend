@@ -210,6 +210,8 @@ class MarketFactsEngine:
             for suffix in suffixes:
                 try:
                     target = f"{clean_symbol}{suffix}" if suffix else clean_symbol
+                    # Ensure no trailing slashes or spaces
+                    target = target.strip().upper()
                     quoted = urllib.parse.quote(target)
                     url = f"https://finance.yahoo.com/quote/{quoted}"
                     
