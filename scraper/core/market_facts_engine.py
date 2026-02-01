@@ -213,18 +213,24 @@ class MarketFactsEngine:
             
             # 1. Primary: JSON blob extraction (most accurate)
             match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
+            change_match = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', html)
+            
             if match:
                 price = float(match.group(1))
-                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price}")
-                return {"current_price": price, "currency": "INR"}
+                change_pct = float(change_match.group(1)) if change_match else 0.0
+                self._log.info(f"🍀 HTML Scrape Success (Regex): {index_symbol} = {price} ({change_pct}%)")
+                return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 
             # 2. Fallback: BeautifulSoup parsing
             soup = BeautifulSoup(html, "html.parser")
             price_tag = soup.find("fin-streamer", {"data-field": "regularMarketPrice"})
+            change_tag = soup.find("fin-streamer", {"data-field": "regularMarketChangePercent"})
+            
             if price_tag and price_tag.get("value"):
                 price = float(price_tag["value"])
-                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price}")
-                return {"current_price": price, "currency": "INR"}
+                change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
+                self._log.info(f"🍀 HTML Scrape Success (Soup): {index_symbol} = {price} ({change_pct}%)")
+                return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 
         except Exception as e:
             self._log.debug(f"HTML Scrape failed for {index_symbol}: {e}")
@@ -341,15 +347,20 @@ class MarketFactsEngine:
                                 "symbol": sym, "currency": chart_data.get("currency", "INR")
                             }
                         else:
-                            # --- STRATEGY 3: HTML SCRAPE (EMERGENCY - INDICES ONLY) ---
-                            if sym.startswith('^'):
+                            # --- STRATEGY 3: HTML SCRAPE (EMERGENCY FALLBACK) ---
+                            # Enable for all symbols if API is blocked/failing
+                            try:
                                 html_data = await self._scrape_index_html(sym)
-                                if html_data:
+                                if html_data and html_data.get("current_price"):
                                     results_map[sym] = {
                                         "price": html_data["current_price"],
-                                        "change": 0, "change_percent": 0,
-                                        "symbol": sym, "currency": html_data.get("currency", "INR")
+                                        "change": 0, 
+                                        "change_percent": html_data.get("change_percent", 0),
+                                        "symbol": sym, 
+                                        "currency": html_data.get("currency", "INR")
                                     }
+                            except Exception as html_exc:
+                                self._log.warning(f"HTML Scrape also failed for {sym}: {html_exc}")
                     except Exception as e:
                         # Individual symbol failure in fallback shouldn't stop the batch
                         self._log.warning(f"Chart API failed for {sym}: {e}")

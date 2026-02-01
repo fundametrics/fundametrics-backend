@@ -11,6 +11,7 @@ from typing import List, Dict, Optional, Any
 from datetime import datetime, timezone
 import logging
 import re
+from pymongo import UpdateOne
 
 from scraper.core.db import (
     get_companies_col,
@@ -106,7 +107,8 @@ class MongoRepository:
             "marketCap": "snapshot.marketCap",
             "pe": "snapshot.pe",
             "roe": "snapshot.roe",
-            "roce": "snapshot.roce"
+            "roce": "snapshot.roce",
+            "changePercent": "snapshot.changePercent"
         }
         
         mongo_sort_key = sort_map.get(sort_by, sort_by)
@@ -688,53 +690,66 @@ class MongoRepository:
     
     async def run_backfill(self) -> Dict[str, Any]:
         """
-        Promotes nested data to root and snapshot fields for all companies.
-        Ensures numerical filters work correctly.
+        High-performance bulk backfill to promote nested data to root snapshots.
+        Fixes numerical filtering issues and missing metrics for all companies.
         """
-        col = get_companies_col()
-        cursor = col.find({})
+        col = self._companies
+        cursor = col.find({}, {
+            "symbol": 1, "name": 1, "sector": 1, "industry": 1, "snapshot": 1,
+            "fundametrics_response": 1, "priority": 1
+        })
         
         count = 0
         updated = 0
+        bulk_ops = []
         
         def to_float(val):
             if val is None: return None
             try:
-                # Handle % and ,
                 if isinstance(val, str):
                     val = val.replace("%", "").replace(",", "").strip()
                 return float(val)
             except:
                 return None
 
+        def get_latest(val):
+            if isinstance(val, list) and len(val) > 0:
+                last = val[-1]
+                if isinstance(last, dict): return last.get("value")
+                return last
+            return val
+
         async for doc in cursor:
             count += 1
             symbol = doc.get("symbol")
-            if not symbol: continue
+            if not symbol or symbol.startswith("--"): continue
             
             fr = doc.get("fundametrics_response") or {}
             ui_metrics = fr.get("fundametrics_metrics") or []
             fr_comp = fr.get("company") or {}
             
-            # Build metric map
+            # Access constants from multiple potential locations
+            constants = {}
+            if isinstance(fr.get("run_id"), dict) and "constants" in fr["run_id"]:
+                constants = fr["run_id"]["constants"]
+            elif "constants" in fr:
+                constants = fr["constants"]
+            elif "metadata" in fr and isinstance(fr["metadata"], dict):
+                constants = fr["metadata"].get("constants", {})
+
+            # Build metric map from standard UI metrics
             m_map = {}
             if isinstance(ui_metrics, list):
                 m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if isinstance(m, dict) and m.get("metric_name")}
             
-            def get_latest(val):
-                if isinstance(val, list) and len(val) > 0:
-                    last = val[-1]
-                    if isinstance(last, dict): return last.get("value")
-                return val
+            # Robust extraction strategy
+            mcap = get_latest(m_map.get("Market Cap") or m_map.get("Market_Cap")) or doc.get("market_cap") or constants.get("market_cap")
+            price = get_latest(m_map.get("Current Price") or m_map.get("Price")) or doc.get("price") or doc.get("current_price") or constants.get("share_price")
+            pe = get_latest(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")) or constants.get("pe_ratio")
+            roe = get_latest(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("Return On Equity") or m_map.get("roe")) or constants.get("roe")
+            roce = get_latest(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("Return On Capital Employed") or m_map.get("roce")) or constants.get("roce")
 
-            # Robust extraction: Try list metrics, then direct fields
-            mcap = get_latest(m_map.get("Market Cap") or m_map.get("Market_Cap")) or doc.get("market_cap")
-            price = get_latest(m_map.get("Current Price") or m_map.get("Price")) or doc.get("price") or doc.get("current_price")
-            pe = get_latest(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe"))
-            roe = get_latest(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe"))
-            roce = get_latest(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce"))
-
-            # Emergency Fallback (Phase 15/25): Try deep metrics blob if still missing
+            # Deep metrics fallback
             deep_metrics = fr.get("metrics", {}).get("values", [])
             if isinstance(deep_metrics, list) and (not mcap or not price or not roe or not pe or not roce):
                 for m in deep_metrics:
@@ -743,10 +758,16 @@ class MongoRepository:
                     if not mcap and m_key in ["Market Cap", "Market_Cap", "MCAP"]: mcap = m_val
                     if not price and m_key in ["Price", "Current Price"]: price = m_val
                     if not pe and m_key in ["PE Ratio", "P/E Ratio", "P/E"]: pe = m_val
-                    if not roe and m_key in ["ROE", "Return on Equity"]: roe = m_val
+                    if not roe and m_key in ["ROE", "Return on Equity", "Return On Equity"]: roe = m_val
                     if not roce and m_key in ["ROCE", "Return on Capital Employed"]: roce = m_val
 
-            # Build snapshot with FLOAT conversion
+            # Promote changePercent if found
+            change = (
+                get_latest(m_map.get("Change Percent") or m_map.get("Price Change %") or m_map.get("changePercent") or m_map.get("change_percent")) or 
+                fr.get("live_market", {}).get("price", {}).get("change_percent") or
+                0.0
+            )
+
             snapshot = {
                 "symbol": symbol,
                 "name": doc.get("name") or fr_comp.get("name") or symbol,
@@ -757,22 +778,27 @@ class MongoRepository:
                 "pe": to_float(pe),
                 "roe": to_float(roe),
                 "roce": to_float(roce),
-                "priority": doc.get("snapshot", {}).get("priority") or 0
+                "changePercent": to_float(change),
+                "priority": doc.get("snapshot", {}).get("priority") or doc.get("priority") or 0,
+                "updatedAt": datetime.now(timezone.utc)
             }
             
-            # Use original priority if exists and non-zero
-            if doc.get("priority"):
-                 snapshot["priority"] = doc.get("priority")
-            
-            # Also promote sector and name to root for faster filtering
             update_payload = {
                 "snapshot": snapshot,
                 "sector": snapshot["sector"],
                 "name": snapshot["name"]
             }
             
-            await col.update_one({"_id": doc["_id"]}, {"$set": update_payload})
+            bulk_ops.append(UpdateOne({"_id": doc["_id"]}, {"$set": update_payload}))
             updated += 1
+            
+            # Execute in batches to prevent memory issues
+            if len(bulk_ops) >= 500:
+                await col.bulk_write(bulk_ops)
+                bulk_ops = []
+
+        if bulk_ops:
+            await col.bulk_write(bulk_ops)
             
         return {"total_scanned": count, "updated": updated}
 

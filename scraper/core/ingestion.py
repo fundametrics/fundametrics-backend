@@ -193,6 +193,12 @@ def _build_snapshot(symbol: str, response: Dict[str, Any]) -> Dict[str, Any]:
             m_map.get("current_price") or 
             m_map.get("price")
         ),
+        "changePercent": (
+            response.get("live_market", {}).get("price", {}).get("change_percent") or 
+            m_map.get("change_percent") or 
+            m_map.get("price_change_percent") or 
+            0.0
+        ),
         "priority": priority
     }
 
