@@ -1301,6 +1301,27 @@ async def get_market_facts_mongo(symbol: str):
     try:
         # Layer 1: Attempt live fetch (Engine handles quarantine check internally)
         market_facts = await market_engine.fetch_market_facts(symbol)
+
+        # PERSISTENCE: Save successful live fetch to MongoDB Snapshot (Phase 23)
+        # This ensures Top Gainers/Losers and other DB queries interact with fresh data
+        if market_facts.current_price:
+            try:
+                payload = {
+                    "snapshot.currentPrice": market_facts.current_price,
+                    "snapshot.change": market_facts.current_change,
+                    "snapshot.changePercent": market_facts.change_percent,
+                    "snapshot.marketCap": market_facts.market_cap,
+                    "snapshot.fiftyTwoWeekHigh": market_facts.fifty_two_week_high,
+                    "snapshot.fiftyTwoWeekLow": market_facts.fifty_two_week_low,
+                    "snapshot.lastUpdated": datetime.now(timezone.utc)
+                }
+                # Clean payload (remove None values to avoid overwriting existing data with null)
+                payload = {k: v for k, v in payload.items() if v is not None}
+                
+                # Fire-and-forget update to avoid blocking the response
+                asyncio.create_task(mongo_repo.upsert_company(symbol, payload))
+            except Exception as e:
+                logging.error(f"Failed to persist market data for {symbol}: {e}")
         
         # Layer 2: If live failed or blocked, try MongoDB Registry/Snapshot
         if not market_facts.current_price:
