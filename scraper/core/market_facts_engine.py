@@ -213,8 +213,11 @@ class MarketFactsEngine:
                     quoted = urllib.parse.quote(target)
                     url = f"https://finance.yahoo.com/quote/{quoted}"
                     
-                    # Use 'clean' mode (no identity) for HTML
-                    html = await self._fetcher.fetch_html(url, timeout=10.0)
+                    # Phase 12 Refinement: Use a clean, non-rate-limited fetcher for HTML fallback
+                    # This avoids the 15s 'acquire' wait when the main API is blocked
+                    async with Fetcher(max_retries=1, timeout=8.0) as html_fetcher:
+                        html = await html_fetcher.fetch_html(url)
+                    
                     if not html or "regularMarketPrice" not in html:
                         continue
                         
@@ -231,9 +234,9 @@ class MarketFactsEngine:
                         # Manual calculation if change is 0 but we have price and prev_close
                         if abs(change_pct) < 0.0001 and prev_close and abs(prev_close) > 0.001:
                             change_pct = ((price - prev_close) / prev_close) * 100.0
-                            self._log.info("Derived Percent: {} = {:.2f}% (Price: {}, Prev: {})", target, change_pct, price, prev_close)
+                            self._log.info(f"Derived Percent: {target} = {change_pct:.2f}% (Price: {price}, Prev: {prev_close})")
 
-                        self._log.info("HTML Scrape Success (Regex): {} = {} ({:.2f}%)", target, price, change_pct)
+                        self._log.info(f"HTML Scrape Success (Regex): {target} = {price} ({change_pct:.2f}%)")
                         return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                         
                     # 2. Fallback: BeautifulSoup parsing
@@ -244,10 +247,10 @@ class MarketFactsEngine:
                     if price_tag and price_tag.get("value"):
                         price = float(price_tag["value"])
                         change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
-                        self._log.info("HTML Scrape Success (Soup): {} = {} ({:.2f}%)", target, price, change_pct)
+                        self._log.info(f"HTML Scrape Success (Soup): {target} = {price} ({change_pct:.2f}%)")
                         return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 except Exception as e:
-                    self._log.debug("Attempt failed for {}: {}", target, e)
+                    self._log.debug(f"Attempt failed for {target}: {e}")
                     continue
             
         except Exception as e:
