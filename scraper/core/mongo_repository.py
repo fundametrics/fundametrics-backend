@@ -710,18 +710,24 @@ class MongoRepository:
             if isinstance(ui_metrics, list):
                 m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if isinstance(m, dict) and m.get("metric_name")}
             
-            # Emergency Fallback for MCAP/Price from deep metrics
-            mcap = m_map.get("Market Cap") or m_map.get("Market_Cap")
-            price = m_map.get("Current Price") or m_map.get("Price")
-            
-            if not mcap or not price:
-                deep_metrics = fr.get("metrics", {}).get("values", [])
-                if isinstance(deep_metrics, list):
-                    for m in deep_metrics:
-                        if not mcap and m.get("metric") in ["Market Cap", "Market_Cap", "MCAP"]:
-                            mcap = m.get("value")
-                        if not price and m.get("metric") in ["Price", "Current Price"]:
-                            price = m.get("value")
+            # Robust extraction: Try list metrics, then direct fields
+            mcap = m_map.get("Market Cap") or m_map.get("Market_Cap") or doc.get("market_cap")
+            price = m_map.get("Current Price") or m_map.get("Price") or doc.get("price") or doc.get("current_price")
+            pe = m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")
+            roe = m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe")
+            roce = m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce")
+
+            # Emergency Fallback (Phase 15/25): Try deep metrics blob if still missing
+            deep_metrics = fr.get("metrics", {}).get("values", [])
+            if isinstance(deep_metrics, list) and (not mcap or not price or not roe or not pe or not roce):
+                for m in deep_metrics:
+                    m_key = m.get("metric") or ""
+                    m_val = m.get("value")
+                    if not mcap and m_key in ["Market Cap", "Market_Cap", "MCAP"]: mcap = m_val
+                    if not price and m_key in ["Price", "Current Price"]: price = m_val
+                    if not pe and m_key in ["PE Ratio", "P/E Ratio", "P/E"]: pe = m_val
+                    if not roe and m_key in ["ROE", "Return on Equity"]: roe = m_val
+                    if not roce and m_key in ["ROCE", "Return on Capital Employed"]: roce = m_val
 
             # Build snapshot with FLOAT conversion
             snapshot = {
@@ -731,9 +737,9 @@ class MongoRepository:
                 "industry": doc.get("industry") or fr_comp.get("industry") or "General",
                 "marketCap": to_float(mcap),
                 "currentPrice": to_float(price),
-                "pe": to_float(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")),
-                "roe": to_float(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe")),
-                "roce": to_float(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce")),
+                "pe": to_float(pe),
+                "roe": to_float(roe),
+                "roce": to_float(roce),
                 "priority": doc.get("snapshot", {}).get("priority") or 0
             }
             
