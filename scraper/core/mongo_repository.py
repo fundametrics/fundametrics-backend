@@ -1,5 +1,7 @@
 """
 MongoDB Repository - Data Access Layer
+# Force Rebuild: Fix count_companies signature mismatch
+
 
 This module provides async methods for interacting with MongoDB collections.
 All database operations should go through this repository.
