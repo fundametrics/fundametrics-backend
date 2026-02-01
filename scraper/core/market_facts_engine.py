@@ -234,12 +234,17 @@ class MarketFactsEngine:
                         prev_close = float(prev_close_match.group(1)) if prev_close_match else None
                         
                         # Manual calculation if change is 0 but we have price and prev_close
+                        # Manual calculation if change is 0 but we have price and prev_close
                         if abs(change_pct) < 0.0001 and prev_close and abs(prev_close) > 0.001:
                             change_pct = ((price - prev_close) / prev_close) * 100.0
                             self._log.info(f"Derived Percent: {target} = {change_pct:.2f}% (Price: {price}, Prev: {prev_close})")
 
-                        self._log.info(f"HTML Scrape Success (Regex): {target} = {price} ({change_pct:.2f}%)")
-                        return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
+                        # Extract currency
+                        currency_match = re.search(r'"currency":\s*"([A-Z]+)"', html)
+                        currency = currency_match.group(1) if currency_match else "INR"
+
+                        self._log.info(f"HTML Scrape Success (Regex): {target} = {price} ({change_pct:.2f}% {currency})")
+                        return {"current_price": price, "change_percent": change_pct, "currency": currency}
                         
                     # 2. Fallback: BeautifulSoup parsing
                     soup = BeautifulSoup(html, "html.parser")

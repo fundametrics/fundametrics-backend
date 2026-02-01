@@ -1392,7 +1392,5 @@ async def get_market_facts_mongo(symbol: str):
             }
         }
     except Exception as e:
-        import traceback
         logging.error(f"Failed to fetch market facts for {symbol}: {e}")
-        logging.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to fetch market data")
