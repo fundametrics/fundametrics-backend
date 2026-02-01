@@ -39,26 +39,27 @@ class MongoRepository:
         symbols = [doc.get("symbol") async for doc in cursor if doc.get("symbol")]
         return sorted(symbols)
     
-    async def get_all_companies(
-        self, 
-        skip: int = 0, 
-        limit: int = 50, 
-        sort_by: str = "symbol", 
-        order: int = 1,
-        sector: Optional[str] = None,
-        min_market_cap: Optional[float] = None,
-        max_market_cap: Optional[float] = None,
-        min_pe: Optional[float] = None,
-        max_pe: Optional[float] = None,
-        min_roe: Optional[float] = None
-    ) -> List[Dict[str, Any]]:
+    async def get_all_companies(self, **kwargs) -> List[Dict[str, Any]]:
         """
         Get companies with basic details. Efficient sorting, paging and filtering.
+        Using **kwargs for maximum flexibility and stability.
         """
+        skip = kwargs.get('skip', 0)
+        limit = kwargs.get('limit', 50)
+        sort_by = kwargs.get('sort_by', 'symbol')
+        order = kwargs.get('order', 1)
+        sector = kwargs.get('sector')
+        min_market_cap = kwargs.get('min_market_cap')
+        max_market_cap = kwargs.get('max_market_cap')
+        min_pe = kwargs.get('min_pe')
+        max_pe = kwargs.get('max_pe')
+        min_roe = kwargs.get('min_roe')
+
         # Complex query builder
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
+            # Case-insensitive match for sector (handles URL encoding/casing diffs)
             query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
             
         # Range filters on snapshot fields
@@ -105,21 +106,22 @@ class MongoRepository:
         
         return await self._format_company_list(cursor)
     
-    async def count_companies(
-        self,
-        sector: Optional[str] = None,
-        min_market_cap: Optional[float] = None,
-        max_market_cap: Optional[float] = None,
-        min_pe: Optional[float] = None,
-        max_pe: Optional[float] = None,
-        min_roe: Optional[float] = None
-    ) -> int:
+    async def count_companies(self, **kwargs) -> int:
         """
         Count total companies matching the given filters.
+        Using **kwargs for maximum flexibility and stability.
         """
+        sector = kwargs.get('sector')
+        min_market_cap = kwargs.get('min_market_cap')
+        max_market_cap = kwargs.get('max_market_cap')
+        min_pe = kwargs.get('min_pe')
+        max_pe = kwargs.get('max_pe')
+        min_roe = kwargs.get('min_roe')
+
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
+            # Case-insensitive match
             query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
             
         if min_market_cap is not None or max_market_cap is not None:
