@@ -118,6 +118,23 @@ async def list_companies(
         raise HTTPException(status_code=500, detail=f"Failed to fetch companies from database")
 
 
+@router.get("/system/backfill")
+async def trigger_backfill():
+    """
+    Administrative endpoint to promotoe nested data to root.
+    Fixes filtering issues for legacy companies.
+    """
+    try:
+        results = await mongo_repo.run_backfill()
+        return {
+            "status": "success",
+            "message": "Global backfill completed successfully",
+            "results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backfill failed: {str(e)}")
+
+
 @router.get("/stocks")
 async def list_stocks():
     """

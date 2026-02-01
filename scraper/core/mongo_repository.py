@@ -675,6 +675,84 @@ class MongoRepository:
         return await companies.count_documents({"_id": symbol.upper()}, limit=1) > 0
 
     
+    async def run_backfill(self) -> Dict[str, Any]:
+        """
+        Promotes nested data to root and snapshot fields for all companies.
+        Ensures numerical filters work correctly.
+        """
+        col = get_companies_col()
+        cursor = col.find({})
+        
+        count = 0
+        updated = 0
+        
+        def to_float(val):
+            if val is None: return None
+            try:
+                # Handle % and ,
+                if isinstance(val, str):
+                    val = val.replace("%", "").replace(",", "").strip()
+                return float(val)
+            except:
+                return None
+
+        async for doc in cursor:
+            count += 1
+            symbol = doc.get("symbol")
+            if not symbol: continue
+            
+            fr = doc.get("fundametrics_response") or {}
+            ui_metrics = fr.get("fundametrics_metrics") or []
+            fr_comp = fr.get("company") or {}
+            
+            # Build metric map
+            m_map = {}
+            if isinstance(ui_metrics, list):
+                m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if isinstance(m, dict) and m.get("metric_name")}
+            
+            # Emergency Fallback for MCAP/Price from deep metrics
+            mcap = m_map.get("Market Cap") or m_map.get("Market_Cap")
+            price = m_map.get("Current Price") or m_map.get("Price")
+            
+            if not mcap or not price:
+                deep_metrics = fr.get("metrics", {}).get("values", [])
+                if isinstance(deep_metrics, list):
+                    for m in deep_metrics:
+                        if not mcap and m.get("metric") in ["Market Cap", "Market_Cap", "MCAP"]:
+                            mcap = m.get("value")
+                        if not price and m.get("metric") in ["Price", "Current Price"]:
+                            price = m.get("value")
+
+            # Build snapshot with FLOAT conversion
+            snapshot = {
+                "symbol": symbol,
+                "name": doc.get("name") or fr_comp.get("name") or symbol,
+                "sector": doc.get("sector") or fr_comp.get("sector") or "General",
+                "industry": doc.get("industry") or fr_comp.get("industry") or "General",
+                "marketCap": to_float(mcap),
+                "currentPrice": to_float(price),
+                "pe": to_float(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")),
+                "roe": to_float(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe")),
+                "roce": to_float(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce")),
+                "priority": doc.get("snapshot", {}).get("priority") or 0
+            }
+            
+            # Use original priority if exists and non-zero
+            if doc.get("priority"):
+                 snapshot["priority"] = doc.get("priority")
+            
+            # Also promote sector and name to root for faster filtering
+            update_payload = {
+                "snapshot": snapshot,
+                "sector": snapshot["sector"],
+                "name": snapshot["name"]
+            }
+            
+            await col.update_one({"_id": doc["_id"]}, {"$set": update_payload})
+            updated += 1
+            
+        return {"total_scanned": count, "updated": updated}
+
     # ==================== TRUST & RELIABILITY (Phase 24) ====================
     
     async def upsert_trust_report(self, report: dict):
