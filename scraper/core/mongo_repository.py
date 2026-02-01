@@ -8,6 +8,7 @@ All database operations should go through this repository.
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timezone
 import logging
+import re
 
 from scraper.core.db import (
     get_companies_col,
@@ -56,7 +57,7 @@ class MongoRepository:
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
-            query["sector"] = sector
+            query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
             
         # Range filters on snapshot fields
         if min_market_cap is not None or max_market_cap is not None:
@@ -117,7 +118,7 @@ class MongoRepository:
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         if sector and sector != "all":
-            query["sector"] = sector
+            query["sector"] = {"$regex": f"^{re.escape(sector)}$", "$options": "i"}
             
         if min_market_cap is not None or max_market_cap is not None:
             query["snapshot.marketCap"] = {}
