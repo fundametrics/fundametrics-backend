@@ -60,8 +60,8 @@ async def list_companies(
     Get list of companies with basic info (Phase 23)
     Supports pagination, server-side sorting, and advanced filtering (Phase 5/6).
     """
-    # Cache key for this specific query
-    cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}"
+    # Cache key for this specific query - must include ALL filters to prevent pollution
+    cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{q}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}"
     
     # Check global cache if default view
     if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
@@ -108,7 +108,7 @@ async def list_companies(
         }
         
         # Save to cache if it's the default view and NO filters are applied
-        if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+        if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
             _COMPANIES_CACHE["data"] = response
             _COMPANIES_CACHE["timestamp"] = datetime.now().timestamp()
             
