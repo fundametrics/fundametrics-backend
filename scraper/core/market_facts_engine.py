@@ -231,7 +231,16 @@ class MarketFactsEngine:
                     if match:
                         price = float(match.group(1))
                         change_pct = float(change_match.group(1)) if change_match else 0.0
-                        prev_close = float(prev_close_match.group(1)) if prev_close_match else None
+                        
+                        # Fallback for previous close: try multiple keys
+                        prev_close = None
+                        if prev_close_match:
+                            prev_close = float(prev_close_match.group(1))
+                        else:
+                            # Try other common JSON keys for previous close
+                            pc_alt = re.search(r'"previousClose":\s*\{"raw":\s*([\d\.]+)', html)
+                            if pc_alt:
+                                prev_close = float(pc_alt.group(1))
                         
                         # Manual calculation if change is 0 but we have price and prev_close
                         # Manual calculation if change is 0 but we have price and prev_close
@@ -254,6 +263,19 @@ class MarketFactsEngine:
                     if price_tag and price_tag.get("value"):
                         price = float(price_tag["value"])
                         change_pct = float(change_tag["value"]) if change_tag and change_tag.get("value") else 0.0
+                        
+                        # Derived movement for Soup fallback
+                        if abs(change_pct) < 0.0001:
+                            pc_tag = soup.find("td", {"data-test": "PREV_CLOSE-value"})
+                            if pc_tag:
+                                try:
+                                    pc_text = pc_tag.get_text().replace(',', '')
+                                    pc_val = float(pc_text)
+                                    if abs(pc_val) > 0.001:
+                                        change_pct = ((price - pc_val) / pc_val) * 100.0
+                                        self._log.info(f"Derived Percent (Soup): {target} = {change_pct:.2f}%")
+                                except: pass
+
                         self._log.info(f"HTML Scrape Success (Soup): {target} = {price} ({change_pct:.2f}%)")
                         return {"current_price": price, "change_percent": change_pct, "currency": "INR"}
                 except Exception as e:
