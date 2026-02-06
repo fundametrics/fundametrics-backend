@@ -203,13 +203,17 @@ class MarketFactsEngine:
             import re
             from bs4 import BeautifulSoup
             
-            # Normalize: Try suffixes if missing
-            clean_symbol = symbol.split('.')[0] if '.' in symbol and not symbol.startswith('^') else symbol
-            suffixes = [""] if symbol.startswith("^") else [".NS", ".BO", ""]
+            # Normalize: If symbol already has suffix, use it directly
+            # Otherwise try common suffixes
+            if symbol.endswith('.NS') or symbol.endswith('.BO') or symbol.startswith('^'):
+                # Symbol already has suffix or is an index, use as-is
+                targets_to_try = [symbol]
+            else:
+                # Try with common suffixes
+                targets_to_try = [f"{symbol}.NS", f"{symbol}.BO", symbol]
             
-            for suffix in suffixes:
+            for target in targets_to_try:
                 try:
-                    target = f"{clean_symbol}{suffix}" if suffix else clean_symbol
                     # Ensure no trailing slashes or spaces
                     target = target.strip().upper()
                     quoted = urllib.parse.quote(target)
