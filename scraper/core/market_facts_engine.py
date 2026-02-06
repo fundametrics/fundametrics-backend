@@ -222,7 +222,12 @@ class MarketFactsEngine:
                     # Phase 12 Refinement: Use a clean, non-rate-limited fetcher for HTML fallback
                     # This avoids the 15s 'acquire' wait when the main API is blocked
                     async with Fetcher(max_retries=1, timeout=8.0) as html_fetcher:
-                        html = await html_fetcher.fetch_html(url)
+                        try:
+                            html = await html_fetcher.fetch_html(url)
+                        except Exception as fetch_err:
+                            # Catch all HTTP errors including 404, 429, etc.
+                            self._log.debug(f"HTTP fetch failed for {target}: {fetch_err}")
+                            continue
                     
                     if not html or "regularMarketPrice" not in html:
                         continue
