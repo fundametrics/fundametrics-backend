@@ -223,24 +223,22 @@ class MarketFactsEngine:
                     if not html or "regularMarketPrice" not in html:
                         continue
                         
-                    # 1. Primary: JSON blob extraction (most accurate)
-                    match = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', html)
-                    change_match = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', html)
-                    prev_close_match = re.search(r'"regularMarketPreviousClose":\s*\{"raw":\s*([\d\.]+)', html)
+                    # 1. Primary: JSON blob extraction (most accurate and symbol-linked)
+                    # We search for the symbol followed by the specific market data keys
+                    sym_blob_match = re.search(rf'"{re.escape(target)}":\s*\{{[^}}]+?"regularMarketPrice"', html)
                     
-                    if match:
-                        price = float(match.group(1))
-                        change_pct = float(change_match.group(1)) if change_match else 0.0
+                    if sym_blob_match:
+                        # We narrowed down to the symbol's blob, now extract fields
+                        blob_slice = html[sym_blob_match.start() : sym_blob_match.start() + 2000]
+                        price_m = re.search(r'"regularMarketPrice":\s*\{"raw":\s*([\d\.]+)', blob_slice)
+                        change_m = re.search(r'"regularMarketChangePercent":\s*\{"raw":\s*([\d\.-]+)', blob_slice)
+                        pc_m = re.search(r'"regularMarketPreviousClose":\s*\{"raw":\s*([\d\.]+)', blob_slice)
+                        pc_alt_m = re.search(r'"previousClose":\s*\{"raw":\s*([\d\.]+)', blob_slice)
                         
-                        # Fallback for previous close: try multiple keys
-                        prev_close = None
-                        if prev_close_match:
-                            prev_close = float(prev_close_match.group(1))
-                        else:
-                            # Try other common JSON keys for previous close
-                            pc_alt = re.search(r'"previousClose":\s*\{"raw":\s*([\d\.]+)', html)
-                            if pc_alt:
-                                prev_close = float(pc_alt.group(1))
+                        if price_m:
+                            price = float(price_m.group(1))
+                            change_pct = float(change_m.group(1)) if change_m else 0.0
+                            prev_close = float(pc_m.group(1)) if pc_m else (float(pc_alt_m.group(1)) if pc_alt_m else None)
                         
                         # Manual calculation if change is 0 but we have price and prev_close
                         # Manual calculation if change is 0 but we have price and prev_close
