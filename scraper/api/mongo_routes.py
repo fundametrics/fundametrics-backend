@@ -55,17 +55,18 @@ async def list_companies(
     max_market_cap: Optional[float] = Query(None),
     min_pe: Optional[float] = Query(None),
     max_pe: Optional[float] = Query(None),
-    min_roe: Optional[float] = Query(None)
+    min_roe: Optional[float] = Query(None),
+    symbols: Optional[str] = Query(None, description="Comma-separated list of symbols to filter by")
 ):
     """
     Get list of companies with basic info (Phase 23)
     Supports pagination, server-side sorting, and advanced filtering (Phase 5/6).
     """
     # Cache key for this specific query - must include ALL filters to prevent pollution
-    cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{q}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}"
+    cache_key = f"{skip}:{limit}:{sort_by}:{order}:{sector}:{q}:{min_market_cap}:{max_market_cap}:{min_pe}:{max_pe}:{min_roe}:{symbols}"
     
     # Check global cache if default view
-    if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+    if skip == 0 and limit == 50 and sort_by == "symbol" and order == 1 and not any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe, symbols]):
         now = datetime.now().timestamp()
         if _COMPANIES_CACHE["data"] and (now - _COMPANIES_CACHE["timestamp"] < CACHE_TTL_SECONDS):
             return _COMPANIES_CACHE["data"]
@@ -85,11 +86,12 @@ async def list_companies(
             max_market_cap=max_market_cap,
             min_pe=min_pe,
             max_pe=max_pe,
-            min_roe=min_roe
+            min_roe=min_roe,
+            symbols=symbols
         )
         
         # Get accurate total count for filtered results
-        if any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe]):
+        if any([sector, q, min_market_cap, max_market_cap, min_pe, max_pe, min_roe, symbols]):
             total = await mongo_repo.count_companies(
                 sector=sector,
                 q=q,
@@ -97,7 +99,8 @@ async def list_companies(
                 max_market_cap=max_market_cap,
                 min_pe=min_pe,
                 max_pe=max_pe,
-                min_roe=min_roe
+                min_roe=min_roe,
+                symbols=symbols
             )
         else:
             col = get_companies_col()
@@ -199,10 +202,17 @@ async def get_stock_detail(symbol: str, request: Request):
         
         income_statements, balance_sheets, cash_flows, metrics, ownership = results
         
-        # Use simple fallback market block (no external call)
+        # Use snapshot price for the initial market block (Phase 26)
+        # This prevents the page from showing "Updating Price" when we have a recent DB value.
+        snap = company.get("snapshot", {})
         live_market = {
-             "price": {"value": None, "currency": "INR"}, 
-             "metadata": {"source": "db_fallback", "data_type": "historical"}
+             "price": {
+                 "value": snap.get("currentPrice"), 
+                 "change": snap.get("change"),
+                 "change_percent": snap.get("changePercent"),
+                 "currency": snap.get("currency") or "INR"
+             }, 
+             "metadata": {"source": "db_snapshot", "data_type": "historical_recent"}
         }
 
         # Fallback: Extract from stored blob if normalized collections are empty
@@ -520,9 +530,15 @@ def _transform_fundametrics_response(symbol: str, company: Dict, fr: Dict, trust
         "symbol": symbol,
         "company": {
             "name": company.get("name") or fr.get("company", {}).get("name") or symbol,
+            "symbol": symbol,
+            "exchange": fr.get("company", {}).get("exchange") or "NSE",
             "sector": company.get("sector") or fr.get("company", {}).get("sector") or "Unknown",
-            "about": company.get("about") or fr.get("company", {}).get("about", "")
+            "industry": fr.get("company", {}).get("industry") or "General",
+            "about": company.get("about") or fr.get("company", {}).get("about", ""),
+            "is_active": True
         },
+        "latest_facts": fr.get("latest_facts", {}),
+        "historical_facts": fr.get("historical_facts", []),
         "fundametrics_metrics": fundametrics_metrics,
         "yearly_financials": yearly_financials,
         "shareholding": fr.get("shareholding"),
@@ -718,14 +734,18 @@ def _build_ui_response(
     if "Current Price" not in seen_metrics:
         # If not from live_market, try metadata/blob
         if price_val is None:
-            # Try metadata first
-            price_val = company.get("price", {}).get("value")
+            # Try snapshot first (Phase 26 Refinement: Fresher than legacy blob)
+            price_val = company.get("snapshot", {}).get("currentPrice")
+            
             if price_val is None:
-                # Try fundametrics_response blob
-                fr = company.get("fundametrics_response", {})
-                m_values = fr.get("metrics", {}).get("values", {})
-                p_obj = m_values.get("Current Price") or m_values.get("fundametrics_current_price")
-                price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
+                # Try metadata
+                price_val = company.get("price", {}).get("value")
+                if price_val is None:
+                    # Try fundametrics_response blob
+                    fr = company.get("fundametrics_response", {})
+                    m_values = fr.get("metrics", {}).get("values", {})
+                    p_obj = m_values.get("Current Price") or m_values.get("fundametrics_current_price")
+                    price_val = p_obj.get("value") if isinstance(p_obj, dict) else p_obj
         
         if price_val is not None:
             fundametrics_metrics.append({
@@ -777,15 +797,23 @@ def _build_ui_response(
     
     fundametrics_metrics = sorted_metrics
     
-    fr_comp = company.get("fundametrics_response", {}).get("company", {})
+    fr = company.get("fundametrics_response", {}) or {}
+    fr_comp = fr.get("company", {})
+    
     company_block = {
         "name": company.get("name") or fr_comp.get("name") or symbol,
+        "symbol": symbol,
+        "exchange": fr_comp.get("exchange") or "NSE",
         "sector": company.get("sector") if (company.get("sector") and company.get("sector") != "Unknown") else fr_comp.get("sector") or "General",
         "industry": company.get("industry") if (company.get("industry") and company.get("industry") != "Unknown") else fr_comp.get("industry") or "General",
-        "about": company.get("about") or fr_comp.get("about", "")
+        "about": company.get("about") or fr_comp.get("about", ""),
+        "is_active": True
     }
     
+    # 1. Shareholding Fallback Logic
     shareholding_block = { "status": "unavailable", "summary": {}, "insights": [] }
+    
+    # Try fresh ownership collection first
     if ownership:
         summary = ownership.get("summary", {})
         if not summary:
@@ -810,6 +838,12 @@ def _build_ui_response(
             }])
         }
     
+    # Fallback to legacy Fundametrics blob if still unavailable
+    if shareholding_block.get("status") == "unavailable" and "shareholding" in fr:
+        legacy_sh = fr.get("shareholding", {})
+        if isinstance(legacy_sh, dict) and legacy_sh.get("status") == "available":
+            shareholding_block = legacy_sh
+
     last_updated = company.get("last_updated")
     if isinstance(last_updated, str):
         scraped_at = last_updated
@@ -866,6 +900,8 @@ def _build_ui_response(
     response = {
         "symbol": symbol,
         "company": company_block,
+        "latest_facts": {},
+        "historical_facts": [],
         "fundametrics_metrics": fundametrics_metrics,
         "yearly_financials": yearly_financials,
         "shareholding": shareholding_block,
@@ -885,9 +921,9 @@ def _build_ui_response(
             "advisory": False,
             "explainability_available": True
         },
-        "signals": [],
-        "news": None,
-        "management": None
+        "signals": fr.get("signals", []),
+        "news": fr.get("news", []),
+        "management": fr.get("management", [])
     }
     
     return response

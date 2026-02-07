@@ -56,11 +56,17 @@ class MongoRepository:
         min_pe = kwargs.get('min_pe')
         max_pe = kwargs.get('max_pe')
         min_roe = kwargs.get('min_roe')
+        symbols = kwargs.get('symbols')
 
         # Complex query builder
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         filters = []
+        
+        if symbols:
+            if isinstance(symbols, str):
+                symbols = [s.strip() for s in symbols.split(",") if s.strip()]
+            filters.append({"symbol": {"$in": symbols}})
         
         if sector and sector != "all":
             # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
@@ -143,10 +149,16 @@ class MongoRepository:
         min_pe = kwargs.get('min_pe')
         max_pe = kwargs.get('max_pe')
         min_roe = kwargs.get('min_roe')
+        symbols = kwargs.get('symbols')
 
         query = {"symbol": {"$not": {"$regex": "^--"}}}
         
         filters = []
+        
+        if symbols:
+            if isinstance(symbols, str):
+                symbols = [s.strip() for s in symbols.split(",") if s.strip()]
+            filters.append({"symbol": {"$in": symbols}})
         
         if sector and sector != "all":
             # Inclusive match: look in root 'sector' OR inside the legacy Fundametrics blob
@@ -223,6 +235,9 @@ class MongoRepository:
                     "pe": snap.get("pe"),
                     "roe": snap.get("roe"),
                     "roce": snap.get("roce"),
+                    "dividendYield": snap.get("dividendYield") if snap.get("dividendYield") is not None else (
+                        doc.get("fundametrics_response", {}).get("metrics", {}).get("values", {}).get("Dividend Yield", {}).get("value")
+                    ),
                 })
                 continue
 
@@ -277,6 +292,7 @@ class MongoRepository:
                 "pe": m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe"),
                 "roe": m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("roe"),
                 "roce": m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("roce"),
+                "dividendYield": m_map.get("dividend_yield") or m_map.get("Dividend Yield") or m_map.get("dy"),
             })
         return results
     
@@ -703,6 +719,30 @@ class MongoRepository:
         updated = 0
         bulk_ops = []
         
+        # Phase 27: Bulk fetch metrics for all companies to avoid N+1 and fix missing Dividend Yield
+        metrics_col = get_metrics_col()
+        metrics_cursor = metrics_col.find({
+            "metric_name": {"$in": [
+                "fundametrics_dividend_yield", "Dividend Yield", "PE Ratio", "ROE", 
+                "Return on Capital Employed", "Market Cap", "Current Price", "Price"
+            ]}
+        }, {"symbol": 1, "metric_name": 1, "value": 1, "period": 1})
+        
+        metrics_map = {} # symbol -> {metric_name: value}
+        async for m_doc in metrics_cursor:
+            sym = m_doc.get("symbol")
+            m_name = m_doc.get("metric_name")
+            m_val = m_doc.get("value")
+            
+            if not sym or not m_name: continue
+            
+            if sym not in metrics_map:
+                metrics_map[sym] = {}
+            
+            # For simplicity, we keep the latest value seen (this works well if periods are sorted or we just want A value)
+            # Better: Keep track of period and take latest.
+            metrics_map[sym][m_name] = m_val
+
         def to_float(val):
             if val is None: return None
             try:
@@ -743,11 +783,15 @@ class MongoRepository:
                 m_map = {m.get("metric_name"): m.get("value") for m in ui_metrics if isinstance(m, dict) and m.get("metric_name")}
             
             # Robust extraction strategy
-            mcap = get_latest(m_map.get("Market Cap") or m_map.get("Market_Cap")) or doc.get("market_cap") or constants.get("market_cap")
-            price = get_latest(m_map.get("Current Price") or m_map.get("Price")) or doc.get("price") or doc.get("current_price") or constants.get("share_price")
-            pe = get_latest(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")) or constants.get("pe_ratio")
-            roe = get_latest(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("Return On Equity") or m_map.get("roe")) or constants.get("roe")
-            roce = get_latest(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("Return On Capital Employed") or m_map.get("roce")) or constants.get("roce")
+            # Priority 1: Dedicated Metrics Collection (Phase 27)
+            symbol_metrics = metrics_map.get(symbol, {})
+            
+            mcap = symbol_metrics.get("Market Cap") or get_latest(m_map.get("Market Cap") or m_map.get("Market_Cap")) or doc.get("market_cap") or constants.get("market_cap")
+            price = symbol_metrics.get("Current Price") or symbol_metrics.get("Price") or get_latest(m_map.get("Current Price") or m_map.get("Price")) or doc.get("price") or doc.get("current_price") or constants.get("share_price")
+            pe = symbol_metrics.get("PE Ratio") or get_latest(m_map.get("pe_ratio") or m_map.get("p/e_ratio") or m_map.get("PE Ratio") or m_map.get("pe")) or constants.get("pe_ratio")
+            roe = symbol_metrics.get("ROE") or get_latest(m_map.get("roe") or m_map.get("return_on_equity") or m_map.get("ROE") or m_map.get("Return On Equity") or m_map.get("roe")) or constants.get("roe")
+            roce = symbol_metrics.get("Return on Capital Employed") or get_latest(m_map.get("roce") or m_map.get("return_on_capital_employed") or m_map.get("ROCE") or m_map.get("Return On Capital Employed") or m_map.get("roce")) or constants.get("roce")
+            dy = symbol_metrics.get("fundametrics_dividend_yield") or symbol_metrics.get("Dividend Yield") or get_latest(m_map.get("dividend_yield") or m_map.get("Dividend Yield") or m_map.get("dy")) or constants.get("dividend_yield")
 
             # Deep metrics fallback
             deep_metrics = fr.get("metrics", {}).get("values", [])
@@ -760,6 +804,7 @@ class MongoRepository:
                     if not pe and m_key in ["PE Ratio", "P/E Ratio", "P/E"]: pe = m_val
                     if not roe and m_key in ["ROE", "Return on Equity", "Return On Equity"]: roe = m_val
                     if not roce and m_key in ["ROCE", "Return on Capital Employed"]: roce = m_val
+                    if not dy and m_key in ["Dividend Yield", "Dividend_Yield", "DY"]: dy = m_val
 
             # Promote changePercent if found
             change = (
@@ -778,6 +823,7 @@ class MongoRepository:
                 "pe": to_float(pe),
                 "roe": to_float(roe),
                 "roce": to_float(roce),
+                "dividendYield": to_float(dy),
                 "changePercent": to_float(change),
                 "priority": doc.get("snapshot", {}).get("priority") or doc.get("priority") or 0,
                 "updatedAt": datetime.now(timezone.utc)
