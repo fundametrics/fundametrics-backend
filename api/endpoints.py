@@ -303,6 +303,15 @@ def _human_age(seconds: float) -> str:
 _DEFAULT_METRICS = ["pe_ratio", "roe", "roce", "debt_to_equity", "pb_ratio"]
 
 
+
+@router.get("/sectors")
+async def get_sectors(db: AsyncSession = Depends(get_db)):
+    """List all unique sectors."""
+    stmt = select(Company.sector).where(Company.sector.isnot(None)).distinct()
+    result = await db.execute(stmt)
+    sectors = [row[0] for row in result.all()]
+    return sorted(sectors)
+
 @router.get("/sectors/{sector_name}/summary")
 async def get_sector_summary(sector_name: str, db: AsyncSession = Depends(get_db)):
     """Top metrics and stats for a sector."""
