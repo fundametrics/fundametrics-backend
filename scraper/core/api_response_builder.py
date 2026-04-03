@@ -978,3 +978,143 @@ class FundametricsResponseBuilder:
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "mode": "historical-only"
         }
+
+    # ─── Phase 3: yfinance Merge ──────────────────────────────────────
+
+    def merge_with_yfinance(self, yf_raw_financials: dict) -> None:
+        """
+        Fill in any None or missing values in the Fundametrics response
+        using data from yfinance financials.
+
+        Priority rule: Screener data wins if present; yfinance fills gaps only.
+
+        Args:
+            yf_raw_financials: dict from yfinance_source.get_raw_financials()
+                with keys 'income_statement', 'balance_sheet', 'cash_flow'.
+        """
+        if not yf_raw_financials or not isinstance(yf_raw_financials, dict):
+            return
+
+        canonical = self.canonical_financials or {}
+
+        # Mapping from yfinance line item names to Fundametrics canonical names
+        yf_income_map = {
+            "Total Revenue": "revenue",
+            "Operating Income": "operating_profit",
+            "Net Income": "net_income",
+            "Gross Profit": "gross_profit",
+            "EBIT": "ebit",
+            "EBITDA": "ebitda",
+            "Interest Expense": "interest",
+            "Tax Provision": "tax",
+            "Basic EPS": "eps",
+            "Diluted EPS": "diluted_eps",
+        }
+
+        yf_balance_map = {
+            "Total Assets": "total_assets",
+            "Total Liabilities Net Minority Interest": "total_liabilities",
+            "Stockholders Equity": "shareholder_equity",
+            "Total Debt": "total_debt",
+            "Current Assets": "current_assets",
+            "Current Liabilities": "current_liabilities",
+            "Cash And Cash Equivalents": "cash",
+            "Long Term Debt": "long_term_borrowings",
+            "Share Issued": "shares_outstanding",
+        }
+
+        yf_cashflow_map = {
+            "Operating Cash Flow": "cash_from_operations",
+            "Free Cash Flow": "free_cash_flow",
+            "Capital Expenditure": "capex",
+            "Investing Cash Flow": "cash_from_investing",
+            "Financing Cash Flow": "cash_from_financing",
+        }
+
+        def _merge_statement(
+            existing: dict,
+            yf_data: dict,
+            field_map: dict,
+        ) -> None:
+            """Merge yfinance data into existing statement dict. Screener wins."""
+            for yf_period, yf_row in yf_data.items():
+                if not isinstance(yf_row, dict):
+                    continue
+
+                # Find closest existing period (year match)
+                import re
+                yf_year_match = re.search(r"(\d{4})", str(yf_period))
+                if not yf_year_match:
+                    continue
+                yf_year = yf_year_match.group(1)
+
+                # Find or create matching period in existing data
+                target_period = None
+                for existing_period in existing.keys():
+                    if yf_year in str(existing_period):
+                        target_period = existing_period
+                        break
+
+                if target_period is None:
+                    # Create new period
+                    target_period = yf_period
+                    existing[target_period] = {}
+
+                target_row = existing[target_period]
+
+                for yf_key, fm_key in field_map.items():
+                    yf_val = yf_row.get(yf_key)
+                    if yf_val is None:
+                        continue
+
+                    existing_val = target_row.get(fm_key)
+
+                    # Only fill if existing is None or missing
+                    should_fill = False
+                    if existing_val is None:
+                        should_fill = True
+                    elif isinstance(existing_val, MetricValue) and existing_val.value is None:
+                        should_fill = True
+                    elif isinstance(existing_val, dict) and existing_val.get("value") is None:
+                        should_fill = True
+
+                    if should_fill:
+                        target_row[fm_key] = MetricValue(
+                            value=float(yf_val),
+                            unit="INR",
+                            statement_id=None,
+                            computed=False,
+                            reason="Backfilled from yfinance",
+                        )
+                        log.debug(
+                            "yfinance gap-fill",
+                            field=fm_key,
+                            period=target_period,
+                            value=yf_val,
+                        )
+
+        # Merge income statement
+        yf_income = yf_raw_financials.get("income_statement", {})
+        if yf_income:
+            if "income_statement" not in canonical:
+                canonical["income_statement"] = {}
+            _merge_statement(canonical["income_statement"], yf_income, yf_income_map)
+            if "yfinance" not in self.data_sources:
+                self.data_sources.append("yfinance")
+
+        # Merge balance sheet
+        yf_balance = yf_raw_financials.get("balance_sheet", {})
+        if yf_balance:
+            if "balance_sheet" not in canonical:
+                canonical["balance_sheet"] = {}
+            _merge_statement(canonical["balance_sheet"], yf_balance, yf_balance_map)
+
+        # Merge cash flow
+        yf_cashflow = yf_raw_financials.get("cash_flow", {})
+        if yf_cashflow:
+            if "cash_flow" not in canonical:
+                canonical["cash_flow"] = {}
+            _merge_statement(canonical["cash_flow"], yf_cashflow, yf_cashflow_map)
+
+        self.canonical_financials = canonical
+

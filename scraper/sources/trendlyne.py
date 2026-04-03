@@ -107,3 +107,63 @@ class TrendlyneScraper:
         data["url"] = stock_url
         
         return data
+
+
+# ─── Phase 5: Sector Peer Extraction ─────────────────────────────────
+
+async def get_sector_peers(symbol: str, fetcher: Optional[Fetcher] = None) -> list:
+    """
+    Extract peer/competitor symbols from the Trendlyne company page.
+
+    Args:
+        symbol: NSE stock symbol.
+        fetcher: Optional Fetcher instance. Creates one if not provided.
+
+    Returns:
+        List of NSE symbol strings for peers in the same sector.
+    """
+    try:
+        import re
+        from bs4 import BeautifulSoup
+
+        if fetcher is None:
+            fetcher = Fetcher()
+
+        scraper = TrendlyneScraper(fetcher)
+        stock_url = await scraper._resolve_url(symbol)
+        if not stock_url:
+            log.warning(f"Could not resolve peer URL for {symbol}")
+            return []
+
+        html = await fetcher.fetch_html(stock_url)
+        if not html:
+            return []
+
+        soup = BeautifulSoup(html, "html.parser")
+        peers = []
+
+        # Look for peer/competitor tables or sections
+        for link in soup.find_all("a", href=True):
+            href = link.get("href", "")
+            # Trendlyne links to peers like /equity/NNN/SYMBOL/company-name/
+            match = re.search(r"/equity/\d+/([A-Z0-9&-]+)/", href)
+            if match:
+                peer_sym = match.group(1).upper()
+                if peer_sym != symbol.upper() and peer_sym not in peers:
+                    peers.append(peer_sym)
+
+        # Deduplicate and limit
+        seen = set()
+        unique_peers = []
+        for p in peers:
+            if p not in seen and len(unique_peers) < 20:
+                seen.add(p)
+                unique_peers.append(p)
+
+        log.info(f"Found {len(unique_peers)} peers for {symbol}")
+        return unique_peers
+
+    except Exception as exc:
+        log.warning(f"Peer extraction failed for {symbol}: {exc}")
+        return []
+

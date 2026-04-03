@@ -294,3 +294,75 @@ recovery:
     half_open_requests: 10  # Test with 10 requests in half-open state
 
 # =========================================================================
+
+# ============================================================================
+# CACHE TTL SETTINGS (Phase 2)
+# ============================================================================
+cache:
+  # Fundamentals data cache TTL in hours (stale-while-revalidate)
+  cache_ttl_fundamentals_hours: 24
+
+  # Live price fields TTL in seconds
+  cache_ttl_live_price_seconds: 30
+
+  # Sector summary cache TTL in hours
+  cache_ttl_sector_summary_hours: 12
+
+  # NSE shareholding cache TTL in hours (changes quarterly)
+  cache_ttl_shareholding_hours: 6
+
+# ============================================================================
+# DATA SOURCES (Phase 1, 4, 8)
+# ============================================================================
+sources:
+  enable_screener: true
+  enable_trendlyne: true
+  enable_shareholding: true
+
+  yfinance:
+    enabled: true
+    suffix: ".NS"  # NSE suffix for yfinance tickers
+
+  nse_india:
+    enabled: true
+    delay_seconds: 2
+    cache_hours: 6
+
+  twelvedata:
+    enabled: true
+    max_daily_calls: 800
+    completeness_threshold: 0.5  # Only use when score < this
+
+# ============================================================================
+# DATA SETTINGS
+# ============================================================================
+data:
+  output_dir: "data/processed"
+  persist_runs: true
+  symbols_file: "config/stock_symbols.txt"
+
+# ============================================================================
+# SCHEDULER (Phase 7)
+# ============================================================================
+scheduler:
+  timezone: "Asia/Kolkata"
+
+  nightly_scrape:
+    hour: 23
+    minute: 0
+    rate_limit_seconds: 3
+    max_symbols: 500
+
+  live_price_refresh:
+    interval_minutes: 5
+    market_hours_start: "09:15"
+    market_hours_end: "15:30"
+    days: "mon-fri"
+
+  weekly_shareholding:
+    day: "sun"
+    hour: 6
+    minute: 0
+
+  max_consecutive_failures: 3
+

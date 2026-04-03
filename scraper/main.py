@@ -52,10 +52,130 @@ def _sanitize_metadata(clean_data: Dict[str, Any]) -> None:
 def _provenance_block() -> Dict[str, Any]:
     return {
         "generated_by": "fundametrics",
-        "pipeline_version": "1.0",
+        "pipeline_version": "2.0",
         "computation_mode": "internal",
         "recomputable": True,
     }
+
+
+def _compute_completeness_score(response: Dict[str, Any]) -> float:
+    """Compute data_completeness_score: ratio of populated fields to expected fields."""
+    expected_keys = [
+        "symbol", "company",
+        # Financials
+        "financials.latest", "financials.metrics", "financials.ratios",
+        "financials.income_statement", "financials.balance_sheet", "financials.cash_flow",
+        # Metrics
+        "metrics.values", "metrics.ratios",
+        # Shareholding
+        "shareholding.summary",
+    ]
+
+    populated = 0
+    total = len(expected_keys)
+
+    for key_path in expected_keys:
+        parts = key_path.split(".")
+        obj = response
+        found = True
+        for part in parts:
+            if isinstance(obj, dict) and part in obj:
+                obj = obj[part]
+            else:
+                found = False
+                break
+        if found and obj not in (None, {}, [], ""):
+            populated += 1
+
+    return round(populated / total, 3) if total > 0 else 0.0
+
+
+def _build_quality_report(response: Dict[str, Any], data_sources: List[str]) -> Dict[str, Any]:
+    """Build Phase 8 quality report for run payload."""
+    completeness = _compute_completeness_score(response)
+
+    # Check for missing fields
+    missing_fields = []
+    metrics = response.get("financials", {}).get("metrics", {})
+    expected_metrics = [
+        "fundametrics_operating_margin", "fundametrics_return_on_equity",
+        "fundametrics_eps", "fundametrics_market_cap",
+        "fundametrics_pe_ratio", "fundametrics_debt_to_equity",
+    ]
+    for key in expected_metrics:
+        val = metrics.get(key, {})
+        if isinstance(val, dict) and val.get("value") is None:
+            missing_fields.append(key)
+        elif val is None:
+            missing_fields.append(key)
+
+    # Anomaly detection
+    anomaly_flags = []
+    roe_val = metrics.get("fundametrics_return_on_equity", {})
+    if isinstance(roe_val, dict) and roe_val.get("value") is not None:
+        if abs(roe_val["value"]) > 100:
+            anomaly_flags.append(f"ROE = {roe_val['value']}% (unusually high)")
+
+    revenue = response.get("financials", {}).get("latest", {}).get("revenue", {})
+    if isinstance(revenue, dict) and revenue.get("value") is not None:
+        if revenue["value"] < 0:
+            anomaly_flags.append(f"Negative revenue: {revenue['value']}")
+
+    # Source breakdown
+    source_breakdown = {}
+    for src in data_sources:
+        source_breakdown[src] = "populated"
+
+    return {
+        "completeness_score": completeness,
+        "source_breakdown": source_breakdown,
+        "missing_fields": missing_fields,
+        "stale_fields": [],  # TODO: track field-level staleness
+        "anomaly_flags": anomaly_flags,
+    }
+
+
+def _try_yfinance_merge(symbol: str, builder: FundametricsResponseBuilder, log) -> List[str]:
+    """Attempt to merge yfinance financials to fill gaps. Returns list of data sources used."""
+    extra_sources = []
+    try:
+        from scraper.sources.yfinance_source import get_raw_financials
+        yf_data = get_raw_financials(symbol)
+        if yf_data:
+            builder.merge_with_yfinance(yf_data)
+            extra_sources.append("yfinance_financials")
+            log.info("yfinance financials merged", symbol=symbol)
+    except Exception as exc:
+        log.warning("yfinance merge skipped", symbol=symbol, error=str(exc))
+    return extra_sources
+
+
+def _try_nse_shareholding(symbol: str, log) -> Optional[Dict[str, Any]]:
+    """Attempt to fetch shareholding from NSE as fallback."""
+    try:
+        from scraper.sources.nse_source import get_shareholding
+        result = get_shareholding(symbol)
+        if result and result.get("status") == "available":
+            log.info("NSE shareholding fetched", symbol=symbol, status="available")
+            return result
+    except Exception as exc:
+        log.warning("NSE shareholding fallback failed", symbol=symbol, error=str(exc))
+    return None
+
+
+def _try_twelvedata_fallback(symbol: str, completeness_score: float, log) -> Optional[Dict[str, Any]]:
+    """Attempt Twelve Data if completeness is below 0.5."""
+    if completeness_score >= 0.5:
+        return None
+    try:
+        from scraper.sources.twelvedata_source import get_financials
+        result = get_financials(symbol)
+        if result and result.get("status") == "ok":
+            log.info("Twelve Data fallback used", symbol=symbol, completeness=completeness_score)
+            return result
+    except Exception as exc:
+        log.warning("Twelve Data fallback failed", symbol=symbol, error=str(exc))
+    return None
 
 
 async def _scrape_symbol(
@@ -137,9 +257,19 @@ async def _scrape_symbol(
     if cash_flow:
         builder.add_cash_flow(cash_flow)
 
+    # ─── yfinance merge (Phase 3) ────────────────────────────────────
+    extra_sources = _try_yfinance_merge(symbol, builder, log)
+
+    # ─── Shareholding: Trendlyne -> NSE fallback (Phase 4) ───────────
     shareholding_block = clean_data.get("shareholding") if enable_shareholding else None
     if shareholding_block:
         builder.add_shareholding(shareholding_block)
+    elif enable_shareholding:
+        # Try NSE direct as fallback
+        nse_shareholding = _try_nse_shareholding(symbol, log)
+        if nse_shareholding and nse_shareholding.get("status") == "available":
+            builder.add_shareholding(nse_shareholding.get("summary", {}))
+            extra_sources.append("nse_shareholding")
 
     # Drop raw shareholding tables from persisted clean data
     if "shareholding" in clean_data:
@@ -165,6 +295,18 @@ async def _scrape_symbol(
     response["metadata"]["run_id"] = run_id
     response["metadata"]["run_timestamp"] = run_timestamp
 
+    # ─── Completeness score + Quality report (Phase 8) ───────────────
+    all_sources = builder.data_sources + extra_sources
+    quality = _build_quality_report(response, all_sources)
+    completeness_score = quality["completeness_score"]
+
+    # ─── Twelve Data fallback if completeness < 0.5 (Phase 8) ────────
+    td_data = _try_twelvedata_fallback(symbol, completeness_score, log)
+    if td_data:
+        extra_sources.append("twelvedata")
+        # Recalculate quality
+        quality = _build_quality_report(response, all_sources + ["twelvedata"])
+
     run_payload = {
         "symbol": symbol,
         "run_id": run_id,
@@ -175,6 +317,8 @@ async def _scrape_symbol(
         "fundametrics_response": response,
         "provenance": provenance,
         "shareholding": shareholding_payload,
+        "data_completeness_score": quality["completeness_score"],
+        "quality": quality,
     }
 
     if repository:
@@ -185,7 +329,7 @@ async def _scrape_symbol(
     output_path = output_dir / f"{symbol.lower()}_{timestamp}.json"
     output_path.write_text(json.dumps(response, indent=2), encoding="utf-8")
 
-    log.success("Run completed", symbol=symbol, run_id=run_id, validation_status=validation_report.get("status"))
+    log.success("Run completed", symbol=symbol, run_id=run_id, validation_status=validation_report.get("status"), completeness=quality["completeness_score"])
     return run_id
 
 

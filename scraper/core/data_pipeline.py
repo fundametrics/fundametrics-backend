@@ -45,7 +45,7 @@ class DataPipeline:
     EQUITY_KEYS = ("equity", "total_equity", "equity_capital", "share_capital")
 
     def process(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Return cleaned data together with a validation report."""
+        """Return cleaned data together with a validation report and quality report."""
 
         clean_data = self._clean(copy.deepcopy(raw_data))
         self._attach_canonical_financials(clean_data)
@@ -62,9 +62,13 @@ class DataPipeline:
             "issues": [issue.as_dict() for issue in issues],
         }
 
+        # Phase 8: Quality report
+        quality = self._compute_quality_report(clean_data, raw_data)
+
         return {
             "clean_data": clean_data,
             "validation_report": report,
+            "quality_report": quality,
         }
 
     # ------------------------------------------------------------------
@@ -274,3 +278,91 @@ class DataPipeline:
                     context={"period": latest_period},
                 )
             )
+
+    # ------------------------------------------------------------------
+    # Phase 8: Quality Report
+    # ------------------------------------------------------------------
+
+    _EXPECTED_FIELDS = [
+        "metadata.symbol",
+        "metadata.company_name",
+        "metadata.sector",
+        "financials.income_statement",
+        "financials.balance_sheet",
+        "financials.cash_flow",
+        "financials.quarters",
+        "shareholding",
+        "canonical_financials.income_statement",
+        "canonical_financials.balance_sheet",
+        "canonical_financials.cash_flow",
+        "canonical_financials.ratios",
+    ]
+
+    def _compute_quality_report(
+        self, clean_data: Dict[str, Any], raw_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Compute per-symbol quality report for Phase 8."""
+
+        # 1. Completeness score
+        populated = 0
+        missing_fields: List[str] = []
+
+        for field_path in self._EXPECTED_FIELDS:
+            parts = field_path.split(".")
+            obj = clean_data
+            found = True
+            for part in parts:
+                if isinstance(obj, dict) and part in obj:
+                    obj = obj[part]
+                else:
+                    found = False
+                    break
+            if found and obj not in (None, {}, [], ""):
+                populated += 1
+            else:
+                missing_fields.append(field_path)
+
+        total = len(self._EXPECTED_FIELDS)
+        completeness_score = round(populated / total, 3) if total > 0 else 0.0
+
+        # 2. Source breakdown
+        source_breakdown: Dict[str, str] = {}
+        if clean_data.get("financials", {}).get("income_statement"):
+            source_breakdown["income_statement"] = "screener"
+        if clean_data.get("financials", {}).get("balance_sheet"):
+            source_breakdown["balance_sheet"] = "screener"
+        if clean_data.get("profile"):
+            source_breakdown["profile"] = "trendlyne"
+        if clean_data.get("shareholding"):
+            source_breakdown["shareholding"] = "screener"
+
+        # 3. Anomaly detection
+        anomaly_flags: List[str] = []
+
+        financials = clean_data.get("financials", {})
+        income = financials.get("income_statement", {})
+        if isinstance(income, dict):
+            for period, row in income.items():
+                if isinstance(row, dict):
+                    rev = row.get("revenue")
+                    if isinstance(rev, (int, float)) and rev < 0:
+                        anomaly_flags.append(f"Negative revenue in {period}: {rev}")
+                    ni = row.get("net_income")
+                    rev_val = rev if isinstance(rev, (int, float)) else None
+                    ni_val = ni if isinstance(ni, (int, float)) else None
+                    if rev_val and ni_val and rev_val > 0:
+                        npm = (ni_val / rev_val) * 100
+                        if npm > 100:
+                            anomaly_flags.append(f"Net margin > 100% in {period}: {npm:.1f}%")
+
+        # 4. Stale fields (placeholder — needs timestamp tracking per field)
+        stale_fields: List[str] = []
+
+        return {
+            "completeness_score": completeness_score,
+            "source_breakdown": source_breakdown,
+            "missing_fields": missing_fields,
+            "stale_fields": stale_fields,
+            "anomaly_flags": anomaly_flags,
+        }
+

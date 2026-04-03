@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../finox-frontend"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "finox-scraper"
+	}
+}

@@ -1,0 +1,13 @@
+﻿# Fundametrics Backend - Environment Configuration
+# MongoDB Atlas Connection (URL-encoded password)
+MONGO_URI=mongodb+srv://admin:Mohit%4015@cluster0.tbhvlm3.mongodb.net/fundametrics?retryWrites=true&w=majority
+
+# API Settings
+INGEST_ENABLED=true
+ADMIN_API_KEY=fundametrics-secret-key-2026
+
+# Rate Limiting
+RATE_LIMIT_PER_MINUTE=10
+
+# Logging
+LOG_LEVEL=INFO

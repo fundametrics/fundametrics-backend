@@ -131,3 +131,29 @@ class ScrapeLog(Base):
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer)
     items_scraped: Mapped[Optional[int]] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class Watchlist(Base):
+    """User watchlist entries"""
+    __tablename__ = "watchlists"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[str] = mapped_column(String(100))
+    symbol: Mapped[str] = mapped_column(String(50))
+    added_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    __table_args__ = (
+        Index("idx_user_symbol", "user_id", "symbol", unique=True),
+    )
+
+
+class DailyApiUsage(Base):
+    """Track daily API call counts for rate-limited sources"""
+    __tablename__ = "daily_api_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source: Mapped[str] = mapped_column(String(50))  # 'twelvedata', 'nse', etc.
+    date: Mapped[date] = mapped_column(Date)
+    call_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_updated: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
