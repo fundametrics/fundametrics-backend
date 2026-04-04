@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, delete, and_
 
-from db.manager import db_manager
+import db.manager as db_pkg
 from db.models import (
     Company, CompanyFact, ComputedMetric, FinancialYearly,
     Management, ScrapeLog, Watchlist,
@@ -73,9 +73,9 @@ def _check_rate_limit(client_ip: str) -> bool:
 # ─── DB dependency ───────────────────────────────────────────────────
 
 async def get_db() -> AsyncSession:
-    if db_manager is None:
+    if db_pkg.db_manager is None:
         raise HTTPException(status_code=503, detail="Database not initialized")
-    async with db_manager.session_factory() as session:
+    async with db_pkg.db_manager.session_factory() as session:
         yield session
 
 
@@ -188,10 +188,10 @@ async def _background_refresh(symbol: str):
     """Background task: re-scrape a symbol's fundamentals."""
     try:
         from scraper.main import run_scraper
-        run_scraper(symbol=symbol, trendlyne=False, persist_runs=True)
+        await asyncio.to_thread(run_scraper, symbol=symbol, trendlyne=False, persist_runs=True)
         _fundamentals_cache[symbol] = {"fetched_at": datetime.now(timezone.utc)}
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Background refresh failed for {symbol}: {e}")
     finally:
         _refreshing_symbols.discard(symbol)
 
