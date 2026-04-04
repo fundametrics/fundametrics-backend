@@ -22,12 +22,18 @@ class DatabaseManager:
             log.error("DATABASE_URL not found in environment variables.")
             raise ValueError("DATABASE_URL is required.")
 
+        engine_kwargs = {
+            "echo": False,
+            "pool_pre_ping": True,
+        }
+        
+        if not self.url.startswith("sqlite"):
+            engine_kwargs["pool_size"] = 10
+            engine_kwargs["max_overflow"] = 20
+
         self.engine = create_async_engine(
             self.url,
-            echo=False,
-            pool_pre_ping=True,
-            pool_size=10,
-            max_overflow=20
+            **engine_kwargs
         )
         
         self.session_factory = async_sessionmaker(
