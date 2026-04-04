@@ -132,7 +132,6 @@ def get_financials(symbol: str) -> dict:
             balance_periods=len(result["balance_sheet"]),
         )
         return result
-
     except Exception as exc:
         log.error("Twelve Data fetch failed", symbol=symbol, run_id=run_id, error=str(exc))
         raise ScrapeError(
@@ -142,6 +141,60 @@ def get_financials(symbol: str) -> dict:
             run_id=run_id,
             phase="twelvedata",
         ) from exc
+
+
+def get_quote(symbol: str) -> dict:
+    """
+    Fetch real-time price quote from Twelve Data API.
+    
+    Args:
+        symbol: NSE stock symbol (e.g. 'RELIANCE').
+        
+    Returns:
+        dict with price, change, change_percent, currency, etc.
+    """
+    run_id = str(uuid.uuid4())[:8]
+    api_key = os.getenv("TWELVEDATA_API_KEY")
+
+    if not api_key:
+        return {"status": "skipped", "reason": "No API Key"}
+
+    if not _check_rate_limit():
+        return {"status": "rate_limited"}
+
+    try:
+        import requests
+        td_symbol = f"{symbol}:NSE"
+        _increment_counter()
+        
+        resp = requests.get(
+            "https://api.twelvedata.com/quote",
+            params={"symbol": td_symbol, "apikey": api_key},
+            timeout=10
+        )
+        
+        if resp.status_code == 200:
+            data = resp.json()
+            if "price" in data or "close" in data:
+                price = _safe_float(data.get("price") or data.get("close"))
+                change = _safe_float(data.get("change"))
+                pct = _safe_float(data.get("change_percent") or data.get("percent_change"))
+                
+                return {
+                    "price": price,
+                    "change": change,
+                    "change_percent": pct,
+                    "currency": data.get("currency", "INR"),
+                    "symbol": symbol,
+                    "status": "ok",
+                    "source": "twelvedata"
+                }
+        
+        return {"status": "error", "message": f"HTTP {resp.status_code}"}
+        
+    except Exception as e:
+        log.error("Twelve Data quote failed", symbol=symbol, error=str(e))
+        return {"status": "error", "message": str(e)}
 
 
 def _safe_float(val: Any) -> Optional[float]:

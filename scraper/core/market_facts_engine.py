@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional, Union, List
 from dataclasses import dataclass
 
 from scraper.core.fetcher import Fetcher
+from scraper.sources import twelvedata_source
 from scraper.utils.logger import get_logger
 
 
@@ -82,6 +83,16 @@ class MarketFactsEngine:
         high_52w = data.get("fifty_two_week_high")
         low_52w = data.get("fifty_two_week_low")
         shares_outstanding = data.get("shares_outstanding")
+
+        # Phase 27: Twelve Data Fallback
+        if current_price is None:
+            self._log.info("Yahoo failed for {}, attempting Twelve Data fallback", symbol)
+            td_data = twelvedata_source.get_quote(symbol)
+            if td_data.get("status") == "ok":
+                current_price = td_data.get("price")
+                current_change = td_data.get("change")
+                change_pct = td_data.get("change_percent")
+                self._log.info("Twelve Data Success for {}: price={}", symbol, current_price)
         
         # Compute market cap internally
         market_cap = self._compute_market_cap(current_price, shares_outstanding)

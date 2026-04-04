@@ -1430,3 +1430,45 @@ async def get_market_facts_mongo(symbol: str):
     except Exception as e:
         logging.error(f"Failed to fetch market facts for {symbol}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch market data")
+
+
+@router.get("/stocks/{symbol}/vs-peers")
+async def get_stock_vs_peers(symbol: str):
+    """
+    Compare a stock against its sector peer group using MongoDB data.
+    """
+    symbol = symbol.upper()
+    try:
+        # 1. Get company and its sector
+        company = await mongo_repo.get_company(symbol)
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        sector = company.get("sector")
+        if not sector or sector == "Unknown":
+            # Try getting from metadata
+            sector = company.get("fundametrics_response", {}).get("company", {}).get("sector")
+            
+        if not sector:
+            # Final fallback to "General"
+            sector = "General"
+
+        # 2. Find peers in same sector
+        peers = await mongo_repo.get_peers(symbol)
+        
+        # 3. Compile comparison data
+        # Fetch detailed snapshots for each peer
+        target_symbols = [symbol] + [p["symbol"] for p in peers[:10]]
+        peer_details = await mongo_repo.get_companies_detail(target_symbols)
+        
+        return {
+            "symbol": symbol,
+            "sector": sector,
+            "peers": peer_details,
+            "metrics_compared": ["Market Cap", "PE Ratio", "ROE", "ROCE", "Debt to Equity"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Failed to fetch peers for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch peer data")

@@ -4,7 +4,7 @@ Fundametrics API Endpoints
 
 Complete REST API surface including:
   - Stock fundamentals (with stale-while-revalidate caching)
-  - Live market data via yfinance
+  - Live market data via robust fallbacks
   - Sector comparison
   - User watchlists
   - Admin: scheduler status, coverage reports
@@ -37,8 +37,10 @@ from api.schemas import (
     WatchlistAdd, WatchlistUpdate, WatchlistItem, WatchlistResponse,
     SchedulerStatusResponse, CoverageResponse,
 )
+from scraper.core.market_facts_engine import MarketFactsEngine
 
 router = APIRouter()
+market_engine = MarketFactsEngine()
 
 # ─── In-memory caches for stale-while-revalidate ────────────────────
 _fundamentals_cache: Dict[str, Dict[str, Any]] = {}
@@ -213,16 +215,33 @@ async def _background_live_refresh(symbol: str):
 @router.get("/stocks/{symbol}/live", response_model=LiveDataResponse)
 async def get_stock_live(symbol: str, request: Request):
     """
-    Fetch real-time market data directly from yfinance. No caching, no DB write.
+    Fetch real-time market data with multiple fallbacks (Yahoo API -> HTML Scrape -> Twelve Data).
     """
     if not _check_rate_limit(request.client.host if request.client else "unknown"):
         raise HTTPException(status_code=429, detail="Rate limit exceeded (60 req/min)")
 
     try:
-        from scraper.sources.yfinance_source import get_live_data
-        data = get_live_data(symbol.upper())
-        return data
+        facts = await market_engine.fetch_market_facts(symbol.upper())
+        if facts.current_price is None:
+             raise HTTPException(status_code=503, detail="Market data sources temporarily unavailable")
+        
+        return {
+            "symbol": symbol.upper(),
+            "price": facts.current_price,
+            "change": facts.current_change,
+            "change_percent": facts.change_percent,
+            "currency": facts.price_currency,
+            "market_cap": facts.market_cap,
+            "fifty_two_week_high": facts.fifty_two_week_high,
+            "fifty_two_week_low": facts.fifty_two_week_low,
+            "fetched_at": facts.last_updated.isoformat()
+        }
+    except HTTPException:
+        raise
     except Exception as exc:
+        import traceback
+        print(f"FAILED LIVE FETCH: {exc}")
+        traceback.print_exc()
         raise HTTPException(status_code=502, detail=f"Failed to fetch live data: {exc}")
 
 

@@ -214,36 +214,69 @@ class ScreenerParser:
                     if metric_key:
                         name = metric_key
                         raw_val = value_el.text.strip()
-                        clean_val = re.sub(r'[\n\t\r₹%,]', '', raw_val)
-                        clean_val = clean_val.replace('Cr.', '').strip()
                         
-                        try:
-                            if '.' in clean_val:
-                                constants[name] = float(clean_val)
-                            else:
-                                constants[name] = int(clean_val)
-                        except ValueError:
-                            constants[name] = clean_val
+                        # Use helper for consistent numeric parsing
+                        constants[name] = self._parse_numeric(raw_val)
         
         log.info(f"Extracted {len(constants)} constants")
         return constants
 
+    def _parse_numeric(self, val_str: str) -> Any:
+        """Helper to parse financial numbers with support for negative parens, crores, and percentages."""
+        if not val_str or val_str.strip() == '':
+            return None
+            
+        # 1. Handle negative numbers in parentheses: (1,234.56) -> -1234.56
+        is_neg = False
+        val_str = val_str.strip()
+        if val_str.startswith('(') and val_str.endswith(')'):
+            is_neg = True
+            val_str = val_str[1:-1]
+            
+        # 2. Clean common symbols
+        clean_val = re.sub(r'[\n\t\r₹%,]', '', val_str)
+        clean_val = clean_val.replace('Cr.', '').strip()
+        
+        if not clean_val:
+            return None
+            
+        try:
+            num = float(clean_val)
+            return -num if is_neg else num
+        except ValueError:
+            return val_str
+
     def _resolve_metric_name(self, raw_label: str) -> Optional[str]:
-        """Resolve a raw label to a normalized metric key using fuzzy matching."""
-        label = raw_label.lower().strip().replace(':', '')
+        """Map raw label text to a Fundametrics metric name (calls class method)."""
+        return self.__class__.resolve_metric_name(raw_label)
+
+    @classmethod
+    def resolve_metric_name(cls, raw_label: str) -> Optional[str]:
+        """Map raw label text to a Fundametrics metric name with relaxed normalization."""
+        if not raw_label:
+            return None
+
+        # Clean label for lookup
+        clean_label = " ".join(raw_label.split()).replace(' +', '').replace('+', '').strip()
         
-        # 1. Exact match lookup (fast)
-        for key, val in self.NORMALIZED_METRIC_MAP.items():
-            if key == label:
-                return val
-                
-        # 2. Fuzzy/contains match (slower but resilient)
-        # Prioritize longer keys to avoid false positives (e.g. "tax" vs "profit before tax")
-        sorted_keys = sorted(self.NORMALIZED_METRIC_MAP.keys(), key=len, reverse=True)
+        # 1. Direct map check
+        if clean_label in cls.METRIC_MAP:
+            return cls.METRIC_MAP[clean_label]
+
+        # 2. Normalized check
+        norm = clean_label.lower()
+        norm = re.sub(r'\([^)]*\)', '', norm)  # remove parenthetical units
+        norm = re.sub(r'[^a-z0-9\s]', ' ', norm)
+        norm = re.sub(r'\s+', ' ', norm).strip()
         
+        if norm in cls.NORMALIZED_METRIC_MAP:
+            return cls.NORMALIZED_METRIC_MAP[norm]
+            
+        # 3. Fuzzy/Contains match (for complex labels)
+        sorted_keys = sorted(cls.NORMALIZED_METRIC_MAP.keys(), key=len, reverse=True)
         for key in sorted_keys:
-            if key in label:
-                return self.NORMALIZED_METRIC_MAP[key]
+            if key in norm and len(key) > 3: # Avoid too short matches like "tax"
+                return cls.NORMALIZED_METRIC_MAP[key]
                 
         return None
 
@@ -295,29 +328,12 @@ class ScreenerParser:
                     if period not in data:
                         data[period] = {}
                         
-                    val = " ".join(col.text.split()).replace(',', '').replace('%', '')
-                    try:
-                        data[period][target_key] = float(val) if val and val != '' else None
-                    except ValueError:
-                        data[period][target_key] = val
+                    raw_val = " ".join(col.text.split())
+                    data[period][target_key] = self._parse_numeric(raw_val)
             
         return data
 
-    @classmethod
-    def _resolve_metric_name(cls, raw_label: str) -> Optional[str]:
-        """Map raw label text to a Fundametrics metric name with relaxed normalization."""
-        if not raw_label:
-            return None
-
-        clean_label = " ".join(raw_label.split()).replace(' +', '').replace('+', '').strip()
-        if clean_label in cls.METRIC_MAP:
-            return cls.METRIC_MAP[clean_label]
-
-        normalized = clean_label.lower()
-        normalized = re.sub(r'\([^)]*\)', '', normalized)  # remove parenthetical units
-        normalized = re.sub(r'[^a-z0-9\s]', ' ', normalized)
-        normalized = re.sub(r'\s+', ' ', normalized).strip()
-        return cls.NORMALIZED_METRIC_MAP.get(normalized)
+    # Unified method above replaces @classmethod _resolve_metric_name
 
     # REMOVED get_ranges_tables to comply with Phase 1 rules
 
