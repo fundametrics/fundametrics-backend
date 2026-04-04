@@ -231,8 +231,8 @@ async def get_stock_live(symbol: str, request: Request):
 # ═══════════════════════════════════════════════════════════════════
 
 @router.get("/stocks/{symbol}/cache-status", response_model=CacheStatusResponse)
-async def get_cache_status(symbol: str):
-    """Return cache age and next refresh schedule for a symbol."""
+async def get_cache_status(symbol: str, background_tasks: BackgroundTasks):
+    """Return cache age and next refresh schedule for a symbol. Triggers scrape if missing."""
     symbol = symbol.upper()
     cached = _fundamentals_cache.get(symbol)
     live = _live_price_cache.get(symbol)
@@ -253,6 +253,7 @@ async def get_cache_status(symbol: str):
                     return CacheStatusResponse(
                         symbol=symbol,
                         cache_status=status,
+                        status="available" if not is_stale else "generating",
                         cached_at=ts,
                         age_seconds=round(age, 1),
                         age_human=_human_age(age),
@@ -263,7 +264,12 @@ async def get_cache_status(symbol: str):
         except Exception:
             pass
 
-        return CacheStatusResponse(symbol=symbol, cache_status="missing")
+        # Trigger scrape if it's completely missing
+        if symbol not in _refreshing_symbols:
+            _refreshing_symbols.add(symbol)
+            background_tasks.add_task(_background_refresh, symbol)
+
+        return CacheStatusResponse(symbol=symbol, cache_status="missing", status="generating", message="Scrape queued")
 
     fetched_at = cached["fetched_at"]
     age = (datetime.now(timezone.utc) - fetched_at).total_seconds()
@@ -277,6 +283,7 @@ async def get_cache_status(symbol: str):
     return CacheStatusResponse(
         symbol=symbol,
         cache_status=status,
+        status="available" if not is_stale else "generating",
         cached_at=fetched_at.isoformat(),
         age_seconds=round(age, 1),
         age_human=_human_age(age),

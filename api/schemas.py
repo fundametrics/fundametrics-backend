@@ -128,6 +128,8 @@ class CacheStatusResponse(BaseModel):
     """Cache status for a symbol's fundamentals data."""
     symbol: str
     cache_status: str  # "fresh" | "stale_refreshing" | "stale" | "missing"
+    status: Optional[str] = None # Backwards compatibility ("generating", "available", "not_found")
+    message: Optional[str] = None
     cached_at: Optional[str] = None
     age_seconds: Optional[float] = None
     age_human: Optional[str] = None
