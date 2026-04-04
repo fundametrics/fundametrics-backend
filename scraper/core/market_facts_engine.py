@@ -87,12 +87,16 @@ class MarketFactsEngine:
         # Phase 27: Twelve Data Fallback
         if current_price is None:
             self._log.info("Yahoo failed for {}, attempting Twelve Data fallback", symbol)
-            td_data = twelvedata_source.get_quote(symbol)
+            td_data = await twelvedata_source.get_quote(symbol)
             if td_data.get("status") == "ok":
                 current_price = td_data.get("price")
                 current_change = td_data.get("change")
                 change_pct = td_data.get("change_percent")
-                self._log.info("Twelve Data Success for {}: price={}", symbol, current_price)
+                # Update market_cap if TwelveData provided it
+                td_mcap = td_data.get("market_cap")
+                if td_mcap:
+                     market_cap = td_mcap / 10000000
+                self._log.info("Twelve Data Success for {}: price={}, mcap={}", symbol, current_price, market_cap)
         
         # Priority: 1. Use provider's market cap if available, 2. Compute internally
         market_cap = data.get("market_cap")
@@ -415,7 +419,7 @@ class MarketFactsEngine:
                         # Phase 25 Refinement: Fallback to HTML even if price is found, IF change is 0.
                         # This catches weekends where API returns 0.0 but HTML show yesterday's performance.
                         is_valid = chart_data and chart_data.get("current_price")
-                        has_movement = chart_data and abs(chart_data.get("change_percent", 0)) > 0.0001
+                        has_movement = chart_data and abs(chart_data.get("change_percent") or 0) > 0.0001
                         
                         if is_valid and has_movement:
                             results_map[sym] = {

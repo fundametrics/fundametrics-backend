@@ -143,15 +143,9 @@ def get_financials(symbol: str) -> dict:
         ) from exc
 
 
-def get_quote(symbol: str) -> dict:
+async def get_quote(symbol: str) -> dict:
     """
-    Fetch real-time price quote from Twelve Data API.
-    
-    Args:
-        symbol: NSE stock symbol (e.g. 'RELIANCE').
-        
-    Returns:
-        dict with price, change, change_percent, currency, etc.
+    Fetch real-time price quote from Twelve Data API (Async).
     """
     run_id = str(uuid.uuid4())[:8]
     api_key = os.getenv("TWELVEDATA_API_KEY")
@@ -163,27 +157,28 @@ def get_quote(symbol: str) -> dict:
         return {"status": "rate_limited"}
 
     try:
-        import requests
+        import httpx
         td_symbol = f"{symbol}:NSE"
         _increment_counter()
         
-        resp = requests.get(
-            "https://api.twelvedata.com/quote",
-            params={"symbol": td_symbol, "apikey": api_key},
-            timeout=10
-        )
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                "https://api.twelvedata.com/quote",
+                params={"symbol": td_symbol, "apikey": api_key}
+            )
         
         if resp.status_code == 200:
             data = resp.json()
             if "price" in data or "close" in data:
                 price = _safe_float(data.get("price") or data.get("close"))
                 change = _safe_float(data.get("change"))
-                pct = _safe_float(data.get("change_percent") or data.get("percent_change"))
+                pct = _safe_float(data.get("percent_change") or data.get("change_percent"))
                 
                 return {
                     "price": price,
                     "change": change,
                     "change_percent": pct,
+                    "market_cap": _safe_float(data.get("market_cap")),
                     "currency": data.get("currency", "INR"),
                     "symbol": symbol,
                     "status": "ok",
