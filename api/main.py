@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
     global _scheduler_instance
 
     # 1. Initialize database
-    db_url = os.getenv("DATABASE_URL")
+    db_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./finox_stock_data.db")
     if db_url:
         init_db(db_url)
         print("✅ Database initialized")
