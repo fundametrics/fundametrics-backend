@@ -94,8 +94,13 @@ class MarketFactsEngine:
                 change_pct = td_data.get("change_percent")
                 self._log.info("Twelve Data Success for {}: price={}", symbol, current_price)
         
-        # Compute market cap internally
-        market_cap = self._compute_market_cap(current_price, shares_outstanding)
+        # Priority: 1. Use provider's market cap if available, 2. Compute internally
+        market_cap = data.get("market_cap")
+        if market_cap is not None:
+             # Yahoo marketCap is absolute INR, convert to crores
+             market_cap = market_cap / 10000000
+        else:
+             market_cap = self._compute_market_cap(current_price, shares_outstanding)
         
         market_facts = MarketFacts(
             current_price=current_price,
