@@ -81,7 +81,7 @@ class FundametricsResponseBuilder:
         self.company_metadata: Dict[str, Any] = {}
 
     @staticmethod
-    def _emit_metric(metric: Optional[MetricValue], default_unit: str = "", fallback_reason: str = "Unavailable") -> Dict[str, Any]:
+    def _emit_metric(metric: Any, default_unit: str = "", fallback_reason: str = "Unavailable") -> Dict[str, Any]:
         if metric is None:
             return {
                 "value": None,
@@ -89,20 +89,36 @@ class FundametricsResponseBuilder:
                 "computed": False,
                 "reason": fallback_reason,
             }
+        
+        # Determine value and fields dynamically
+        if isinstance(metric, (int, float)):
+            return {
+                "value": float(metric),
+                "unit": default_unit,
+                "computed": False,
+            }
+            
+        if isinstance(metric, dict):
+            return {
+                "value": metric.get("value"),
+                "unit": metric.get("unit", default_unit),
+                "computed": metric.get("computed", False),
+                "reason": metric.get("reason", "")
+            }
 
         payload: Dict[str, Any] = {
-            "value": metric.value,
-            "unit": metric.unit or default_unit,
-            "computed": metric.computed,
+            "value": getattr(metric, "value", None),
+            "unit": getattr(metric, "unit", default_unit) or default_unit,
+            "computed": getattr(metric, "computed", False),
         }
-        if metric.value is not None:
+        if payload["value"] is not None:
             confidence = metric.confidence.to_dict() if getattr(metric, "confidence", None) else {"score": 0, "grade": "none"}
             payload["confidence"] = confidence
-        if metric.statement_id:
+        if getattr(metric, "statement_id", None):
             payload["statement_id"] = metric.statement_id
-        if metric.value is None:
-            payload["reason"] = metric.reason or fallback_reason
-        elif metric.reason:
+        if payload["value"] is None:
+            payload["reason"] = getattr(metric, "reason", None) or fallback_reason
+        elif getattr(metric, "reason", None):
             payload["reason"] = metric.reason
         return payload
 
