@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable, Set
+from typing import Iterable, Set, Any
 
 from scraper.core.metrics import MetricValue
 
@@ -50,11 +50,11 @@ def validate_symbol(symbol: str, *, allowlist: Iterable[str] | None = None) -> s
 
 
 
-def validate_same_statement(*metrics: MetricValue) -> None:
+def validate_same_statement(*metrics: Any) -> None:
     ids = {
-        metric.statement_id
+        getattr(metric, "statement_id", None)
         for metric in metrics
-        if metric is not None and metric.statement_id is not None
+        if metric is not None and getattr(metric, "statement_id", None) is not None
     }
     if len(ids) > 1:
         raise MetricConsistencyError(sorted(ids))
