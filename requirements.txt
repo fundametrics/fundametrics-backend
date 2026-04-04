@@ -73,3 +73,5 @@ requests==2.31.0                 # HTTP library (fallback)
 # flake8==7.0.0                  # Linting
 # mypy==1.8.0                    # Type checking
 # ipython==8.19.0                # Enhanced REPL
+
+aiosqlite
