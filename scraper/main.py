@@ -241,21 +241,13 @@ async def _scrape_symbol(
     builder.set_company_metadata(clean_data.get("metadata"))
 
     financials = clean_data.get("financials", {}) or {}
-    income_statement = financials.get("income_statement")
-    if income_statement:
-        builder.add_income_statement(income_statement)
-
-    balance_sheet = financials.get("balance_sheet")
-    if balance_sheet:
-        builder.add_balance_sheet(balance_sheet)
+    builder.set_canonical_financials(financials)
 
     quarters = financials.get("quarters")
     if quarters:
         builder.set_quarterly_financials(quarters)
 
-    cash_flow = financials.get("cash_flow")
-    if cash_flow:
-        builder.add_cash_flow(cash_flow)
+
 
     # ─── yfinance merge (Phase 3) ────────────────────────────────────
     extra_sources = _try_yfinance_merge(symbol, builder, log)
