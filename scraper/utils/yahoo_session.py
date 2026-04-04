@@ -93,9 +93,10 @@ class YahooSession:
 
     async def refresh_if_needed(self):
         if self.is_in_quarantine(): return
-        # Phase 12: No fresh identity fetch during boot cooling (to avoid burst flags)
-        if self.is_boot_cooling() and not self.cookies:
-            log.debug("Ghost-Boot: Skipping identity refresh during cooling period.")
+        # Phase 12: Allow INITIAL identity fetch even during cooling, 
+        # but skip subsequent refreshes to avoid burst flags.
+        if self.is_boot_cooling() and self.cookies:
+            log.debug("Ghost-Boot: Cooling period active, skipping refresh.")
             return
 
         async with self._lock:
