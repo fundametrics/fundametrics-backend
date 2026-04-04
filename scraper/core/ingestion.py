@@ -354,12 +354,17 @@ async def ingest_symbol(symbol: str, *, allowlist: Iterable[str] | None = None) 
         warnings=metadata_warnings
     )
     
-    # Optional: Persist to MongoDB if repository is available
+    # Phase 22: Persist to MongoDB
     try:
         repo = MongoRepository(get_db())
+        # 1. Trust Report
         await repo.upsert_trust_report(trust_report)
+        
+        # 2. Full Ingestion Payload (Storage)
+        # We save this to 'companies' collection as the primary record
+        await repo.upsert_company(normalised_symbol, storage_payload)
     except Exception as e:
-        log.warning(f"Could not persist trust report to MongoDB: {e}")
+        log.warning(f"Could not persist to MongoDB: {e}")
 
     run_timestamp = response_metadata.get("run_timestamp", datetime.now(timezone.utc).isoformat())
     response_metadata["run_id"] = run_id

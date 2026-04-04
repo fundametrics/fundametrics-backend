@@ -562,24 +562,28 @@ class FundametricsResponseBuilder:
                 # ROE Estimation
                 if 'roe' not in ratios_table[period] and ni:
                     # Try to get equity (Cap + Reserves)
-                    cap = row_bal.get('equity_capital')
-                    res = row_bal.get('reserves')
-                    if cap and res and cap.value is not None and res.value is not None:
+                    cap = self.metrics_engine._coerce_metric(row_bal.get('equity_capital'), "INR")
+                    res = self.metrics_engine._coerce_metric(row_bal.get('reserves'), "INR")
+                    ni_m = self.metrics_engine._coerce_metric(ni, "INR")
+                    
+                    if cap.value is not None and res.value is not None and ni_m.value is not None:
                         equity = cap.value + res.value
                         if equity > 0:
-                            roe_val = round((ni.value / equity) * 100, 2)
+                            roe_val = round((ni_m.value / equity) * 100, 2)
                             ratios_table[period]['roe'] = self._emit_metric(MetricValue(roe_val, "%", None, True))
                 
                 # ROCE Estimation
                 if 'roce' not in ratios_table[period] and op:
                     # Use Operating Profit as proxy for EBIT if EBIT missing
-                    cap = row_bal.get('equity_capital')
-                    res = row_bal.get('reserves')
-                    bor = row_bal.get('borrowings')
-                    if cap and res and bor and cap.value is not None and res.value is not None and bor.value is not None:
+                    cap = self.metrics_engine._coerce_metric(row_bal.get('equity_capital'), "INR")
+                    res = self.metrics_engine._coerce_metric(row_bal.get('reserves'), "INR")
+                    bor = self.metrics_engine._coerce_metric(row_bal.get('borrowings'), "INR")
+                    op_m = self.metrics_engine._coerce_metric(op, "INR")
+                    
+                    if cap.value is not None and res.value is not None and bor.value is not None and op_m.value is not None:
                         cap_employed = cap.value + res.value + bor.value
                         if cap_employed > 0:
-                            roce_val = round((op.value / cap_employed) * 100, 2)
+                            roce_val = round((op_m.value / cap_employed) * 100, 2)
                             ratios_table[period]['roce'] = self._emit_metric(MetricValue(roce_val, "%", None, True))
 
                 # Face Value Injection
@@ -592,11 +596,11 @@ class FundametricsResponseBuilder:
 
                 # Book Value Estimation
                 if 'book_value' not in ratios_table[period]:
-                    cap = row_bal.get('equity_capital')
-                    res = row_bal.get('reserves')
+                    cap = self.metrics_engine._coerce_metric(row_bal.get('equity_capital'), "INR")
+                    res = self.metrics_engine._coerce_metric(row_bal.get('reserves'), "INR")
                     fv = self.company_metadata.get('constants', {}).get('face_value')
                     
-                    if cap and res and fv and cap.value is not None and res.value is not None:
+                    if cap.value is not None and res.value is not None and fv:
                         try:
                             fv_val = float(fv)
                             if fv_val > 0 and cap.value > 0:

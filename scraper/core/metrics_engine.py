@@ -188,8 +188,11 @@ class FundametricsMetricsEngine:
         return int(match.group(1)) if match else 0
 
     @staticmethod
-    def calc_operating_margin(revenue: MetricValue, operating_profit: MetricValue) -> MetricValue:
+    def calc_operating_margin(revenue: Any, operating_profit: Any) -> MetricValue:
         try:
+            revenue = FundametricsMetricsEngine._coerce_metric(revenue, "INR")
+            operating_profit = FundametricsMetricsEngine._coerce_metric(operating_profit, "INR")
+            
             validate_same_statement(revenue, operating_profit)
             if revenue.value in (None, 0) or operating_profit.value is None:
                 raise ValueError("Insufficient data")
@@ -213,8 +216,11 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_net_margin(revenue: MetricValue, net_income: MetricValue) -> MetricValue:
+    def calc_net_margin(revenue: Any, net_income: Any) -> MetricValue:
         try:
+            revenue = FundametricsMetricsEngine._coerce_metric(revenue, "INR")
+            net_income = FundametricsMetricsEngine._coerce_metric(net_income, "INR")
+            
             validate_same_statement(revenue, net_income)
             if revenue.value in (None, 0) or net_income.value is None:
                 raise ValueError("Insufficient data")
@@ -238,9 +244,12 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_roce(ebit: MetricValue, capital_employed: MetricValue) -> MetricValue:
+    def calc_roce(ebit: Any, capital_employed: Any) -> MetricValue:
         """Fundametrics Return on Capital Employed Calculation"""
         try:
+            ebit = FundametricsMetricsEngine._coerce_metric(ebit, "INR")
+            capital_employed = FundametricsMetricsEngine._coerce_metric(capital_employed, "INR")
+            
             validate_same_statement(ebit, capital_employed)
             if capital_employed.value in (None, 0) or ebit.value is None:
                 raise ValueError("Insufficient data")
@@ -262,9 +271,12 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_asset_turnover(revenue: MetricValue, total_assets: MetricValue) -> MetricValue:
+    def calc_asset_turnover(revenue: Any, total_assets: Any) -> MetricValue:
         """Fundametrics Asset Turnover Calculation"""
         try:
+            revenue = FundametricsMetricsEngine._coerce_metric(revenue, "INR")
+            total_assets = FundametricsMetricsEngine._coerce_metric(total_assets, "INR")
+            
             validate_same_statement(revenue, total_assets)
             if total_assets.value in (None, 0) or revenue.value is None:
                 raise ValueError("Insufficient data")
@@ -286,9 +298,12 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_interest_coverage(ebit: MetricValue, interest: MetricValue) -> MetricValue:
+    def calc_interest_coverage(ebit: Any, interest: Any) -> MetricValue:
         """Fundametrics Interest Coverage Ratio Calculation"""
         try:
+            ebit = FundametricsMetricsEngine._coerce_metric(ebit, "INR")
+            interest = FundametricsMetricsEngine._coerce_metric(interest, "INR")
+            
             validate_same_statement(ebit, interest)
             if interest.value in (None, 0) or ebit.value is None:
                 raise ValueError("Insufficient data")
@@ -310,8 +325,11 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_return_on_equity(net_income: MetricValue, average_equity: MetricValue) -> MetricValue:
+    def calc_return_on_equity(net_income: Any, average_equity: Any) -> MetricValue:
         try:
+            net_income = FundametricsMetricsEngine._coerce_metric(net_income, "INR")
+            average_equity = FundametricsMetricsEngine._coerce_metric(average_equity, "INR")
+            
             validate_same_statement(net_income, average_equity)
             if average_equity.value in (None, 0) or net_income.value is None:
                 raise ValueError("Insufficient data")
@@ -333,8 +351,11 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_eps(net_income: MetricValue, shares_outstanding: MetricValue) -> MetricValue:
+    def calc_eps(net_income: Any, shares_outstanding: Any) -> MetricValue:
         try:
+            net_income = FundametricsMetricsEngine._coerce_metric(net_income, "INR")
+            shares_outstanding = FundametricsMetricsEngine._coerce_metric(shares_outstanding, "shares")
+            
             validate_same_statement(net_income, shares_outstanding)
             if shares_outstanding.value in (None, 0) or net_income.value is None:
                 raise ValueError("Insufficient data")
@@ -356,9 +377,12 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_debt_to_equity(total_debt: MetricValue, total_equity: MetricValue) -> MetricValue:
+    def calc_debt_to_equity(total_debt: Any, total_equity: Any) -> MetricValue:
         """Fundametrics Debt to Equity Ratio Calculation"""
         try:
+            total_debt = FundametricsMetricsEngine._coerce_metric(total_debt, "INR")
+            total_equity = FundametricsMetricsEngine._coerce_metric(total_equity, "INR")
+            
             validate_same_statement(total_debt, total_equity)
             if total_equity.value in (None, 0) or total_debt.value is None:
                 raise ValueError("Insufficient data")
@@ -404,9 +428,10 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_pe_ratio(share_price: float, eps: MetricValue) -> MetricValue:
+    def calc_pe_ratio(share_price: float, eps: Any) -> MetricValue:
         """Fundametrics P/E Ratio Calculation"""
         try:
+            eps = FundametricsMetricsEngine._coerce_metric(eps, "INR")
             if not share_price or eps.value is None or eps.value <= 0:
                 raise ValueError("Insufficient data or negative EPS")
             value = round(share_price / eps.value, 2)
@@ -416,7 +441,7 @@ class FundametricsMetricsEngine:
                 statement_id=eps.statement_id,
                 computed=True,
             )
-        except ValueError as err:
+        except (ValueError, TypeError) as err:
             return MetricValue(
                 value=None,
                 unit="x",
@@ -426,9 +451,10 @@ class FundametricsMetricsEngine:
             )
 
     @staticmethod
-    def calc_price_to_book(share_price: float, bvps: MetricValue) -> MetricValue:
+    def calc_price_to_book(share_price: float, bvps: Any) -> MetricValue:
         """Fundametrics Price to Book Ratio Calculation"""
         try:
+            bvps = FundametricsMetricsEngine._coerce_metric(bvps, "INR")
             if not share_price or bvps.value is None or bvps.value <= 0:
                 raise ValueError("Insufficient data or negative BVPS")
             value = round(share_price / bvps.value, 2)
@@ -438,7 +464,7 @@ class FundametricsMetricsEngine:
                 statement_id=bvps.statement_id,
                 computed=True,
             )
-        except ValueError as err:
+        except (ValueError, TypeError) as err:
             return MetricValue(
                 value=None,
                 unit="x",

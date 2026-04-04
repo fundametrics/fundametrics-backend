@@ -19,7 +19,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from api.endpoints import router as api_router
+from scraper.api.mongo_routes import router as mongo_router
 from db.manager import init_db
+from scraper.core.db import init_indexes, close_db, ping_db
 
 load_dotenv()
 
@@ -38,11 +40,11 @@ async def lifespan(app: FastAPI):
     """Startup: init DB + start scheduler. Shutdown: stop scheduler."""
     global _scheduler_instance
 
-    # 1. Initialize database
+    # 1. Initialize SQL database (Metadata/Legacy)
     db_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./finox_stock_data.db")
     if db_url:
         init_db(db_url)
-        print("✅ Database initialized")
+        print("✅ SQL Database initialized")
 
         # Create new tables (Watchlist, DailyApiUsage) if they don't exist
         try:
@@ -54,11 +56,21 @@ async def lifespan(app: FastAPI):
                     await conn.run_sync(Base.metadata.create_all)
 
             await create_tables()
-            print("✅ Database tables synced")
+            print("✅ SQL Database tables synced")
         except Exception as e:
-            print(f"⚠️  Table sync warning: {e}")
+            print(f"⚠️  SQL Table sync warning: {e}")
     else:
-        print("⚠️  DATABASE_URL not set. DB features disabled.")
+        print("⚠️  DATABASE_URL not set. SQL features disabled.")
+
+    # 1.1 Initialize MongoDB (New Primary Data Store)
+    try:
+        if await ping_db():
+            await init_indexes()
+            print("✅ MongoDB connected and indexes verified")
+        else:
+            print("❌ MongoDB connection failed")
+    except Exception as e:
+        print(f"⚠️  MongoDB initialization error: {e}")
 
     # 2. Start scheduler
     try:
@@ -75,6 +87,9 @@ async def lifespan(app: FastAPI):
     if _scheduler_instance:
         _scheduler_instance.shutdown(wait=False)
         print("🛑 Scheduler stopped")
+    
+    await close_db()
+    print("🛑 MongoDB connection closed")
 
 
 # ─── App creation ────────────────────────────────────────────────────
@@ -128,6 +143,11 @@ async def rate_limit_middleware(request: Request, call_next):
 
 # ─── Routes ───────────────────────────────────────────────────────────
 
+# Phase 22: Register MongoDB-first routes
+# This ensures that for overlapping paths like /stocks/{symbol}, we use the MongoDB implementation
+app.include_router(mongo_router, prefix="/api/v1")
+
+# Register Legacy / Tooling routes
 app.include_router(api_router, prefix="/api/v1")
 
 
